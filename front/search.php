@@ -17,6 +17,7 @@
 
 use Glpi\Application\View\TemplateRenderer;
 use GlpiPlugin\Iam\CaseSearch;
+use GlpiPlugin\Iam\Help;
 use GlpiPlugin\Iam\Matrix;
 use GlpiPlugin\Iam\Menu;
 use GlpiPlugin\Iam\QuickSearch;
@@ -33,6 +34,7 @@ $results = $q === '' ? null : CaseSearch::run($parsed);
 
 Html::header(__('Case search', 'iam'), $_SERVER['PHP_SELF'], plugin_iam_sector(), Menu::class, 'search');
 TemplateRenderer::getInstance()->display('@iam/search.html.twig', [
+    'help'       => Help::context(),
     'q'          => $q,
     'results'    => $results,
     'parsed'     => $parsed,

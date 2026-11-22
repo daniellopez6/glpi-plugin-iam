@@ -14,8 +14,10 @@
  #}
 {# Quick case search. Everything is escaped by Twig (the query is echoed back escaped); results only contain rows the
    session may see (the server applies the visibility predicate of each table). #}
+{% import '@iam/_help.html.twig' as h %}
 <div class="iam-search-page">
    <h2 class="mb-3"><i class="ti ti-search me-1"></i>{{ __('Case search', 'iam') }}</h2>
+   {{ h.box(help.boxes.search) }}
    <form method="get" action="{{ self_url }}" class="d-flex gap-2 mb-2" role="search">
       <input type="search" name="q" value="{{ q }}" maxlength="200" autofocus autocomplete="off"
              class="form-control form-control-lg" aria-label="{{ __('Case search', 'iam') }}"

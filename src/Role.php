@@ -267,6 +267,7 @@ class Role extends CommonDBChild
             $rows[] = $r;
         }
         TemplateRenderer::getInstance()->display('@iam/roles_tab.html.twig', [
+            'help'      => Help::context(),
             'rows'      => $rows,
             'levels'    => self::levelLabels(),
             'resource'  => (int) $item->getID(),

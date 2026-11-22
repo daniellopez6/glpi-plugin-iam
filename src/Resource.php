@@ -294,6 +294,7 @@ class Resource extends CommonDBTM
             $link = ['name' => (string) $linked->getName(), 'url' => $linked->getFormURLWithID((int) $linked->getID())];
         }
         TemplateRenderer::getInstance()->display('@iam/resource_form.html.twig', [
+            'help'          => Help::context(),
             'item'          => $this,
             'params'        => $options,
             'itemtypes'     => array_keys(self::itemtypeLabels()),

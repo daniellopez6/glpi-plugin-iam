@@ -44,6 +44,12 @@ class Position extends CommonTreeDropdown
         return __('Positions', 'iam');
     }
 
+    public function showForm($ID, array $options = [])
+    {
+        Help::box('position');
+        return parent::showForm($ID, $options);
+    }
+
     /** @return array<int, array<string, mixed>> */
     public function getAdditionalFields()
     {

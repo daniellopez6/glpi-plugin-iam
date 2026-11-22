@@ -1,0 +1,76 @@
+{#
+ # -------------------------------------------------------------------------
+ # IAM - Identity & Access Governance plugin for GLPI
+ # Copyright (C) 2026 daniellopez6
+ # https://github.com/daniellopez6/glpi-plugin-iam
+ # -------------------------------------------------------------------------
+ # LICENSE
+ #
+ # This program is free software: you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+ # the Free Software Foundation, either version 3 of the License, or
+ # (at your option) any later version. See LICENSE for the full text.
+ # -------------------------------------------------------------------------
+{# Help and glossary page: the guide of the active role first, then the other roles, the matrix legend, the glossary
+   (with the ISO 27001:2022 control of each term) and the frequently asked questions. All text is escaped by Twig. #}
+{% macro guide(r, links, mine) %}
+   <div class="card h-100 {{ mine ? 'border-primary' : '' }}" id="role-{{ r.key }}">
+      <div class="card-header"><h4 class="card-title">{{ r.title }}{% if mine %} <span class="badge bg-primary ms-2">{{ __('Your role', 'iam') }}</span>{% endif %}</h4></div>
+      <div class="card-body small">
+         <div class="text-secondary mb-2">{{ r.who }}</div>
+         <ul class="mb-2">
+            {% for t in r.tasks %}<li>{% if t.link and links[t.link] is defined %}<a href="{{ links[t.link] }}">{{ t.text }}</a>{% else %}{{ t.text }}{% endif %}</li>{% endfor %}
+         </ul>
+         <div><i class="ti ti-calendar me-1" aria-hidden="true"></i><strong>{{ __('When', 'iam') }}:</strong> {{ r.when }}</div>
+      </div>
+   </div>
+{% endmacro %}
+{% import _self as m %}
+<div class="container-fluid iam-help-page" style="max-width:1100px">
+   <h2 class="mb-1"><i class="ti ti-help me-2" aria-hidden="true"></i>{{ __('Help and glossary', 'iam') }}</h2>
+   <p class="text-secondary">{{ __('What each person has to do, the meaning of the matrix symbols, the terms and the most common questions.', 'iam') }}</p>
+   <div class="mb-3 d-flex flex-wrap gap-2">
+      <a href="#roles" class="btn btn-sm btn-outline-primary">{{ __('What do I have to do?', 'iam') }}</a>
+      <a href="#legend" class="btn btn-sm btn-outline-primary">{{ __('Matrix legend', 'iam') }}</a>
+      <a href="#glossary" class="btn btn-sm btn-outline-primary">{{ __('Glossary', 'iam') }}</a>
+      <a href="#faq" class="btn btn-sm btn-outline-primary">{{ __('Frequently asked questions', 'iam') }}</a>
+   </div>
+
+   <h3 id="roles">{{ __('What do I have to do?', 'iam') }}</h3>
+   <div class="row row-cards mb-4">
+      <div class="col-12">{{ m.guide(mine, links, true) }}</div>
+   </div>
+   <details class="mb-4">
+      <summary class="mb-2" style="cursor:pointer"><strong>{{ __('Guides of the other roles', 'iam') }}</strong></summary>
+      <div class="row row-cards">
+         {% for r in others %}<div class="col-md-6">{{ m.guide(r, links, false) }}</div>{% endfor %}
+      </div>
+   </details>
+
+   <h3 id="legend">{{ __('Matrix legend', 'iam') }}</h3>
+   <div class="card mb-4"><div class="table-responsive"><table class="table card-table table-sm">
+      <tbody>
+         {% for key, l in legend %}
+         <tr><td style="width:30%"><strong>{{ l.label }}</strong></td><td class="small">{{ l.text }}</td></tr>
+         {% endfor %}
+      </tbody>
+   </table></div></div>
+
+   <h3 id="glossary">{{ __('Glossary', 'iam') }}</h3>
+   <div class="card mb-4"><div class="table-responsive"><table class="table card-table table-sm">
+      <thead><tr>
+         <th style="width:20%">{{ __('Term', 'iam') }}</th><th>{{ __('Meaning', 'iam') }}</th>
+         <th style="width:25%">{{ __('Example', 'iam') }}</th><th style="width:9%">{{ __('ISO 27001:2022', 'iam') }}</th>
+      </tr></thead>
+      <tbody>
+         {% for g in glossary %}
+         <tr><td><strong>{{ g.term }}</strong></td><td class="small">{{ g.definition }}</td><td class="small text-secondary">{{ g.example }}</td><td><span class="badge bg-blue-lt">{{ g.iso }}</span></td></tr>
+         {% endfor %}
+      </tbody>
+   </table></div></div>
+
+   <h3 id="faq">{{ __('Frequently asked questions', 'iam') }}</h3>
+   {% for f in faq %}
+   <details class="card card-sm mb-2"><summary class="card-body py-2" style="cursor:pointer"><strong>{{ f.q }}</strong></summary><div class="card-body pt-0 small">{{ f.a }}</div></details>
+   {% endfor %}
+</div>

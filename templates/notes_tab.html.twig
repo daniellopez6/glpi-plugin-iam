@@ -14,6 +14,8 @@
  #}
 {# Append-only log of an item: no edit or delete controls; content is autoescaped, then nl2br (pre_escape html).
    CSRF: GLPI 12 checks Sec-Fetch-Site/Origin on every POST (token-less, csrf_token() is deprecated). #}
+{% import '@iam/_help.html.twig' as h %}
+{{ h.box(help.boxes.notes) }}
 <div class="card">
    {% if can_add %}
    <div class="card-body border-bottom">
@@ -21,14 +23,14 @@
          <input type="hidden" name="itemtype" value="{{ itemtype }}">
          <input type="hidden" name="items_id" value="{{ items_id }}">
          <div class="mb-2">
-            <label class="form-label" for="iam-note-content">{{ __('New log entry', 'iam') }}</label>
+            <label class="form-label" for="iam-note-content" title="{{ help.fields.note_content }}">{{ __('New log entry', 'iam') }}</label>
             <textarea id="iam-note-content" name="content" class="form-control" rows="3" maxlength="{{ max_length }}" required></textarea>
             <div class="form-hint">{{ __('Entries are permanent: they cannot be changed or deleted. To correct one, add a new entry that references it.', 'iam') }}</div>
          </div>
          <div class="row g-2 align-items-end">
             {% if rows|length > 0 %}
             <div class="col-md-4">
-               <label class="form-label" for="iam-note-ref">{{ __('Corrects entry', 'iam') }}</label>
+               <label class="form-label" for="iam-note-ref" title="{{ help.fields.note_corrects }}">{{ __('Corrects entry', 'iam') }}</label>
                <select id="iam-note-ref" name="plugin_iam_notes_id" class="form-select">
                   <option value="0">-</option>
                   {% for r in rows %}<option value="{{ r.id }}">#{{ r.id }} ({{ r.date }}, {{ r.author }})</option>{% endfor %}

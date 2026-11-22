@@ -12,14 +12,16 @@
  # (at your option) any later version. See LICENSE for the full text.
  # -------------------------------------------------------------------------
  #}
+{% import '@iam/_help.html.twig' as h %}
+{{ h.box(help.boxes.role) }}
 <div class="card">
    <div class="table-responsive">
       <table class="table table-hover card-table">
          <thead>
             <tr>
                <th>{{ __('Name') }}</th>
-               <th>{{ __('Level', 'iam') }}</th>
-               <th>{{ __('Break-glass', 'iam') }}</th>
+               <th title="{{ help.fields.role_level }}">{{ __('Level', 'iam') }}</th>
+               <th title="{{ help.fields.role_breakglass }}">{{ __('Break-glass', 'iam') }}</th>
                {% if can_edit or can_purge %}<th></th>{% endif %}
             </tr>
          </thead>
@@ -78,13 +80,13 @@
          <input type="hidden" name="plugin_iam_resources_id" value="{{ resource }}">
          <div class="col-md-5"><label class="form-label">{{ __('Name') }}</label><input type="text" name="name" class="form-control" required></div>
          <div class="col-md-3">
-            <label class="form-label">{{ __('Level', 'iam') }}</label>
+            <label class="form-label" title="{{ help.fields.role_level }}">{{ __('Level', 'iam') }}</label>
             <select name="level" class="form-select">
                {% for k, label in levels %}<option value="{{ k }}">{{ label }}</option>{% endfor %}
             </select>
          </div>
          <div class="col-md-2">
-            <label class="form-label">{{ __('Break-glass', 'iam') }}</label>
+            <label class="form-label" title="{{ help.fields.role_breakglass }}">{{ __('Break-glass', 'iam') }}</label>
             <select name="is_breakglass" class="form-select"><option value="0">{{ __('No', 'iam') }}</option><option value="1">{{ __('Yes', 'iam') }}</option></select>
          </div>
          <div class="col-md-2"><button type="submit" name="add" class="btn btn-primary w-100"><i class="ti ti-plus"></i></button></div>

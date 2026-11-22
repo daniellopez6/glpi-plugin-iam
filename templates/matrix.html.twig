@@ -14,6 +14,7 @@
  #}
 {# RBAC matrix: rows = positions grouped by area, columns = resources (collapsed; expanded to roles by matrix.js).
    Every value is escaped by Twig; the client data travels in a data-* attribute (JSON with HEX flags). #}
+{% import '@iam/_help.html.twig' as h %}
 {% set glyphs = {'allowed': 'ti-check', 'on_request': 'ti-circle-half-2', 'forbidden': 'ti-ban'} %}
 
 {% macro block(b, members_visible, glyphs) %}
@@ -63,6 +64,8 @@
       </div>
    </div>
 
+   {{ h.box(help.boxes.matrix) }}
+
    {# Filters: server side (area, resource, only deviations, privileged) and a quick client-side text filter #}
    <form method="get" action="{{ self_url }}" class="iam-filters d-flex flex-wrap align-items-end gap-2 mb-2" role="search">
       <div>
@@ -108,26 +111,23 @@
       </div>
    </form>
 
-   {# Legend: every glyph and colour (states differ by icon AND colour) #}
+   {# Legend: every glyph and colour (states differ by icon AND colour); the text is the one of the help page (HelpContent) #}
    <div class="iam-legend" role="note" aria-label="{{ __('Legend', 'iam') }}">
       <span class="iam-legend-title">{{ __('Legend', 'iam') }}</span>
-      <span><i class="ti ti-check iam-e-allowed" aria-hidden="true"></i> {{ expectations.allowed }}</span>
-      <span><i class="ti ti-circle-half-2 iam-e-on_request" aria-hidden="true"></i> {{ expectations.on_request }}</span>
-      <span><i class="ti ti-ban iam-e-forbidden" aria-hidden="true"></i> {{ expectations.forbidden }}</span>
-      <span><span class="iam-e-none" aria-hidden="true">·</span> {{ __('No expectation', 'iam') }}</span>
+      <span><i class="ti ti-check iam-e-allowed" aria-hidden="true"></i> {{ help.legend.allowed.label }}</span>
+      <span><i class="ti ti-circle-half-2 iam-e-on_request" aria-hidden="true"></i> {{ help.legend.on_request.label }}</span>
+      <span><i class="ti ti-ban iam-e-forbidden" aria-hidden="true"></i> {{ help.legend.forbidden.label }}</span>
+      <span><span class="iam-e-none" aria-hidden="true">·</span> {{ help.legend.none.label }}</span>
+      <span><span class="iam-count">{{ members_visible ? '3/4' : '3' }}</span> {{ help.legend.ok.label }}</span>
+      <span><span class="iam-dev"><i class="ti ti-alert-triangle" aria-hidden="true"></i>2</span> {{ help.legend.unexpected.label }}</span>
+      <span><span class="iam-dev"><i class="ti ti-ban" aria-hidden="true"></i>1</span> {{ help.legend.forbidden_held.label }}</span>
       {% if members_visible %}
-         <span><span class="iam-count">3/4</span> {{ __('people with every expected access / people expected', 'iam') }}</span>
-      {% else %}
-         <span><span class="iam-count">3</span> {{ __('People holding it as expected', 'iam') }}</span>
+         <span><span class="iam-miss"><i class="ti ti-point-filled" aria-hidden="true"></i>1</span> {{ help.legend.missing.label }}</span>
       {% endif %}
-      <span><span class="iam-dev"><i class="ti ti-alert-triangle" aria-hidden="true"></i>2</span> {{ __('people holding an access not expected', 'iam') }}</span>
-      <span><span class="iam-dev"><i class="ti ti-ban" aria-hidden="true"></i>1</span> {{ __('…including a forbidden one', 'iam') }}</span>
-      {% if members_visible %}
-         <span><span class="iam-miss"><i class="ti ti-point-filled" aria-hidden="true"></i>1</span> {{ __('people missing an expected access', 'iam') }}</span>
-      {% endif %}
-      <span><i class="ti ti-shield-half-filled iam-priv" aria-hidden="true"></i> {{ levels.privileged }}</span>
-      <span><i class="ti ti-urgent iam-bg" aria-hidden="true"></i> {{ __('Break-glass role', 'iam') }}</span>
+      <span><i class="ti ti-shield-half-filled iam-priv" aria-hidden="true"></i> {{ help.legend.privileged.label }}</span>
+      <span><i class="ti ti-urgent iam-bg" aria-hidden="true"></i> {{ help.legend.breakglass.label }}</span>
       <span class="text-secondary"><i class="ti ti-hand-click" aria-hidden="true"></i> {{ __('Click a resource to see its roles, a role cell to see the people.', 'iam') }}</span>
+      <a href="{{ help_url }}" class="ms-auto"><i class="ti ti-help" aria-hidden="true"></i> {{ __('Help and glossary', 'iam') }}</a>
    </div>
 
    {% if not members_visible %}

@@ -184,6 +184,7 @@ class Position_User extends CommonDBRelation
         $positionId = (int) $this->fields['plugin_iam_positions_id'];
         $ticket = (int) $this->fields['tickets_id'];
         TemplateRenderer::getInstance()->display('@iam/position_user_form.html.twig', [
+            'help'         => Help::context(),
             'position'     => $position->getFromDB($positionId) ? (string) $position->fields['completename'] : '#' . $positionId,
             'position_url' => Position::canView() ? Position::getFormURLWithID($positionId) : '',
             'person'       => (string) User::getFriendlyNameById((int) $this->fields['users_id']),
@@ -416,6 +417,7 @@ class Position_User extends CommonDBRelation
         }
         $canAdd = self::canCreate();
         TemplateRenderer::getInstance()->display('@iam/positions_tab.html.twig', [
+            'help'     => Help::context(),
             'rows'     => $rows,
             'for_user' => $forUser,
             'can_add'  => $canAdd,

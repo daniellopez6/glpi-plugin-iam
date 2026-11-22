@@ -15,10 +15,12 @@
 {# Resource form #}
 {% extends 'generic_show_form.html.twig' %}
 {% import 'components/form/fields_macros.html.twig' as fields %}
+{% import '@iam/_help.html.twig' as h %}
 
 {% block form_fields %}
-   {{ fields.textField('name', item.fields['name'], __('Name'), {'required': true}) }}
-   {{ fields.textField('code', item.fields['code'], __('Code', 'iam')) }}
+   <div class="col-12">{{ h.box(help.boxes.resource) }}</div>
+   {{ fields.textField('name', item.fields['name'], __('Name'), {'required': true, 'helper': help.fields.resource_name}) }}
+   {{ fields.textField('code', item.fields['code'], __('Code', 'iam'), {'helper': help.fields.resource_code}) }}
    {% if link_deleted %}
    <div class="col-12">
       <div class="alert alert-warning d-flex align-items-center">
@@ -35,6 +37,7 @@
       {{ fields.htmlField('', '<a href="' ~ (link.url|e('html_attr')) ~ '">' ~ (link.name|e) ~ '</a>', __('Linked item', 'iam')) }}
    {% endif %}
    {{ fields.dropdownItemsFromItemtypes('items_id', (link ? __('Change linked item', 'iam') : __('Linked item', 'iam')), {
+      'helper': help.fields.resource_item,
       'itemtypes': itemtypes,
       'itemtype_name': 'itemtype',
       'items_id_name': 'items_id',
@@ -44,9 +47,9 @@
       'checkright': true,
       'display_emptychoice': true
    }) }}
-   {{ fields.dropdownField('User', 'users_id_owner', item.fields['users_id_owner'], __('Owner (person)', 'iam'), {'right': 'all', 'entity': item.fields['entities_id']}) }}
-   {{ fields.dropdownField('Group', 'groups_id_owner', item.fields['groups_id_owner'], __('Owner (group)', 'iam'), {'entity': item.fields['entities_id']}) }}
-   {{ fields.dropdownArrayField('criticality', item.fields['criticality'], criticalities, __('Criticality', 'iam')) }}
-   {{ fields.dropdownArrayField('review_frequency', item.fields['review_frequency'] ?: 'annual', frequencies, __('Review frequency', 'iam')) }}
+   {{ fields.dropdownField('User', 'users_id_owner', item.fields['users_id_owner'], __('Owner (person)', 'iam'), {'helper': help.fields.resource_owner_user, 'right': 'all', 'entity': item.fields['entities_id']}) }}
+   {{ fields.dropdownField('Group', 'groups_id_owner', item.fields['groups_id_owner'], __('Owner (group)', 'iam'), {'helper': help.fields.resource_owner_group, 'entity': item.fields['entities_id']}) }}
+   {{ fields.dropdownArrayField('criticality', item.fields['criticality'], criticalities, __('Criticality', 'iam'), {'helper': help.fields.resource_criticality}) }}
+   {{ fields.dropdownArrayField('review_frequency', item.fields['review_frequency'] ?: 'annual', frequencies, __('Review frequency', 'iam'), {'helper': help.fields.resource_review}) }}
    {{ fields.textareaField('comment', item.fields['comment'], __('Comments'), {'full_width': true}) }}
 {% endblock %}

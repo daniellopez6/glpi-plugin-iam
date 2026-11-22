@@ -16,6 +16,7 @@
  */
 
 use Glpi\Application\View\TemplateRenderer;
+use GlpiPlugin\Iam\Help;
 use GlpiPlugin\Iam\Matrix;
 use GlpiPlugin\Iam\MatrixBuilder;
 use GlpiPlugin\Iam\Menu;
@@ -127,6 +128,8 @@ TemplateRenderer::getInstance()->display('@iam/matrix.html.twig', [
     'can_edit'        => Matrix::canEdit(),
     'expectations'    => Position_Role::expectationLabels(),
     'levels'          => Role::levelLabels(),
+    'help'            => Help::context(),
+    'help_url'        => Help::getSearchURL(),
     'self_url'        => plugin_iam_url('front/matrix.php'),
     'cell_url'        => plugin_iam_url('ajax/matrixcell.php'),
     'edit_url'        => plugin_iam_url('ajax/matrixedit.php'),

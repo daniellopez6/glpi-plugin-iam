@@ -92,6 +92,11 @@ class Menu extends CommonGLPI
                     + (Grant::canCreate() ? ['add' => Grant::getFormURL(false)] : []),
             ];
         }
+        $options['help'] = [
+            'title' => Help::getTypeName(),
+            'page'  => Help::getSearchURL(false),
+            'icon'  => Help::getIcon(),
+        ];
         // Landing page: the first entry the profile can open (the matrix for every IAM profile but a REPORT-only one)
         $first = reset($options);
         return [

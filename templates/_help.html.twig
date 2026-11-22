@@ -1,0 +1,33 @@
+{#
+ # -------------------------------------------------------------------------
+ # IAM - Identity & Access Governance plugin for GLPI
+ # Copyright (C) 2026 daniellopez6
+ # https://github.com/daniellopez6/glpi-plugin-iam
+ # -------------------------------------------------------------------------
+ # LICENSE
+ #
+ # This program is free software: you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+ # the Free Software Foundation, either version 3 of the License, or
+ # (at your option) any later version. See LICENSE for the full text.
+ # -------------------------------------------------------------------------
+{# Collapsible contextual help ("What is this?"), without JavaScript. The box comes from data/help/{lang}.json
+   (see HelpContent); every value is escaped by Twig, no HTML in the content. #}
+{% macro box(b) %}
+{% if b %}
+<details class="card card-sm mb-3 iam-help" style="border-left:4px solid var(--tblr-primary)">
+   <summary class="card-body py-2" style="cursor:pointer;list-style:none">
+      <i class="ti ti-help-circle text-primary me-1" aria-hidden="true"></i><strong>{{ b.title }}</strong>
+      {% if b.iso %}<span class="badge bg-blue-lt ms-2">ISO 27001:2022 {{ b.iso }}</span>{% endif %}
+      <span class="small text-secondary ms-1">{{ __('(click to read)', 'iam') }}</span>
+   </summary>
+   <div class="card-body pt-0 small">
+      <ul class="mb-1">{% for l in b.lines %}<li>{{ l }}</li>{% endfor %}</ul>
+      {% if b.example %}<div class="text-secondary"><i class="ti ti-bulb me-1" aria-hidden="true"></i>{{ b.example }}</div>{% endif %}
+   </div>
+</details>
+{% endif %}
+{% endmacro %}
+{# Rendered directly (Help::box) it prints the box given as `box`; imported, only the macro is available #}
+{% import _self as m %}
+{% if box is defined %}{{ m.box(box) }}{% endif %}

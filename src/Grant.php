@@ -682,6 +682,7 @@ class Grant extends CommonDBTM
         $userName = static fn (int $id): string => $id > 0 ? (string) User::getFriendlyNameById($id) : '';
 
         TemplateRenderer::getInstance()->display('@iam/grant_form.html.twig', [
+            'help'            => Help::context(),
             'item'            => $this,
             'params'          => $options,
             'mode'            => $mode,

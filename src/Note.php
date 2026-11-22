@@ -435,6 +435,7 @@ class Note extends CommonDBTM
             ];
         }
         TemplateRenderer::getInstance()->display('@iam/notes_tab.html.twig', [
+            'help'       => Help::context(),
             'rows'       => $rows,
             'can_add'    => self::mayAddOn($item),
             'itemtype'   => $item::class,

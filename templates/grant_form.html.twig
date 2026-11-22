@@ -14,8 +14,10 @@
  #}
 {# Grant form. Step 1 of a new grant picks the resource (plain GET, no AJAX); step 2 offers only the roles of that resource. #}
 {% import 'components/form/fields_macros.html.twig' as fields %}
+{% import '@iam/_help.html.twig' as h %}
 
 {% if pick_resource %}
+{{ h.box(help.boxes.grant) }}
 <div class="card">
    <div class="card-body">
       <form method="get" action="{{ action }}" class="row g-2 align-items-end">
@@ -38,13 +40,16 @@
 {% set editable = mode == 'new' or mode == 'full' %}
 {% embed 'generic_show_form.html.twig' %}
    {% import 'components/form/fields_macros.html.twig' as fields %}
+   {% import '@iam/_help.html.twig' as h %}
    {% block form_fields %}
+      <div class="col-12">{{ h.box(help.boxes.grant) }}</div>
       {# Person, resource and role are fixed once the grant exists #}
       {% if mode == 'new' %}
-         {{ fields.dropdownField('User', 'users_id', preset_user, __('Person', 'iam'), {'right': 'all', 'required': true}) }}
+         {{ fields.dropdownField('User', 'users_id', preset_user, __('Person', 'iam'), {'right': 'all', 'required': true, 'helper': help.fields.grant_person}) }}
          {{ fields.hiddenField('plugin_iam_resources_id', resource.id) }}
          {{ fields.htmlField('', '<a href="' ~ (resource.url|e('html_attr')) ~ '">' ~ (resource.name|e) ~ '</a>', __('Resource', 'iam')) }}
          {{ fields.dropdownField('GlpiPlugin\\Iam\\Role', 'plugin_iam_roles_id', 0, __('Role', 'iam'), {
+            'helper': help.fields.grant_role,
             'condition': {'plugin_iam_resources_id': resource.id},
             'entity': resource.entity,
             'required': true
@@ -59,8 +64,8 @@
       {% endif %}
 
       {% if editable %}
-         {{ fields.dateField('date_begin', item.fields['date_begin'], __('Begin date', 'iam')) }}
-         {{ fields.dateField('date_end', item.fields['date_end'], __('End date', 'iam')) }}
+         {{ fields.dateField('date_begin', item.fields['date_begin'], __('Begin date', 'iam'), {'helper': help.fields.grant_begin}) }}
+         {{ fields.dateField('date_end', item.fields['date_end'], __('End date', 'iam'), {'helper': help.fields.grant_end}) }}
       {% else %}
          {{ fields.readOnlyField('', item.fields['date_begin'], __('Begin date', 'iam')) }}
          {{ fields.readOnlyField('', item.fields['date_end'], __('End date', 'iam')) }}
@@ -70,7 +75,7 @@
       {% if not ticket_visible %}
          {{ fields.readOnlyField('', __('The ticket is not visible to you.', 'iam'), __('Ticket', 'iam')) }}
       {% elseif editable %}
-         {{ fields.dropdownField('Ticket', 'tickets_id', ticket_id, __('Ticket', 'iam'), {'display_emptychoice': true}) }}
+         {{ fields.dropdownField('Ticket', 'tickets_id', ticket_id, __('Ticket', 'iam'), {'display_emptychoice': true, 'helper': help.fields.grant_ticket}) }}
       {% elseif ticket_id %}
          {{ fields.htmlField('', '<a href="' ~ (path('/front/ticket.form.php')|e('html_attr')) ~ '?id=' ~ ticket_id ~ '">#' ~ ticket_id ~ '</a>', __('Ticket', 'iam')) }}
       {% else %}
@@ -78,13 +83,13 @@
       {% endif %}
 
       {% if editable %}
-         {{ fields.dropdownField('User', 'users_id_approver', item.fields['users_id_approver'], __('Approver', 'iam'), {'right': 'all'}) }}
+         {{ fields.dropdownField('User', 'users_id_approver', item.fields['users_id_approver'], __('Approver', 'iam'), {'right': 'all', 'helper': help.fields.grant_approver}) }}
       {% else %}
          {{ fields.readOnlyField('', approver, __('Approver', 'iam')) }}
       {% endif %}
       {# The security approval is recorded in the approver's own name; whoever registers the grant cannot give it #}
       {% if mode == 'full' and can_approve %}
-         {{ fields.dropdownArrayField('users_id_approver_security', item.fields['users_id_approver_security'], security_choices, __('Security approver', 'iam')) }}
+         {{ fields.dropdownArrayField('users_id_approver_security', item.fields['users_id_approver_security'], security_choices, __('Security approver', 'iam'), {'helper': help.fields.grant_security}) }}
       {% else %}
          {{ fields.readOnlyField('', security, __('Security approver', 'iam')) }}
       {% endif %}
@@ -93,14 +98,14 @@
          {% if not account_visible %}
             {{ fields.readOnlyField('', __('The account is not visible to you.', 'iam'), __('Account', 'iam')) }}
          {% elseif editable %}
-            {{ fields.dropdownField('GlpiPlugin\\Accounts\\Account', 'plugin_accounts_accounts_id', account_id, __('Account', 'iam'), {'display_emptychoice': true}) }}
+            {{ fields.dropdownField('GlpiPlugin\\Accounts\\Account', 'plugin_accounts_accounts_id', account_id, __('Account', 'iam'), {'display_emptychoice': true, 'helper': help.fields.grant_account}) }}
          {% else %}
             {{ fields.readOnlyField('', account_id ? get_item_name('GlpiPlugin\\Accounts\\Account', account_id) : '', __('Account', 'iam')) }}
          {% endif %}
       {% endif %}
 
       {% if editable %}
-         {{ fields.dropdownArrayField('mfa', item.fields['mfa'] ?: 'na', mfa_labels, __('MFA', 'iam')) }}
+         {{ fields.dropdownArrayField('mfa', item.fields['mfa'] ?: 'na', mfa_labels, __('MFA', 'iam'), {'helper': help.fields.grant_mfa}) }}
       {% else %}
          {{ fields.readOnlyField('', mfa_label, __('MFA', 'iam')) }}
       {% endif %}
@@ -108,11 +113,11 @@
       {% if mode == 'read' %}
          {{ fields.readOnlyField('', status_label, __('Status', 'iam')) }}
       {% else %}
-         {{ fields.dropdownArrayField('status', item.fields['status'] ?: 'active', statuses, __('Status', 'iam')) }}
+         {{ fields.dropdownArrayField('status', item.fields['status'] ?: 'active', statuses, __('Status', 'iam'), {'helper': help.fields.grant_status}) }}
       {% endif %}
 
       {% if mode == 'full' %}
-         {{ fields.textareaField('revoke_reason', item.fields['revoke_reason'], __('Revocation reason', 'iam'), {'full_width': true}) }}
+         {{ fields.textareaField('revoke_reason', item.fields['revoke_reason'], __('Revocation reason', 'iam'), {'full_width': true, 'helper': help.fields.grant_revoke_reason}) }}
       {% elseif item.fields['revoke_reason'] %}
          {{ fields.readOnlyField('', item.fields['revoke_reason'], __('Revocation reason', 'iam'), {'full_width': true}) }}
       {% endif %}
@@ -120,7 +125,7 @@
       {% if mode == 'read' %}
          {{ fields.readOnlyField('', item.fields['justification'], __('Justification', 'iam'), {'full_width': true}) }}
       {% else %}
-         {{ fields.textareaField('justification', item.fields['justification'], __('Justification', 'iam'), {'full_width': true, 'required': mode == 'owner'}) }}
+         {{ fields.textareaField('justification', item.fields['justification'], __('Justification', 'iam'), {'full_width': true, 'required': mode == 'owner', 'helper': help.fields.grant_justification}) }}
       {% endif %}
 
       {% if mode != 'new' %}
