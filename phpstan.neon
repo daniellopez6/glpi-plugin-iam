@@ -1,0 +1,17 @@
+# Run from a checkout placed in glpi/plugins/iam: vendor/bin/phpstan analyse -c phpstan.neon
+# Add src, front and ajax to `paths` as those directories are created.
+parameters:
+    level: 6
+    paths:
+        - setup.php
+        - hook.php
+    bootstrapFiles:
+        - ../../vendor/autoload.php
+        - ../../src/autoload/constants.php
+        - ../../src/autoload/i18n.php
+        - ../../src/autoload/misc-functions.php
+        - ../../src/autoload/dbutils-aliases.php
+        - ../../src/autoload/legacy-autoloader.php
+    scanDirectories:
+        - ../../src
+    treatPhpDocTypesAsCertain: false

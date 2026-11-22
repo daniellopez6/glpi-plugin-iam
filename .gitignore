@@ -1,0 +1,11 @@
+/vendor/
+/node_modules/
+/.phpunit.cache/
+/.php-cs-fixer.cache
+*.tar.bz2
+*.tgz
+.idea/
+.vscode/
+/composer.lock
+/.phpunit.result.cache
+__pycache__/

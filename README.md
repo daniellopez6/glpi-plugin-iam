@@ -6,6 +6,6 @@ fed from any GLPI inventory item, nominal access register, deviation detection
 (segregation of duties, privileged access, orphans, movers), GRC Manager waivers,
 owner recertification campaigns and append-only audit notes.
 
-**Status:** design phase. See `docs/superpowers/specs/`.
+**Status:** 1.0 in development. See `docs/superpowers/specs/`.
 
 License: GPLv3.

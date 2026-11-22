@@ -1,0 +1,14 @@
+# IAM - Identity & Access Governance plugin for GLPI
+# This file is distributed under the same license as the plugin (GPL-3.0-or-later).
+msgid ""
+msgstr ""
+"Project-Id-Version: iam\n"
+"POT-Creation-Date: 2026-11-22 12:15+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: setup.php:45
+msgid "IAM - Identity & Access Governance"
+msgstr ""
