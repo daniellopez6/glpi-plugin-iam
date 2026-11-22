@@ -301,6 +301,43 @@ Clínica Del Valle):
   usa `source=agent`, deja nota permanente con su razonamiento y nunca aprueba
   (solo registra y propone).
 
+## 13 bis. Ayuda y adopción
+
+Requisito transversal, no una entrega final: cada pantalla sale con su ayuda.
+Se reutiliza lo construido en ERM 2.1–2.3.
+
+**Para personas (analista, dueño, auditor):**
+- Ayuda en cada campo (tooltips) y recuadros plegables “¿Qué es esto?” en cada
+  pantalla, con la referencia ISO 27001:2022 que aplica (A.5.3, A.5.15, A.5.18, A.8.2).
+- Leyenda permanente en la matriz (qué significa cada color e ícono) y, en cada
+  desvío, **qué hacer**: causa probable, acción recomendada, cómo cerrarlo o pedir
+  excepción.
+- Página de Ayuda según el perfil activo (Analista / Dueño / Auditor), glosario
+  (RBAC, SoD, privilegiado, recertificación, mover/leaver, break-glass) y preguntas
+  frecuentes. Contenido en `data/help/{es,en}.json`.
+- Checklist de puesta en marcha en el tablero: crear puestos → asignar personas →
+  dar de alta recursos y roles → definir matriz → cargar accesos → primera campaña.
+- Asistente de alta de recurso (elegir elemento del inventario → roles sugeridos
+  → dueño → nivel) y **biblioteca de plantillas**: roles típicos y reglas SoD
+  comunes (pagos, compras, nómina, administración de TI) para no partir de cero.
+- Guías rápidas por rol y un caso completo de punta a punta en `docs/`
+  (es y en), con capturas.
+- “Metodología IAM” en PDF descargable (criterios de desvíos, severidades,
+  privilegiados, recertificación), útil como documento del SGSI.
+
+**Para el agente de IA (y para integradores):**
+- `docs/api-agente.md`: cómo autenticarse, qué clases usar, orden de operaciones
+  (buscar persona → buscar recurso/rol → crear grant con ticket → nota permanente),
+  ejemplos `curl` y JSON completos, errores esperables y cómo interpretarlos.
+- Reglas del agente explícitas: `source=agent`, siempre ticket, siempre nota con
+  su razonamiento, nunca aprueba, nunca revoca sin ticket.
+- Mensajes de error de la API claros y estables (códigos), pensados para que un
+  agente pueda corregir y reintentar.
+
+Reparto por entrega: 1.0 incluye ayuda en campos, recuadros, leyenda de la matriz,
+página de Ayuda básica y `api-agente.md`; 1.1 suma el “qué hacer” por desvío y la
+biblioteca de plantillas; 1.2 el checklist, guías, caso completo y PDF de metodología.
+
 ## 14. Entregas sugeridas
 
 1. **1.0** Catálogos (puestos, persona↔puesto, recursos, roles), matriz, grants,
@@ -323,6 +360,8 @@ Clínica Del Valle):
 - Notas en los controles que no se borran.
 - Enfoque A (plugin propio).
 - Opción 1: solo registro de accesos ya otorgados; aprobación en el ticket GLPI.
+- Ayuda adecuada para adopción rápida, tanto para analistas como para el agente.
+- Multi-entidad.
 - Repo público nuevo `daniellopez6/glpi-plugin-iam` para publicar a la comunidad.
 
 ## 16. Llamadas de Claude (revisables)
