@@ -35,8 +35,6 @@ class Role extends CommonDBChild
 
     public const LEVELS = ['standard', 'sensitive', 'privileged'];
 
-    private const FIELDS = ['id', 'plugin_iam_resources_id', 'entities_id', 'name', 'level', 'is_breakglass', 'comment', 'date_mod', 'date_creation'];
-    private const IMMUTABLE = ['plugin_iam_resources_id', 'entities_id'];
 
     public static function getTypeName($nb = 0)
     {
@@ -56,6 +54,15 @@ class Role extends CommonDBChild
             'sensitive'  => __('Sensitive', 'iam'),
             'privileged' => __('Privileged', 'iam'),
         ];
+    }
+
+    /**
+     * The roles table has no is_recursive column (the parent's recursion is not copied): without this GLPI builds
+     * list queries (API, search) on a column that does not exist.
+     */
+    public function maybeRecursive()
+    {
+        return false;
     }
 
     /** Owners (READ_OWNED) see the roles of their resources: visibility follows the parent resource. */
@@ -109,7 +116,8 @@ class Role extends CommonDBChild
     private static function sanitize(array $input, bool $isUpdate): array
     {
         $internal = array_filter($input, static fn ($k): bool => str_starts_with((string) $k, '_'), ARRAY_FILTER_USE_KEY);
-        return InputGuard::filter($input, self::FIELDS, self::IMMUTABLE, $isUpdate) + $internal;
+        $id = $isUpdate && isset($input['id']) ? ['id' => (int) $input['id']] : [];
+        return InputGuard::filter($input, FieldSets::ROLE, FieldSets::ROLE_IMMUTABLE, $isUpdate) + $id + $internal;
     }
 
     /**

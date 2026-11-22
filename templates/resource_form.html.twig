@@ -28,6 +28,9 @@
       </div>
    </div>
    {% endif %}
+   {% if link_hidden %}
+   <div class="col-12"><div class="alert alert-info"><i class="ti ti-eye-off me-2"></i>{{ __('The linked item is not visible to you.', 'iam') }}</div></div>
+   {% endif %}
    {% if link %}
       {{ fields.htmlField('', '<a href="' ~ (link.url|e('html_attr')) ~ '">' ~ (link.name|e) ~ '</a>', __('Linked item', 'iam')) }}
    {% endif %}

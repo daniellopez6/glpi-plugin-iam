@@ -22,7 +22,8 @@
 use GlpiPlugin\Iam\Install\Installer;
 use GlpiPlugin\Iam\Ownership;
 use GlpiPlugin\Iam\Resource;
-use GlpiPlugin\Iam\Rights;
+use GlpiPlugin\Iam\Role;
+use Glpi\DBAL\QuerySubQuery;
 
 function plugin_iam_install(): bool
 {
@@ -46,12 +47,18 @@ function plugin_iam_uninstall(): bool
  */
 function plugin_iam_addDefaultWhere($itemtype): array
 {
-    if ($itemtype === Resource::class && Rights::onlyOwn() && !Session::haveRight(Rights::CONFIG, READ)) {
-        return [Ownership::resourceCriteria(
-            (int) Session::getLoginUserID(),
-            array_values(array_map('intval', (array) ($_SESSION['glpigroups'] ?? []))),
-            Resource::getTable()
-        )];
+    // Same condition as Resource::canViewItem(): without CONFIG READ only owned resources (and their roles) are visible
+    if (($itemtype === Resource::class || $itemtype === Role::class) && Resource::ownedOnly()) {
+        $groups = array_values(array_map('intval', (array) ($_SESSION['glpigroups'] ?? [])));
+        $own = Ownership::resourceCriteria((int) Session::getLoginUserID(), $groups, Resource::getTable());
+        if ($itemtype === Resource::class) {
+            return [$own];
+        }
+        return [[Role::getTable() . '.plugin_iam_resources_id' => new QuerySubQuery([
+            'SELECT' => Resource::getTable() . '.id',
+            'FROM'   => Resource::getTable(),
+            'WHERE'  => [$own],
+        ])]];
     }
     return [];
 }

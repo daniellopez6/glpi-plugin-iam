@@ -17,6 +17,7 @@
 
 namespace GlpiPlugin\Iam\Tests\Unit;
 
+use GlpiPlugin\Iam\FieldSets;
 use GlpiPlugin\Iam\InputGuard;
 use PHPUnit\Framework\TestCase;
 
@@ -45,5 +46,22 @@ final class InputGuardTest extends TestCase
         $this->assertFalse(InputGuard::enum('', $levels));
         $this->assertFalse(InputGuard::enum('Standard', $levels));
         $this->assertTrue(InputGuard::enum('privileged', $levels));
+    }
+
+    public function testWhitelistsNeverAcceptStateOrAuditFields(): void
+    {
+        foreach ([FieldSets::RESOURCE, FieldSets::ROLE] as $fields) {
+            foreach (['id', 'is_deleted', 'date_mod', 'date_creation'] as $forbidden) {
+                $this->assertNotContains($forbidden, $fields);
+            }
+        }
+        $in = ['name' => 'x', 'is_deleted' => 1, 'date_mod' => '2000-01-01', 'id' => 9];
+        $this->assertSame(['name' => 'x'], InputGuard::filter($in, FieldSets::RESOURCE, FieldSets::RESOURCE_IMMUTABLE, false));
+    }
+
+    public function testRoleResourceAndEntityAreImmutable(): void
+    {
+        $in = ['plugin_iam_resources_id' => 2, 'entities_id' => 3, 'name' => 'n'];
+        $this->assertSame(['name' => 'n'], InputGuard::filter($in, FieldSets::ROLE, FieldSets::ROLE_IMMUTABLE, true));
     }
 }

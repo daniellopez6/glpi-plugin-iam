@@ -39,9 +39,6 @@ class Resource extends CommonDBTM
     public const CRITICALITIES = ['', 'low', 'medium', 'high', 'critical'];
     public const FREQUENCIES   = ['quarterly', 'semiannual', 'annual'];
 
-    private const FIELDS = ['id', 'name', 'code', 'entities_id', 'is_recursive', 'is_deleted', 'itemtype', 'items_id',
-        'users_id_owner', 'groups_id_owner', 'criticality', 'review_frequency', 'comment', 'date_mod', 'date_creation'];
-    private const IMMUTABLE = ['entities_id', 'is_recursive'];
 
     public static function getTypeName($nb = 0)
     {
@@ -106,7 +103,7 @@ class Resource extends CommonDBTM
     }
 
     /** True when the session sees the catalogue only through ownership. */
-    private static function ownedOnly(): bool
+    public static function ownedOnly(): bool
     {
         return !Session::haveRight(Rights::CONFIG, READ);
     }
@@ -269,6 +266,13 @@ class Resource extends CommonDBTM
             $type = '';
             $itemId = 0;
         }
+        // The item (and so its name) is only handed to the dropdown when the session may see it
+        $hidden = false;
+        if ($itemId > 0 && !self::itemAllowed($type, $itemId)) {
+            $hidden = $linked !== null || $this->isNewItem();
+            $type = '';
+            $itemId = 0;
+        }
         $link = null;
         if ($linked !== null && $linked->can((int) $linked->getID(), READ)) {
             $link = ['name' => (string) $linked->getName(), 'url' => $linked->getFormURLWithID((int) $linked->getID())];
@@ -282,7 +286,8 @@ class Resource extends CommonDBTM
             'criticalities' => self::criticalityLabels(),
             'frequencies'   => self::frequencyLabels(),
             'link'          => $link,
-            'link_deleted'  => !$this->isNewItem() && $itemId > 0 && $linked === null,
+            'link_deleted'  => !$this->isNewItem() && (int) ($this->fields['items_id'] ?? 0) > 0 && $linked === null,
+            'link_hidden'   => $hidden,
         ]);
         return true;
     }
@@ -342,7 +347,9 @@ class Resource extends CommonDBTM
     {
         // Internal keys of GLPI (_no_history, _glpi_csrf_token...) are not data fields
         $internal = array_filter($input, static fn ($k): bool => str_starts_with((string) $k, '_'), ARRAY_FILTER_USE_KEY);
-        return InputGuard::filter($input, self::FIELDS, self::IMMUTABLE, $isUpdate) + $internal;
+        // The id identifies the row on update only
+        $id = $isUpdate && isset($input['id']) ? ['id' => (int) $input['id']] : [];
+        return InputGuard::filter($input, FieldSets::RESOURCE, FieldSets::RESOURCE_IMMUTABLE, $isUpdate) + $id + $internal;
     }
 
     /** The inventory item must exist, not be deleted and be viewable by the session (entity included). */
@@ -397,6 +404,11 @@ class Resource extends CommonDBTM
         }
         if (array_key_exists('is_recursive', $input)) {
             $input['is_recursive'] = empty($input['is_recursive']) ? 0 : 1;
+        }
+
+        // An empty link in the form means "not changed" (the item may be hidden from this viewer): no silent unlink
+        if ($isUpdate && (string) ($input['itemtype'] ?? '') === '' && (int) ($input['items_id'] ?? 0) === 0) {
+            unset($input['itemtype'], $input['items_id']);
         }
 
         // Linked item (revalidated only when it changes, so an old link to a deleted item does not block other edits)

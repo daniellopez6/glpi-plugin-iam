@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  iam\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-22 12:48+0000\n"
+"POT-Creation-Date: 2026-11-22 12:54+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: es_AR\n"
@@ -207,97 +207,97 @@ msgstr "Ver reportes"
 msgid "See and export reports"
 msgstr "Ver y exportar reportes"
 
-#: src/Resource.php:161
+#: src/Resource.php:162
 msgid "The resource has grants or matrix cells (nothing is deleted). Put it in the trashbin instead."
 msgstr "El recurso tiene otorgamientos o celdas de matriz (no se borra nada). Envíelo a la papelera."
 
-#: src/Resource.php:204 templates/resource_form.html.twig:21 templates/resource_item_tab.html.twig:21
+#: src/Resource.php:205 templates/resource_form.html.twig:21 templates/resource_item_tab.html.twig:21
 msgid "Code"
 msgstr "Código"
 
-#: src/Resource.php:205
+#: src/Resource.php:206
 msgid "Linked item type"
 msgstr "Tipo de elemento vinculado"
 
-#: src/Resource.php:207 templates/resource_form.html.twig:44 templates/resource_item_tab.html.twig:23
+#: src/Resource.php:208 templates/resource_form.html.twig:47 templates/resource_item_tab.html.twig:23
 msgid "Owner (person)"
 msgstr "Dueño (persona)"
 
-#: src/Resource.php:209 templates/resource_form.html.twig:45 templates/resource_item_tab.html.twig:24
+#: src/Resource.php:210 templates/resource_form.html.twig:48 templates/resource_item_tab.html.twig:24
 msgid "Owner (group)"
 msgstr "Dueño (grupo)"
 
-#: src/Resource.php:211 templates/resource_form.html.twig:46 templates/resource_item_tab.html.twig:22
+#: src/Resource.php:212 templates/resource_form.html.twig:49 templates/resource_item_tab.html.twig:22
 msgid "Criticality"
 msgstr "Criticidad"
 
-#: src/Resource.php:213 templates/resource_form.html.twig:47
+#: src/Resource.php:214 templates/resource_form.html.twig:50
 msgid "Review frequency"
 msgstr "Frecuencia de revisión"
 
-#: src/Resource.php:297
+#: src/Resource.php:306
 msgid "Access (IAM)"
 msgstr "Accesos (IAM)"
 
-#: src/Resource.php:389
+#: src/Resource.php:400
 msgid "The resource must have a name."
 msgstr "El recurso debe tener un nombre."
 
-#: src/Resource.php:393
+#: src/Resource.php:404
 msgid "The criticality is not valid."
 msgstr "La criticidad no es válida."
 
-#: src/Resource.php:396
+#: src/Resource.php:407
 msgid "The review frequency is not valid."
 msgstr "La frecuencia de revisión no es válida."
 
-#: src/Resource.php:410
+#: src/Resource.php:426
 msgid "The linked item type is not allowed."
 msgstr "El tipo de elemento vinculado no está permitido."
 
-#: src/Resource.php:413
+#: src/Resource.php:429
 msgid "The linked item does not exist or you are not allowed to see it."
 msgstr "El elemento vinculado no existe o no tiene permiso para verlo."
 
-#: src/Resource.php:428
+#: src/Resource.php:444
 msgid "The owner does not exist or you are not allowed to see it."
 msgstr "El dueño no existe o no tiene permiso para verlo."
 
-#: src/Resource.php:48 templates/resource_item_tab.html.twig:20
+#: src/Resource.php:49 templates/resource_item_tab.html.twig:20
 msgid "Resource"
 msgid_plural "Resources"
 msgstr[0] "Recurso"
 msgstr[1] "Recursos"
 
-#: src/Resource.php:58
+#: src/Resource.php:59
 msgid "Resources"
 msgstr "Recursos"
 
-#: src/Resource.php:66
+#: src/Resource.php:67
 msgid "Low"
 msgstr "Baja"
 
-#: src/Resource.php:67
+#: src/Resource.php:68
 msgid "Medium"
 msgstr "Media"
 
-#: src/Resource.php:68
+#: src/Resource.php:69
 msgid "High"
 msgstr "Alta"
 
-#: src/Resource.php:69
+#: src/Resource.php:70
 msgid "Critical"
 msgstr "Crítica"
 
-#: src/Resource.php:77
+#: src/Resource.php:78
 msgid "Quarterly"
 msgstr "Trimestral"
 
-#: src/Resource.php:78
+#: src/Resource.php:79
 msgid "Semiannual"
 msgstr "Semestral"
 
-#: src/Resource.php:79
+#: src/Resource.php:80
 msgid "Annual"
 msgstr "Anual"
 
@@ -321,15 +321,15 @@ msgstr "Acceso de solo lectura a todo el registro, el catálogo y los reportes."
 msgid "Registers access requests and grants and reads the catalogue. Cannot review or approve."
 msgstr "Registra solicitudes y otorgamientos de acceso y consulta el catálogo. No puede revisar ni aprobar."
 
-#: src/Role.php:124
+#: src/Role.php:125
 msgid "The role must have a name."
 msgstr "El rol debe tener un nombre."
 
-#: src/Role.php:131
+#: src/Role.php:132
 msgid "The role level is not valid."
 msgstr "El nivel del rol no es válido."
 
-#: src/Role.php:150
+#: src/Role.php:151
 msgid "The resource of the role is not valid."
 msgstr "El recurso del rol no es válido."
 
@@ -421,11 +421,15 @@ msgstr ""
 "El elemento de inventario de este recurso ya no existe o está en la papelera. Vincule otro elemento o conserve el "
 "registro como historial."
 
-#: templates/resource_form.html.twig:32 templates/resource_form.html.twig:34
+#: templates/resource_form.html.twig:32
+msgid "The linked item is not visible to you."
+msgstr "El elemento vinculado no es visible para usted."
+
+#: templates/resource_form.html.twig:35 templates/resource_form.html.twig:37
 msgid "Linked item"
 msgstr "Elemento vinculado"
 
-#: templates/resource_form.html.twig:34
+#: templates/resource_form.html.twig:37
 msgid "Change linked item"
 msgstr "Cambiar elemento vinculado"
 

@@ -109,4 +109,5 @@ ES: dict = {
  "Save": "Guardar",
  "In use": "En uso",
  "No roles defined.": "Sin roles definidos.",
+ "The linked item is not visible to you.": "El elemento vinculado no es visible para usted.",
 }
