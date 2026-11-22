@@ -266,6 +266,26 @@ integrante valida y queda registrado quién; un técnico sin estos derechos no v
 el menú ni las pestañas. La API respeta las mismas restricciones (`addDefaultWhere`
 en todas las tablas, incluidas las hijas).
 
+## 12 bis. Multi-entidad
+
+Mismo modelo que ERM (varias empresas en una instancia, p. ej. Finandina y
+Clínica Del Valle):
+
+- Toda tabla tiene `entities_id`; catálogos (puestos, recursos, roles, reglas SoD)
+  además `is_recursive`, para que un holding defina puestos o aplicaciones
+  comunes heredados por las filiales, y cada filial agregue los propios.
+- Celda de matriz, grant, desvío y campaña pertenecen a la **entidad del recurso**.
+  Una persona de la entidad B puede tener acceso a una aplicación de la entidad A
+  (servicio compartido); lo ve quien tenga visibilidad sobre A.
+- La matriz, el tablero, “Mis activos” y las fotos se filtran por la entidad
+  activa (con o sin sub-entidades, según la selección de GLPI).
+- Configuración por entidad heredable (pestaña en Entidad, como `EntityConfig`
+  del ERM): prefijo de numeración, vencimiento máximo de privilegiados,
+  frecuencias de recertificación por nivel, si se exige MFA en privilegiados.
+- Las reglas SoD se evalúan por persona en todas las entidades que el analista
+  puede ver (un conflicto puede cruzar empresas).
+- Demo en dos empresas: Finandina S.A. (entidad 1) y Clínica Del Valle (entidad 2).
+
 ## 13. Integraciones
 
 - **Inventario GLPI**: el recurso apunta a cualquier itemtype; pestaña “Accesos
