@@ -21,6 +21,7 @@ use CommonDBRelation;
 use CommonDBTM;
 use CommonGLPI;
 use Glpi\Application\View\TemplateRenderer;
+use Profile_User;
 use Session;
 use Ticket;
 use User;
@@ -101,6 +102,9 @@ class Position_User extends CommonDBRelation
         if (!self::canCreate() || !$position->getFromDB((int) ($this->input['plugin_iam_positions_id'] ?? 0))) {
             return false;
         }
+        if (!self::userVisible((int) ($this->input['users_id'] ?? 0))) {
+            return false;
+        }
         return Session::haveAccessToEntity((int) $position->fields['entities_id']);
     }
 
@@ -152,6 +156,12 @@ class Position_User extends CommonDBRelation
         return $rows;
     }
 
+    private static function userVisible(int $usersId): bool
+    {
+        $entities = Profile_User::getUserEntities($usersId, true);
+        return $entities !== [] && Session::haveAccessToOneOfEntities($entities);
+    }
+
     /** The ticket, when given, must exist and be visible to the current user. */
     private static function ticketAllowed(int $ticketId): bool
     {
@@ -193,6 +203,10 @@ class Position_User extends CommonDBRelation
         $user = new User();
         if ($usersId <= 0 || !$user->getFromDB($usersId)) {
             return self::fail(__('Select a person.', 'iam'));
+        }
+        // The person must belong to an entity the session can see (no assignment of people out of scope)
+        if (!self::userVisible($usersId)) {
+            return self::fail(__('The person does not exist or you are not allowed to see it.', 'iam'));
         }
         $data = self::cleanDates([
             'plugin_iam_positions_id' => (int) $position->getID(),

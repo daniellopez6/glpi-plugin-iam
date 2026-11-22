@@ -62,4 +62,5 @@ ES: dict = {
  "No position assignments.": "Sin asignaciones de puesto.",
  ("Position", "Positions"): ("Puesto", "Puestos"),
  ("Position assignment", "Position assignments"): ("Asignación de puesto", "Asignaciones de puesto"),
+ "The person does not exist or you are not allowed to see it.": "La persona no existe o no tiene permiso para verla.",
 }

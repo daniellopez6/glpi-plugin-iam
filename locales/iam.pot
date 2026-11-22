@@ -3,7 +3,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: iam\n"
-"POT-Creation-Date: 2026-11-22 12:34+0000\n"
+"POT-Creation-Date: 2026-11-22 12:36+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -27,73 +27,77 @@ msgstr[1] ""
 msgid "Positions"
 msgstr ""
 
-#: src/Position.php:50 src/Position.php:60
+#: src/Position.php:51 src/Position.php:61
 msgid "Job title"
 msgstr ""
 
-#: src/Position.php:81
+#: src/Position.php:82
 msgid "The position has assignments (the history is kept). Deactivate it instead of deleting it."
 msgstr ""
 
-#: src/Position_User.php:126
+#: src/Position_User.php:130
 msgid "The end date cannot be before the begin date."
 msgstr ""
 
-#: src/Position_User.php:127
+#: src/Position_User.php:131
 msgid "A date is not valid (expected format YYYY-MM-DD)."
 msgstr ""
 
-#: src/Position_User.php:128
+#: src/Position_User.php:132
 msgid "The person already has an active primary position."
 msgstr ""
 
-#: src/Position_User.php:129
+#: src/Position_User.php:133
 msgid "The assignment type is not valid."
 msgstr ""
 
-#: src/Position_User.php:130
+#: src/Position_User.php:134
 msgid "The assignment is not valid."
 msgstr ""
 
-#: src/Position_User.php:187
+#: src/Position_User.php:197
 msgid "Select a position."
 msgstr ""
 
-#: src/Position_User.php:190
+#: src/Position_User.php:200
 msgid "The position is not active."
 msgstr ""
 
-#: src/Position_User.php:195
+#: src/Position_User.php:205
 msgid "Select a person."
 msgstr ""
 
-#: src/Position_User.php:211 src/Position_User.php:244
+#: src/Position_User.php:209
+msgid "The person does not exist or you are not allowed to see it."
+msgstr ""
+
+#: src/Position_User.php:225 src/Position_User.php:258
 msgid "The ticket does not exist or you are not allowed to see it."
 msgstr ""
 
-#: src/Position_User.php:258
+#: src/Position_User.php:272
 msgid "Positions (IAM)"
 msgstr ""
 
-#: src/Position_User.php:263
+#: src/Position_User.php:277
 msgid "Assignments"
 msgstr ""
 
-#: src/Position_User.php:46
+#: src/Position_User.php:47
 msgid "Position assignment"
 msgid_plural "Position assignments"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Position_User.php:58
+#: src/Position_User.php:59
 msgid "Holder"
 msgstr ""
 
-#: src/Position_User.php:59
+#: src/Position_User.php:60
 msgid "Substitute"
 msgstr ""
 
-#: src/Position_User.php:60
+#: src/Position_User.php:61
 msgid "Temporary"
 msgstr ""
 
