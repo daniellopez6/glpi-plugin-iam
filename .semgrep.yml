@@ -28,4 +28,4 @@ rules:
       exclude:
         - "**/src/ResourceItemtypes.php"
         - "**/src/NoteRules.php"
-    pattern: new $X(...)
+    pattern-regex: 'new\s+\$'

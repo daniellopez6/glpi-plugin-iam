@@ -51,7 +51,7 @@ jobs:
       - name: Locales are up to date
         working-directory: glpi/plugins/iam
         run: |
-          pip install babel
+          pip install babel==2.17.0
           python3 tools/extract_locales.py
           python3 tools/build_po.py
-          git diff --exit-code -I 'POT-Creation-Date' -I 'PO-Revision-Date' -- locales/*.po locales/*.pot
+          git diff --exit-code -I 'POT-Creation-Date' -I 'PO-Revision-Date' -I 'Generated-By' -- locales/*.po locales/*.pot
