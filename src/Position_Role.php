@@ -111,6 +111,21 @@ class Position_Role extends CommonDBRelation
         return $role->getFromDB($roleId) && $role->canViewItem();
     }
 
+    /** Writing a cell needs write access on the role's resource (CONFIG UPDATE and an active entity, non-recursive). */
+    private static function roleWritable(int $roleId): bool
+    {
+        $role = new Role();
+        $resource = new Resource();
+        return $role->getFromDB($roleId)
+            && $resource->getFromDB((int) $role->fields['plugin_iam_resources_id'])
+            && $resource->canUpdateItem();
+    }
+
+    private static function rowWritable(int $positionId, int $roleId): bool
+    {
+        return self::positionVisible($positionId) && self::roleWritable($roleId);
+    }
+
     private static function rowVisible(int $positionId, int $roleId): bool
     {
         return self::positionVisible($positionId) && self::roleVisible($roleId);
@@ -124,12 +139,12 @@ class Position_Role extends CommonDBRelation
     public function canCreateItem(): bool
     {
         return self::canCreate()
-            && self::rowVisible((int) ($this->input['plugin_iam_positions_id'] ?? 0), (int) ($this->input['plugin_iam_roles_id'] ?? 0));
+            && self::rowWritable((int) ($this->input['plugin_iam_positions_id'] ?? 0), (int) ($this->input['plugin_iam_roles_id'] ?? 0));
     }
 
     public function canUpdateItem(): bool
     {
-        return self::canUpdate() && self::rowVisible((int) ($this->fields['plugin_iam_positions_id'] ?? 0), (int) ($this->fields['plugin_iam_roles_id'] ?? 0));
+        return self::canUpdate() && self::rowWritable((int) ($this->fields['plugin_iam_positions_id'] ?? 0), (int) ($this->fields['plugin_iam_roles_id'] ?? 0));
     }
 
     public function canDeleteItem(): bool
