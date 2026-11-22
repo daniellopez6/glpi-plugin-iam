@@ -131,14 +131,22 @@ class Position extends CommonTreeDropdown
         return $id > 0 ? countElementsInTable(self::getTable(), ['plugin_iam_positions_id' => $id]) : 0;
     }
 
+    /** Number of matrix expectations (Position_Role cells) of a position. */
+    public static function expectationCount(int $id): int
+    {
+        return $id > 0 ? countElementsInTable(Position_Role::getTable(), ['plugin_iam_positions_id' => $id]) : 0;
+    }
+
     /**
      * A position with assignment history is never purged (it can be deactivated instead), nor one with sub-positions:
-     * GLPI would silently re-parent them, changing the tree the matrix and the expected access are built on.
+     * GLPI would silently re-parent them, changing the tree the matrix and the expected access are built on, nor one
+     * with matrix expectations (its cells would be left orphaned).
      */
     public function canPurgeItem(): bool
     {
         $id = (int) ($this->fields['id'] ?? 0);
-        return parent::canPurgeItem() && self::assignmentCount($id) === 0 && self::childCount($id) === 0;
+        return parent::canPurgeItem() && self::assignmentCount($id) === 0 && self::childCount($id) === 0
+            && self::expectationCount($id) === 0;
     }
 
     public function pre_deleteItem()
@@ -154,6 +162,14 @@ class Position extends CommonTreeDropdown
         if (self::childCount((int) $this->getID()) > 0) {
             Session::addMessageAfterRedirect(
                 __('The position has sub-positions. Move or delete them first, or deactivate it instead of deleting it.', 'iam'),
+                false,
+                ERROR
+            );
+            return false;
+        }
+        if (self::expectationCount((int) $this->getID()) > 0) {
+            Session::addMessageAfterRedirect(
+                __('The position has expectations in the access matrix. Remove its matrix expectations first, or deactivate it instead of deleting it.', 'iam'),
                 false,
                 ERROR
             );
