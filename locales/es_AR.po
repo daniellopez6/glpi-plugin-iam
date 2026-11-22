@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  iam\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-22 12:54+0000\n"
+"POT-Creation-Date: 2026-11-22 12:59+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: es_AR\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: setup.php:77
+#: setup.php:79
 msgid "IAM - Identity & Access Governance"
 msgstr "IAM - Gobierno de Identidades y Accesos"
 
@@ -45,6 +45,40 @@ msgstr "Cargo (título)"
 msgid "The parent position does not exist or is not available in this entity."
 msgstr "El puesto padre no existe o no está disponible en esta entidad."
 
+#: src/Position_Role.php:170 src/Position_User.php:206
+msgid "Select a position."
+msgstr "Seleccione un puesto."
+
+#: src/Position_Role.php:179
+msgid "The role does not exist or its resource is in the trash."
+msgstr "El rol no existe o su recurso está en la papelera."
+
+#: src/Position_Role.php:183 src/Position_Role.php:205
+msgid "The expectation is not valid."
+msgstr "La expectativa no es válida."
+
+#: src/Position_Role.php:186
+msgid "The position already has an expectation for this role."
+msgstr "El puesto ya tiene una expectativa para este rol."
+
+#: src/Position_Role.php:48
+msgid "Matrix cell"
+msgid_plural "Matrix cells"
+msgstr[0] "Celda de matriz"
+msgstr[1] "Celdas de matriz"
+
+#: src/Position_Role.php:60
+msgid "Allowed"
+msgstr "Permitido"
+
+#: src/Position_Role.php:61
+msgid "On request"
+msgstr "Bajo solicitud"
+
+#: src/Position_Role.php:62
+msgid "Forbidden"
+msgstr "Prohibido"
+
 #: src/Position_User.php:139
 msgid "The end date cannot be before the begin date."
 msgstr "La fecha de fin no puede ser anterior a la fecha de inicio."
@@ -64,10 +98,6 @@ msgstr "El tipo de asignación no es válido."
 #: src/Position_User.php:143
 msgid "The assignment is not valid."
 msgstr "La asignación no es válida."
-
-#: src/Position_User.php:206
-msgid "Select a position."
-msgstr "Seleccione un puesto."
 
 #: src/Position_User.php:209
 msgid "The position is not active."
@@ -207,97 +237,97 @@ msgstr "Ver reportes"
 msgid "See and export reports"
 msgstr "Ver y exportar reportes"
 
-#: src/Resource.php:162
+#: src/Resource.php:158
 msgid "The resource has grants or matrix cells (nothing is deleted). Put it in the trashbin instead."
 msgstr "El recurso tiene otorgamientos o celdas de matriz (no se borra nada). Envíelo a la papelera."
 
-#: src/Resource.php:205 templates/resource_form.html.twig:21 templates/resource_item_tab.html.twig:21
+#: src/Resource.php:201 templates/resource_form.html.twig:21 templates/resource_item_tab.html.twig:21
 msgid "Code"
 msgstr "Código"
 
-#: src/Resource.php:206
+#: src/Resource.php:202
 msgid "Linked item type"
 msgstr "Tipo de elemento vinculado"
 
-#: src/Resource.php:208 templates/resource_form.html.twig:47 templates/resource_item_tab.html.twig:23
+#: src/Resource.php:204 templates/resource_form.html.twig:47 templates/resource_item_tab.html.twig:23
 msgid "Owner (person)"
 msgstr "Dueño (persona)"
 
-#: src/Resource.php:210 templates/resource_form.html.twig:48 templates/resource_item_tab.html.twig:24
+#: src/Resource.php:206 templates/resource_form.html.twig:48 templates/resource_item_tab.html.twig:24
 msgid "Owner (group)"
 msgstr "Dueño (grupo)"
 
-#: src/Resource.php:212 templates/resource_form.html.twig:49 templates/resource_item_tab.html.twig:22
+#: src/Resource.php:208 templates/resource_form.html.twig:49 templates/resource_item_tab.html.twig:22
 msgid "Criticality"
 msgstr "Criticidad"
 
-#: src/Resource.php:214 templates/resource_form.html.twig:50
+#: src/Resource.php:210 templates/resource_form.html.twig:50
 msgid "Review frequency"
 msgstr "Frecuencia de revisión"
 
-#: src/Resource.php:306
+#: src/Resource.php:302
 msgid "Access (IAM)"
 msgstr "Accesos (IAM)"
 
-#: src/Resource.php:400
+#: src/Resource.php:396
 msgid "The resource must have a name."
 msgstr "El recurso debe tener un nombre."
 
-#: src/Resource.php:404
+#: src/Resource.php:400
 msgid "The criticality is not valid."
 msgstr "La criticidad no es válida."
 
-#: src/Resource.php:407
+#: src/Resource.php:403
 msgid "The review frequency is not valid."
 msgstr "La frecuencia de revisión no es válida."
 
-#: src/Resource.php:426
+#: src/Resource.php:422
 msgid "The linked item type is not allowed."
 msgstr "El tipo de elemento vinculado no está permitido."
 
-#: src/Resource.php:429
+#: src/Resource.php:425
 msgid "The linked item does not exist or you are not allowed to see it."
 msgstr "El elemento vinculado no existe o no tiene permiso para verlo."
 
-#: src/Resource.php:444
+#: src/Resource.php:440
 msgid "The owner does not exist or you are not allowed to see it."
 msgstr "El dueño no existe o no tiene permiso para verlo."
 
-#: src/Resource.php:49 templates/resource_item_tab.html.twig:20
+#: src/Resource.php:45 templates/resource_item_tab.html.twig:20
 msgid "Resource"
 msgid_plural "Resources"
 msgstr[0] "Recurso"
 msgstr[1] "Recursos"
 
-#: src/Resource.php:59
+#: src/Resource.php:55
 msgid "Resources"
 msgstr "Recursos"
 
-#: src/Resource.php:67
+#: src/Resource.php:63
 msgid "Low"
 msgstr "Baja"
 
-#: src/Resource.php:68
+#: src/Resource.php:64
 msgid "Medium"
 msgstr "Media"
 
-#: src/Resource.php:69
+#: src/Resource.php:65
 msgid "High"
 msgstr "Alta"
 
-#: src/Resource.php:70
+#: src/Resource.php:66
 msgid "Critical"
 msgstr "Crítica"
 
-#: src/Resource.php:78
+#: src/Resource.php:74
 msgid "Quarterly"
 msgstr "Trimestral"
 
-#: src/Resource.php:79
+#: src/Resource.php:75
 msgid "Semiannual"
 msgstr "Semestral"
 
-#: src/Resource.php:80
+#: src/Resource.php:76
 msgid "Annual"
 msgstr "Anual"
 
@@ -321,37 +351,37 @@ msgstr "Acceso de solo lectura a todo el registro, el catálogo y los reportes."
 msgid "Registers access requests and grants and reads the catalogue. Cannot review or approve."
 msgstr "Registra solicitudes y otorgamientos de acceso y consulta el catálogo. No puede revisar ni aprobar."
 
-#: src/Role.php:125
+#: src/Role.php:132
 msgid "The role must have a name."
 msgstr "El rol debe tener un nombre."
 
-#: src/Role.php:132
+#: src/Role.php:139
 msgid "The role level is not valid."
 msgstr "El nivel del rol no es válido."
 
-#: src/Role.php:151
+#: src/Role.php:158
 msgid "The resource of the role is not valid."
 msgstr "El recurso del rol no es válido."
 
-#: src/Role.php:43
+#: src/Role.php:41
 msgid "Role"
 msgid_plural "Roles"
 msgstr[0] "Rol"
 msgstr[1] "Roles"
 
-#: src/Role.php:55
+#: src/Role.php:53
 msgid "Standard"
 msgstr "Estándar"
 
-#: src/Role.php:56
+#: src/Role.php:54
 msgid "Sensitive"
 msgstr "Sensible"
 
-#: src/Role.php:57
+#: src/Role.php:55
 msgid "Privileged"
 msgstr "Privilegiado"
 
-#: src/Role.php:90 templates/roles_tab.html.twig:63
+#: src/Role.php:97 templates/roles_tab.html.twig:63
 msgid "The role has grants or matrix cells (nothing is deleted)."
 msgstr "El rol tiene otorgamientos o celdas de matriz (no se borra nada)."
 

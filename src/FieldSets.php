@@ -32,4 +32,8 @@ final class FieldSets
     public const ROLE = ['plugin_iam_resources_id', 'entities_id', 'name', 'level', 'is_breakglass', 'comment'];
     /** @var list<string> */
     public const ROLE_IMMUTABLE = ['plugin_iam_resources_id', 'entities_id'];
+    /** @var list<string> */
+    public const POSITION_ROLE = ['plugin_iam_positions_id', 'plugin_iam_roles_id', 'entities_id', 'expectation', 'comment'];
+    /** @var list<string> */
+    public const POSITION_ROLE_IMMUTABLE = ['plugin_iam_positions_id', 'plugin_iam_roles_id', 'entities_id'];
 }

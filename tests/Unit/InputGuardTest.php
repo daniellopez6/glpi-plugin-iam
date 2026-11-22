@@ -64,4 +64,19 @@ final class InputGuardTest extends TestCase
         $in = ['plugin_iam_resources_id' => 2, 'entities_id' => 3, 'name' => 'n'];
         $this->assertSame(['name' => 'n'], InputGuard::filter($in, FieldSets::ROLE, FieldSets::ROLE_IMMUTABLE, true));
     }
+
+    public function testExpectationValues(): void
+    {
+        $values = ['allowed', 'on_request', 'forbidden'];
+        foreach ($values as $v) {
+            $this->assertTrue(InputGuard::enum($v, $values));
+        }
+        $this->assertFalse(InputGuard::enum('yes', $values));
+        $this->assertSame(['expectation' => 'allowed'], InputGuard::filter(
+            ['expectation' => 'allowed', 'plugin_iam_positions_id' => 1, 'entities_id' => 5, 'is_deleted' => 1],
+            FieldSets::POSITION_ROLE,
+            FieldSets::POSITION_ROLE_IMMUTABLE,
+            true
+        ));
+    }
 }
