@@ -131,7 +131,6 @@ ES: dict = {
  "Only a security approver can set the security approval.": "Solo un aprobador de seguridad puede registrar la aprobación de seguridad.",
  "As owner you can only request a revocation or a modification, with its justification.": "Como dueño solo puede solicitar una revocación o una modificación, con su justificación.",
  "As owner you can only request a revocation or a modification.": "Como dueño solo puede solicitar una revocación o una modificación.",
- "The approver does not exist.": "El aprobador no existe.",
  "The account does not exist or you are not allowed to see it.": "La cuenta no existe o no tiene permiso para verla.",
  "The grant is not valid.": "El otorgamiento no es válido.",
  "Select a role.": "Seleccione un rol.",
@@ -162,4 +161,10 @@ ES: dict = {
  "Account": "Cuenta",
  "Register a grant": "Registrar un otorgamiento",
  "No grants.": "Sin otorgamientos.",
+ "The approver does not exist or you are not allowed to see it.": "El aprobador no existe o no tiene permiso para verlo.",
+ "The approver cannot be the person who registers the access.": "El aprobador no puede ser quien registra el acceso.",
+ "The security approval is always recorded in the name of the approver who gives it.": "La aprobación de seguridad siempre se registra a nombre del aprobador que la otorga.",
+ "A revocation or modification request needs a justification.": "Una solicitud de revocación o modificación requiere una justificación.",
+ "Not approved": "No aprobado",
+ "Approved by me": "Aprobado por mí",
 }

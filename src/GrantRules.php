@@ -108,19 +108,21 @@ final class GrantRules
             }
         }
 
-        if ($statusChanged && $status === 'revoked' && trim((string) ($merged['revoke_reason'] ?? '')) === '') {
+        // On the resulting row: a revoked grant always keeps its reason (it cannot be blanked afterwards)
+        if ((string) ($merged['status'] ?? '') === 'revoked' && trim((string) ($merged['revoke_reason'] ?? '')) === '') {
             $errors[] = 'revoke_requires_reason';
         }
         return $errors;
     }
 
     /**
-     * Separation of duties on the resulting row: nobody registers or edits their own access, the approver is not the
-     * beneficiary, and the security approver is neither the beneficiary nor the requester (recorder).
+     * Separation of duties on the resulting row: nobody registers or edits their own access, the approver is neither
+     * the beneficiary nor the recorder, and the security approver is neither the beneficiary nor the requester
+     * (recorder), so nobody security-approves a registration of their own.
      *
      * @param array<string,mixed> $merged
      *
-     * @return list<string> error codes: self_service, approver_is_beneficiary, security_approver_conflict
+     * @return list<string> error codes: self_service, approver_is_beneficiary, approver_is_recorder, security_approver_conflict
      */
     public static function separation(array $merged, int $sessionUser): array
     {
@@ -133,6 +135,9 @@ final class GrantRules
         if ($approver > 0 && $approver === $beneficiary) {
             $errors[] = 'approver_is_beneficiary';
         }
+        if ($approver > 0 && $approver === (int) ($merged['users_id_recorder'] ?? 0)) {
+            $errors[] = 'approver_is_recorder';
+        }
         $security = (int) ($merged['users_id_approver_security'] ?? 0);
         if ($security > 0 && ($security === $beneficiary || $security === (int) ($merged['users_id_recorder'] ?? 0))) {
             $errors[] = 'security_approver_conflict';
@@ -141,32 +146,52 @@ final class GrantRules
     }
 
     /**
-     * Setting, changing or clearing the security approver is a security approval (Rights::APPROVE UPDATE).
+     * Security approval (Rights::APPROVE UPDATE). The security approver is always the session user: an approver records
+     * their own approval and can never attribute it to somebody else. Clearing it is an approval decision as well.
      *
      * @param array<string,mixed> $changes
      *
-     * @return list<string>
+     * @return list<string> error codes: security_approver_right, approver_security_not_self
      */
-    public static function approvalErrors(array $changes, bool $canApprove): array
+    public static function approvalErrors(array $changes, bool $canApprove, int $sessionUser): array
     {
-        return array_key_exists('users_id_approver_security', $changes) && !$canApprove ? ['security_approver_right'] : [];
+        if (!array_key_exists('users_id_approver_security', $changes)) {
+            return [];
+        }
+        $errors = $canApprove ? [] : ['security_approver_right'];
+        $value = (int) $changes['users_id_approver_security'];
+        if ($value > 0 && ($sessionUser <= 0 || $value !== $sessionUser)) {
+            $errors[] = 'approver_security_not_self';
+        }
+        return $errors;
     }
 
     /**
-     * Restrictions of an owner: only a revocation/modification request and its justification.
+     * Restrictions of an owner (UPDATE_OWNED without UPDATE): every change is a revocation or modification request,
+     * i.e. a valid transition to revoke_pending/modify_pending with a non-empty justification ($justification is the
+     * justification sent with the request, changed or not). Editing a justification alone, or a terminal grant, is refused.
      *
      * @param array<string,mixed> $changes
      *
-     * @return list<string> error codes: owner_field_forbidden, owner_status_forbidden
+     * @return list<string> error codes: owner_request_required, owner_field_forbidden, owner_status_forbidden,
+     *                      owner_justification_required
      */
-    public static function ownerErrors(array $changes): array
+    public static function ownerErrors(array $changes, string $currentStatus, string $justification): array
     {
         $errors = [];
+        if (!array_key_exists('status', $changes)) {
+            $errors[] = 'owner_request_required';
+        } elseif (
+            !InputGuard::enum((string) $changes['status'], self::OWNER_STATUSES)
+            || !self::transitionAllowed($currentStatus, (string) $changes['status'])
+        ) {
+            $errors[] = 'owner_status_forbidden';
+        }
         if (array_diff(array_keys($changes), self::OWNER_FIELDS) !== []) {
             $errors[] = 'owner_field_forbidden';
         }
-        if (array_key_exists('status', $changes) && !InputGuard::enum((string) $changes['status'], self::OWNER_STATUSES)) {
-            $errors[] = 'owner_status_forbidden';
+        if (array_key_exists('status', $changes) && trim($justification) === '') {
+            $errors[] = 'owner_justification_required';
         }
         return $errors;
     }

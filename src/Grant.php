@@ -306,7 +306,11 @@ class Grant extends CommonDBTM
             'owner_field_forbidden'                => __('As owner you can only request a revocation or a modification, with its justification.', 'iam'),
             'owner_status_forbidden'               => __('As owner you can only request a revocation or a modification.', 'iam'),
             'ticket_invalid'                       => __('The ticket does not exist or you are not allowed to see it.', 'iam'),
-            'approver_invalid'                     => __('The approver does not exist.', 'iam'),
+            'approver_invalid'                     => __('The approver does not exist or you are not allowed to see it.', 'iam'),
+            'approver_is_recorder'                 => __('The approver cannot be the person who registers the access.', 'iam'),
+            'approver_security_not_self'           => __('The security approval is always recorded in the name of the approver who gives it.', 'iam'),
+            'owner_request_required'               => __('As owner you can only request a revocation or a modification, with its justification.', 'iam'),
+            'owner_justification_required'         => __('A revocation or modification request needs a justification.', 'iam'),
             'account_invalid'                      => __('The account does not exist or you are not allowed to see it.', 'iam'),
             default                                => __('The grant is not valid.', 'iam'),
         };
@@ -377,7 +381,9 @@ class Grant extends CommonDBTM
             $errors[] = 'ticket_invalid';
         }
         foreach (['users_id_approver', 'users_id_approver_security'] as $field) {
-            if (array_key_exists($field, $values) && (int) $values[$field] > 0 && !self::userExists((int) $values[$field])) {
+            // Same error for a missing person and for one outside the visible entities (no existence oracle)
+            $uid = (int) ($values[$field] ?? 0);
+            if (array_key_exists($field, $values) && $uid > 0 && (!self::userExists($uid) || !Position_User::userVisible($uid))) {
                 $errors[] = 'approver_invalid';
             }
         }
@@ -455,7 +461,7 @@ class Grant extends CommonDBTM
 
         $errors = array_merge(
             GrantRules::separation($data, self::sessionUser()),
-            GrantRules::approvalErrors($data, self::canApprove()),
+            GrantRules::approvalErrors($data, self::canApprove(), self::sessionUser()),
             GrantRules::validate($data, false, $roleKey),
             self::referenceErrors($data)
         );
@@ -470,7 +476,8 @@ class Grant extends CommonDBTM
         if (!is_array($input)) {
             return false;
         }
-        $changes = GrantRules::changes(self::sanitize($input, true), $this->fields);
+        $clean = self::sanitize($input, true);
+        $changes = GrantRules::changes($clean, $this->fields);
         $id = ['id' => (int) $this->getID()];
         if ($changes === []) {
             return $id;
@@ -478,11 +485,13 @@ class Grant extends CommonDBTM
         $merged = array_merge($this->fields, $changes);
         $errors = GrantRules::separation($merged, self::sessionUser());
         if (!self::fullEditor()) {
-            $errors = array_merge($errors, GrantRules::ownerErrors($changes));
+            // The request must carry its own justification (the stored one belongs to the registration)
+            $justification = (string) ($clean['justification'] ?? '');
+            $errors = array_merge($errors, GrantRules::ownerErrors($changes, (string) $this->fields['status'], $justification));
         }
         $errors = array_merge(
             $errors,
-            GrantRules::approvalErrors($changes, self::canApprove()),
+            GrantRules::approvalErrors($changes, self::canApprove(), self::sessionUser()),
             GrantRules::validate($changes, true, Rights::activeRoleKey(), $this->fields),
             self::referenceErrors($changes)
         );
@@ -598,11 +607,29 @@ class Grant extends CommonDBTM
         $current = (string) $this->fields['status'];
         $next = GrantRules::TRANSITIONS[$current] ?? [];
         if ($mode === 'owner') {
-            $next = array_values(array_intersect($next, GrantRules::OWNER_STATUSES));
+            // Only the requests: the form always files a status change
+            return array_intersect_key($labels, array_flip(array_intersect($next, GrantRules::OWNER_STATUSES)));
         } elseif ($mode !== 'full') {
             $next = [];
         }
         return array_intersect_key($labels, array_flip(array_merge([$current], $next)));
+    }
+
+    /**
+     * Choices of the security approval for an approver: keep the current one, approve in one's own name, or clear it.
+     *
+     * @return array<int,string>
+     */
+    private function securityChoices(): array
+    {
+        $current = (int) ($this->fields['users_id_approver_security'] ?? 0);
+        $me = self::sessionUser();
+        $choices = [0 => __('Not approved', 'iam')];
+        if ($current > 0 && $current !== $me) {
+            $choices[$current] = (string) User::getFriendlyNameById($current);
+        }
+        $choices[$me] = __('Approved by me', 'iam');
+        return $choices;
     }
 
     /** @return array{id:int,name:string,url:string,entity:int}|null */
@@ -624,6 +651,11 @@ class Grant extends CommonDBTM
             $mode = 'new';
         } elseif ($this->canUpdateItem()) {
             $mode = self::fullEditor() ? 'full' : 'owner';
+            // An owner only files requests: without a possible request transition the grant is read-only for them
+            $requests = array_intersect(GrantRules::TRANSITIONS[(string) $this->fields['status']] ?? [], GrantRules::OWNER_STATUSES);
+            if ($mode === 'owner' && $requests === []) {
+                $mode = 'read';
+            }
         } else {
             $mode = 'read';
         }
@@ -672,6 +704,7 @@ class Grant extends CommonDBTM
             'ticket_id'       => $ticketId,
             'ticket_visible'  => $ticketId === 0 || $ticketVisible,
             'can_approve'     => self::canApprove(),
+            'security_choices' => $this->securityChoices(),
             'accounts'        => self::accountsAvailable(),
             'account_id'      => $accountId,
             'account_visible' => $accountId === 0 || self::accountAllowed($accountId),

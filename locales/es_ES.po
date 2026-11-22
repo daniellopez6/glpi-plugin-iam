@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  iam\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-22 13:39+0000\n"
+"POT-Creation-Date: 2026-11-22 13:48+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: es_ES\n"
@@ -67,7 +67,7 @@ msgstr "El aprobador de seguridad no puede ser la persona que recibe el acceso n
 msgid "Only a security approver can set the security approval."
 msgstr "Solo un aprobador de seguridad puede registrar la aprobación de seguridad."
 
-#: src/Grant.php:306
+#: src/Grant.php:306 src/Grant.php:312
 msgid "As owner you can only request a revocation or a modification, with its justification."
 msgstr "Como dueño solo puede solicitar una revocación o una modificación, con su justificación."
 
@@ -80,101 +80,113 @@ msgid "The ticket does not exist or you are not allowed to see it."
 msgstr "El ticket no existe o no tiene permiso para verlo."
 
 #: src/Grant.php:309
-msgid "The approver does not exist."
-msgstr "El aprobador no existe."
+msgid "The approver does not exist or you are not allowed to see it."
+msgstr "El aprobador no existe o no tiene permiso para verlo."
 
 #: src/Grant.php:310
+msgid "The approver cannot be the person who registers the access."
+msgstr "El aprobador no puede ser quien registra el acceso."
+
+#: src/Grant.php:311
+msgid "The security approval is always recorded in the name of the approver who gives it."
+msgstr "La aprobación de seguridad siempre se registra a nombre del aprobador que la otorga."
+
+#: src/Grant.php:313
+msgid "A revocation or modification request needs a justification."
+msgstr "Una solicitud de revocación o modificación requiere una justificación."
+
+#: src/Grant.php:314
 msgid "The account does not exist or you are not allowed to see it."
 msgstr "La cuenta no existe o no tiene permiso para verla."
 
-#: src/Grant.php:311
+#: src/Grant.php:315
 msgid "The grant is not valid."
 msgstr "El otorgamiento no es válido."
 
-#: src/Grant.php:425
+#: src/Grant.php:431
 msgid "Select a role."
 msgstr "Seleccione un rol."
 
-#: src/Grant.php:429 src/Position_Role.php:213 src/Position_Role.php:246
+#: src/Grant.php:435 src/Position_Role.php:213 src/Position_Role.php:246
 msgid "The role does not exist or its resource is in the trash."
 msgstr "El rol no existe o su recurso está en la papelera."
 
-#: src/Grant.php:432
+#: src/Grant.php:438
 msgid "The role does not belong to the selected resource."
 msgstr "El rol no pertenece al recurso seleccionado."
 
-#: src/Grant.php:435
+#: src/Grant.php:441
 msgid "The resource does not exist or you are not allowed to see it."
 msgstr "El recurso no existe o no tiene permiso para verlo."
 
-#: src/Grant.php:439 src/Position_User.php:218
+#: src/Grant.php:445 src/Position_User.php:218
 msgid "The person does not exist or you are not allowed to see it."
 msgstr "La persona no existe o no tiene permiso para verla."
 
-#: src/Grant.php:506 templates/grant_form.html.twig:44 templates/grant_form.html.twig:53 templates/grants_tab.html.twig:35
+#: src/Grant.php:514 templates/grant_form.html.twig:44 templates/grant_form.html.twig:53 templates/grants_tab.html.twig:35
 #: templates/positions_tab.html.twig:21 templates/positions_tab.html.twig:80
 msgid "Person"
 msgstr "Persona"
 
-#: src/Grant.php:513 templates/grants_tab.html.twig:38 templates/roles_tab.html.twig:21 templates/roles_tab.html.twig:36
+#: src/Grant.php:521 templates/grants_tab.html.twig:38 templates/roles_tab.html.twig:21 templates/roles_tab.html.twig:36
 #: templates/roles_tab.html.twig:81
 msgid "Level"
 msgstr "Nivel"
 
-#: src/Grant.php:514 templates/grant_form.html.twig:108 templates/grant_form.html.twig:110
+#: src/Grant.php:523 templates/grant_form.html.twig:109 templates/grant_form.html.twig:111
 #: templates/grants_tab.html.twig:39 templates/positions_tab.html.twig:26
 msgid "Status"
 msgstr "Estado"
 
-#: src/Grant.php:516 templates/grant_form.html.twig:62 templates/grant_form.html.twig:65 templates/grants_tab.html.twig:40
+#: src/Grant.php:525 templates/grant_form.html.twig:62 templates/grant_form.html.twig:65 templates/grants_tab.html.twig:40
 #: templates/positions_tab.html.twig:24 templates/positions_tab.html.twig:93
 msgid "Begin date"
 msgstr "Fecha de inicio"
 
-#: src/Grant.php:517 templates/grant_form.html.twig:63 templates/grant_form.html.twig:66 templates/grants_tab.html.twig:41
+#: src/Grant.php:526 templates/grant_form.html.twig:63 templates/grant_form.html.twig:66 templates/grants_tab.html.twig:41
 #: templates/positions_tab.html.twig:25 templates/positions_tab.html.twig:55 templates/positions_tab.html.twig:94
 msgid "End date"
 msgstr "Fecha de fin"
 
-#: src/Grant.php:519 templates/grant_form.html.twig:71 templates/grant_form.html.twig:73 templates/grant_form.html.twig:75
+#: src/Grant.php:528 templates/grant_form.html.twig:71 templates/grant_form.html.twig:73 templates/grant_form.html.twig:75
 #: templates/grant_form.html.twig:77 templates/grants_tab.html.twig:42 templates/positions_tab.html.twig:27
 #: templates/positions_tab.html.twig:95
 msgid "Ticket"
 msgstr "Ticket"
 
-#: src/Grant.php:520 templates/grant_form.html.twig:126 templates/grants_tab.html.twig:43
+#: src/Grant.php:529 templates/grant_form.html.twig:127 templates/grants_tab.html.twig:43
 msgid "Source"
 msgstr "Origen"
 
-#: src/Grant.php:522 templates/grant_form.html.twig:81 templates/grant_form.html.twig:83
+#: src/Grant.php:531 templates/grant_form.html.twig:81 templates/grant_form.html.twig:83
 msgid "Approver"
 msgstr "Aprobador"
 
-#: src/Grant.php:525 templates/grant_form.html.twig:86 templates/grant_form.html.twig:88
+#: src/Grant.php:534 templates/grant_form.html.twig:87 templates/grant_form.html.twig:89
 msgid "Security approver"
 msgstr "Aprobador de seguridad"
 
-#: src/Grant.php:526 templates/grant_form.html.twig:102 templates/grant_form.html.twig:104
+#: src/Grant.php:535 templates/grant_form.html.twig:103 templates/grant_form.html.twig:105
 msgid "MFA"
 msgstr "MFA"
 
-#: src/Grant.php:528 templates/grant_form.html.twig:127
+#: src/Grant.php:537 templates/grant_form.html.twig:128
 msgid "Recorded by"
 msgstr "Registrado por"
 
-#: src/Grant.php:530 templates/grant_form.html.twig:129
+#: src/Grant.php:539 templates/grant_form.html.twig:130
 msgid "Revocation date"
 msgstr "Fecha de revocación"
 
-#: src/Grant.php:533 templates/grant_form.html.twig:120 templates/grant_form.html.twig:122
+#: src/Grant.php:542 templates/grant_form.html.twig:121 templates/grant_form.html.twig:123
 msgid "Justification"
 msgstr "Justificación"
 
-#: src/Grant.php:535 templates/grant_form.html.twig:114 templates/grant_form.html.twig:116
+#: src/Grant.php:544 templates/grant_form.html.twig:115 templates/grant_form.html.twig:117
 msgid "Revocation reason"
 msgstr "Motivo de revocación"
 
-#: src/Grant.php:540 templates/grant_form.html.twig:93 templates/grant_form.html.twig:95 templates/grant_form.html.twig:97
+#: src/Grant.php:549 templates/grant_form.html.twig:94 templates/grant_form.html.twig:96 templates/grant_form.html.twig:98
 msgid "Account"
 msgstr "Cuenta"
 
@@ -183,6 +195,14 @@ msgid "Grant"
 msgid_plural "Grants"
 msgstr[0] "Otorgamiento"
 msgstr[1] "Otorgamientos"
+
+#: src/Grant.php:626
+msgid "Not approved"
+msgstr "No aprobado"
+
+#: src/Grant.php:630
+msgid "Approved by me"
+msgstr "Aprobado por mí"
 
 #: src/Grant.php:65 templates/resource_item_tab.html.twig:26
 msgid "Grants"
@@ -196,10 +216,6 @@ msgstr "Pendiente"
 msgid "Active"
 msgstr "Activo"
 
-#: src/Grant.php:732
-msgid "Grants (IAM)"
-msgstr "Otorgamientos (IAM)"
-
 #: src/Grant.php:74
 msgid "Revocation pending"
 msgstr "Revocación pendiente"
@@ -211,6 +227,10 @@ msgstr "Modificación pendiente"
 #: src/Grant.php:76
 msgid "Revoked"
 msgstr "Revocado"
+
+#: src/Grant.php:765
+msgid "Grants (IAM)"
+msgstr "Otorgamientos (IAM)"
 
 #: src/Grant.php:77
 msgid "Expired"
@@ -589,7 +609,7 @@ msgstr "Sensible"
 msgid "Privileged"
 msgstr "Privilegiado"
 
-#: templates/grant_form.html.twig:133
+#: templates/grant_form.html.twig:134
 msgid "As owner you can request the revocation or the modification of this access; the change is made through a ticket."
 msgstr "Como dueño puede solicitar la revocación o la modificación de este acceso; el cambio se ejecuta mediante un ticket."
 
@@ -605,7 +625,7 @@ msgstr "Entidad"
 msgid "The ticket is not visible to you."
 msgstr "El ticket no es visible para usted."
 
-#: templates/grant_form.html.twig:93
+#: templates/grant_form.html.twig:94
 msgid "The account is not visible to you."
 msgstr "La cuenta no es visible para usted."
 

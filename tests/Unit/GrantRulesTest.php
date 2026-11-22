@@ -178,10 +178,38 @@ final class GrantRulesTest extends TestCase
 
     public function testSecurityApproverNeedsApproveRight(): void
     {
-        $this->assertSame(['security_approver_right'], GrantRules::approvalErrors(['users_id_approver_security' => 7], false));
-        $this->assertSame(['security_approver_right'], GrantRules::approvalErrors(['users_id_approver_security' => 0], false), 'clearing it is an approval decision too');
-        $this->assertSame([], GrantRules::approvalErrors(['users_id_approver_security' => 7], true));
-        $this->assertSame([], GrantRules::approvalErrors(['date_end' => '2027-01-01'], false));
+        $this->assertContains('security_approver_right', GrantRules::approvalErrors(['users_id_approver_security' => 7], false, 7));
+        $this->assertSame(['security_approver_right'], GrantRules::approvalErrors(['users_id_approver_security' => 0], false, 7), 'clearing it is an approval decision too');
+        $this->assertSame([], GrantRules::approvalErrors(['users_id_approver_security' => 7], true, 7));
+        $this->assertSame([], GrantRules::approvalErrors(['users_id_approver_security' => 0], true, 7));
+        $this->assertSame([], GrantRules::approvalErrors(['date_end' => '2027-01-01'], false, 7));
+    }
+
+    public function testSecurityApprovalIsAlwaysTheSessionUser(): void
+    {
+        // An approver cannot attribute the security approval to somebody else
+        $this->assertContains('approver_security_not_self', GrantRules::approvalErrors(['users_id_approver_security' => 8], true, 7));
+        $this->assertContains('approver_security_not_self', GrantRules::approvalErrors(['users_id_approver_security' => 8], true, 0));
+        $this->assertNotContains('approver_security_not_self', GrantRules::approvalErrors(['users_id_approver_security' => 7], true, 7));
+    }
+
+    public function testApproverIsNotRecorder(): void
+    {
+        $this->assertContains('approver_is_recorder', GrantRules::separation(['users_id' => 20, 'users_id_approver' => 9, 'users_id_recorder' => 9], 9));
+        $this->assertNotContains('approver_is_recorder', GrantRules::separation(['users_id' => 20, 'users_id_approver' => 10, 'users_id_recorder' => 9], 9));
+        // A recorder cannot security-approve their own registration
+        $this->assertContains('security_approver_conflict', GrantRules::separation(['users_id' => 20, 'users_id_recorder' => 9, 'users_id_approver_security' => 9], 9));
+    }
+
+    public function testRevokedGrantKeepsItsReason(): void
+    {
+        $revoked = self::current(['status' => 'revoked', 'revoke_reason' => 'Left the company']);
+        $this->assertContains('revoke_requires_reason', GrantRules::validate(['revoke_reason' => ''], true, null, $revoked));
+        $this->assertContains('revoke_requires_reason', GrantRules::validate(['revoke_reason' => '  '], true, null, $revoked));
+        $this->assertSame([], GrantRules::validate(['revoke_reason' => 'Contract ended'], true, null, $revoked));
+        $this->assertSame([], GrantRules::validate(['date_end' => '2027-01-01'], true, null, $revoked));
+        // Blanking the reason of a non revoked grant is harmless
+        $this->assertSame([], GrantRules::validate(['revoke_reason' => ''], true, null, self::current()));
     }
 
     public function testChangesIgnoreUnchangedValues(): void
@@ -195,14 +223,33 @@ final class GrantRulesTest extends TestCase
 
     public function testOwnerMayOnlyRequestRevocationOrModification(): void
     {
-        $this->assertSame([], GrantRules::ownerErrors(['status' => 'revoke_pending', 'justification' => 'Not needed']));
-        $this->assertSame([], GrantRules::ownerErrors(['status' => 'modify_pending']));
-        $this->assertSame([], GrantRules::ownerErrors(['justification' => 'More context']));
-        $this->assertContains('owner_field_forbidden', GrantRules::ownerErrors(['date_end' => '2030-01-01']));
-        $this->assertContains('owner_field_forbidden', GrantRules::ownerErrors(['users_id_approver' => 3]));
-        $this->assertContains('owner_field_forbidden', GrantRules::ownerErrors(['mfa' => 'yes']));
-        $this->assertContains('owner_field_forbidden', GrantRules::ownerErrors(['plugin_accounts_accounts_id' => 4]));
-        $this->assertContains('owner_status_forbidden', GrantRules::ownerErrors(['status' => 'revoked', 'revoke_reason' => 'r']));
-        $this->assertContains('owner_status_forbidden', GrantRules::ownerErrors(['status' => 'active']));
+        $this->assertSame([], GrantRules::ownerErrors(['status' => 'revoke_pending', 'justification' => 'Not needed'], 'active', 'Not needed'));
+        // The justification was sent unchanged (not in the changes) but the request carries it
+        $this->assertSame([], GrantRules::ownerErrors(['status' => 'modify_pending'], 'active', 'Same text as stored'));
+        $this->assertContains('owner_field_forbidden', GrantRules::ownerErrors(['status' => 'revoke_pending', 'date_end' => '2030-01-01'], 'active', 'x'));
+        $this->assertContains('owner_field_forbidden', GrantRules::ownerErrors(['status' => 'revoke_pending', 'users_id_approver' => 3], 'active', 'x'));
+        $this->assertContains('owner_field_forbidden', GrantRules::ownerErrors(['status' => 'revoke_pending', 'mfa' => 'yes'], 'active', 'x'));
+        $this->assertContains('owner_field_forbidden', GrantRules::ownerErrors(['status' => 'revoke_pending', 'plugin_accounts_accounts_id' => 4], 'active', 'x'));
+        $this->assertContains('owner_status_forbidden', GrantRules::ownerErrors(['status' => 'revoked', 'revoke_reason' => 'r'], 'active', 'x'));
+        $this->assertContains('owner_status_forbidden', GrantRules::ownerErrors(['status' => 'active'], 'revoke_pending', 'x'));
+    }
+
+    public function testOwnerJustificationOnlyIsRefused(): void
+    {
+        $this->assertContains('owner_request_required', GrantRules::ownerErrors(['justification' => 'More context'], 'active', 'More context'));
+        $this->assertContains('owner_request_required', GrantRules::ownerErrors(['justification' => 'Rewritten'], 'revoked', 'Rewritten'), 'terminal grants are history');
+    }
+
+    public function testOwnerRequestNeedsJustification(): void
+    {
+        $this->assertContains('owner_justification_required', GrantRules::ownerErrors(['status' => 'revoke_pending'], 'active', ''));
+        $this->assertContains('owner_justification_required', GrantRules::ownerErrors(['status' => 'revoke_pending', 'justification' => '   '], 'active', '   '));
+    }
+
+    public function testOwnerRequestNeedsAValidTransition(): void
+    {
+        $this->assertContains('owner_status_forbidden', GrantRules::ownerErrors(['status' => 'revoke_pending'], 'revoked', 'x'));
+        $this->assertContains('owner_status_forbidden', GrantRules::ownerErrors(['status' => 'modify_pending'], 'revoke_pending', 'x'));
+        $this->assertContains('owner_status_forbidden', GrantRules::ownerErrors(['status' => 'revoke_pending'], 'expired', 'x'));
     }
 }

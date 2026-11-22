@@ -82,8 +82,9 @@
       {% else %}
          {{ fields.readOnlyField('', approver, __('Approver', 'iam')) }}
       {% endif %}
-      {% if editable and can_approve %}
-         {{ fields.dropdownField('User', 'users_id_approver_security', item.fields['users_id_approver_security'], __('Security approver', 'iam'), {'right': 'all'}) }}
+      {# The security approval is recorded in the approver's own name; whoever registers the grant cannot give it #}
+      {% if mode == 'full' and can_approve %}
+         {{ fields.dropdownArrayField('users_id_approver_security', item.fields['users_id_approver_security'], security_choices, __('Security approver', 'iam')) }}
       {% else %}
          {{ fields.readOnlyField('', security, __('Security approver', 'iam')) }}
       {% endif %}
@@ -119,7 +120,7 @@
       {% if mode == 'read' %}
          {{ fields.readOnlyField('', item.fields['justification'], __('Justification', 'iam'), {'full_width': true}) }}
       {% else %}
-         {{ fields.textareaField('justification', item.fields['justification'], __('Justification', 'iam'), {'full_width': true}) }}
+         {{ fields.textareaField('justification', item.fields['justification'], __('Justification', 'iam'), {'full_width': true, 'required': mode == 'owner'}) }}
       {% endif %}
 
       {% if mode != 'new' %}
