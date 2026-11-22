@@ -18,7 +18,11 @@
 namespace GlpiPlugin\Iam\Install;
 
 use DBConnection;
+use GlpiPlugin\Iam\Profile as IamProfile;
+use GlpiPlugin\Iam\Rights;
 use Migration;
+use Profile as GlpiProfile;
+use ProfileRight;
 
 /**
  * Creates, upgrades and removes the database objects of the plugin.
@@ -44,7 +48,35 @@ final class Installer
 
         // Later releases add columns here with $m->addField()/addKey(), guarded by fieldExists().
 
+        self::installRights();
+
         $m->executeMigration();
+    }
+
+    /**
+     * Creates the missing rights with their defaults by profile name (values already set by an
+     * administrator are never overwritten) and the missing role profiles.
+     */
+    private static function installRights(): void
+    {
+        global $DB;
+
+        foreach (Rights::all() as $right) {
+            if (countElementsInTable('glpi_profilerights', ['name' => $right]) > 0) {
+                continue;
+            }
+            ProfileRight::addProfileRights([$right]);
+            foreach ($DB->request(['FROM' => 'glpi_profiles']) as $profile) {
+                $value = Rights::defaults((string) $profile['name'])[$right] ?? 0;
+                if ($profile['interface'] !== 'central') {
+                    $value = 0;
+                }
+                if ($value) {
+                    ProfileRight::updateProfileRights((int) $profile['id'], [$right => $value]);
+                }
+            }
+        }
+        IamProfile::createRoleProfiles();
     }
 
     public static function uninstall(): void
@@ -62,6 +94,20 @@ final class Installer
      */
     private static function uninstallRights(): void
     {
-        // Task 3: filled in when the rights and the role profiles are created.
+        global $DB;
+
+        foreach (array_keys(Rights::roleProfiles()) as $key) {
+            $rows = $DB->request([
+                'SELECT' => 'id',
+                'FROM'   => GlpiProfile::getTable(),
+                'WHERE'  => ['comment' => ['LIKE', '%' . Rights::marker($key) . '%']],
+            ]);
+            foreach ($rows as $row) {
+                if (countElementsInTable('glpi_profiles_users', ['profiles_id' => $row['id']]) === 0) {
+                    (new GlpiProfile())->delete(['id' => $row['id']], true);
+                }
+            }
+        }
+        ProfileRight::deleteProfileRights(Rights::all());
     }
 }

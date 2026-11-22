@@ -3,12 +3,128 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: iam\n"
-"POT-Creation-Date: 2026-11-22 12:15+0000\n"
+"POT-Creation-Date: 2026-11-22 12:25+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: setup.php:45
+#: setup.php:49
 msgid "IAM - Identity & Access Governance"
+msgstr ""
+
+#: src/Profile.php:36 templates/profile_rights.html.twig:20
+msgid "Access governance (IAM)"
+msgstr ""
+
+#: src/Profile.php:49
+msgid "See all"
+msgstr ""
+
+#: src/Profile.php:49
+msgid "See all items"
+msgstr ""
+
+#: src/Profile.php:50
+msgid "See own"
+msgstr ""
+
+#: src/Profile.php:50
+msgid "See only the accesses of own resources"
+msgstr ""
+
+#: src/Profile.php:51
+msgid "Update"
+msgstr ""
+
+#: src/Profile.php:51
+msgid "Update the items the user can see"
+msgstr ""
+
+#: src/Profile.php:52
+msgid "Update own"
+msgstr ""
+
+#: src/Profile.php:52
+msgid "Update only the accesses of own resources"
+msgstr ""
+
+#: src/Profile.php:53
+msgid "Create"
+msgstr ""
+
+#: src/Profile.php:53
+msgid "Create items"
+msgstr ""
+
+#: src/Profile.php:54 src/Profile.php:54
+msgid "Put in trashbin"
+msgstr ""
+
+#: src/Profile.php:55
+msgid "Purge"
+msgstr ""
+
+#: src/Profile.php:55
+msgid "Delete permanently"
+msgstr ""
+
+#: src/Profile.php:58
+msgid "Access register (grants, deviations and notes)"
+msgstr ""
+
+#: src/Profile.php:63
+msgid "Catalogue (positions, resources, roles, access matrix and SoD rules)"
+msgstr ""
+
+#: src/Profile.php:68
+msgid "Recertification reviews"
+msgstr ""
+
+#: src/Profile.php:70
+msgid "Review accesses"
+msgstr ""
+
+#: src/Profile.php:70
+msgid "Confirm or revoke accesses in recertification campaigns"
+msgstr ""
+
+#: src/Profile.php:73
+msgid "Approvals (requests and deviations)"
+msgstr ""
+
+#: src/Profile.php:75
+msgid "Approve"
+msgstr ""
+
+#: src/Profile.php:75
+msgid "Approve or reject requests and deviations (never own ones)"
+msgstr ""
+
+#: src/Profile.php:78
+msgid "Reports and exports"
+msgstr ""
+
+#: src/Profile.php:80
+msgid "See reports"
+msgstr ""
+
+#: src/Profile.php:80
+msgid "See and export reports"
+msgstr ""
+
+#: src/Rights.php:117
+msgid "Maintains the access governance catalogue and register: positions, resources, roles, access matrix and grants. Does not review or approve."
+msgstr ""
+
+#: src/Rights.php:123
+msgid "Sees and updates only the accesses of the resources they own and recertifies them."
+msgstr ""
+
+#: src/Rights.php:129
+msgid "Read-only access to the whole register, the catalogue and the reports."
+msgstr ""
+
+#: src/Rights.php:135
+msgid "Registers access requests and grants and reads the catalogue. Cannot review or approve."
 msgstr ""

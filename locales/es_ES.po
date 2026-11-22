@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  iam\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-22 12:15+0000\n"
+"POT-Creation-Date: 2026-11-22 12:25+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: es_ES\n"
@@ -15,7 +15,127 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: setup.php:45
+#: setup.php:49
 msgid "IAM - Identity & Access Governance"
 msgstr "IAM - Gobierno de Identidades y Accesos"
+
+#: src/Profile.php:36 templates/profile_rights.html.twig:20
+msgid "Access governance (IAM)"
+msgstr "Gobierno de accesos (IAM)"
+
+#: src/Profile.php:49
+msgid "See all"
+msgstr "Ver todo"
+
+#: src/Profile.php:49
+msgid "See all items"
+msgstr "Ver todos los elementos"
+
+#: src/Profile.php:50
+msgid "See own"
+msgstr "Ver propios"
+
+#: src/Profile.php:50
+msgid "See only the accesses of own resources"
+msgstr "Ver solo los accesos de los recursos propios"
+
+#: src/Profile.php:51
+msgid "Update"
+msgstr "Actualizar"
+
+#: src/Profile.php:51
+msgid "Update the items the user can see"
+msgstr "Actualizar los elementos que el usuario puede ver"
+
+#: src/Profile.php:52
+msgid "Update own"
+msgstr "Actualizar propios"
+
+#: src/Profile.php:52
+msgid "Update only the accesses of own resources"
+msgstr "Actualizar solo los accesos de los recursos propios"
+
+#: src/Profile.php:53
+msgid "Create"
+msgstr "Crear"
+
+#: src/Profile.php:53
+msgid "Create items"
+msgstr "Crear elementos"
+
+#: src/Profile.php:54
+msgid "Put in trashbin"
+msgstr "Enviar a la papelera"
+
+#: src/Profile.php:55
+msgid "Purge"
+msgstr "Purgar"
+
+#: src/Profile.php:55
+msgid "Delete permanently"
+msgstr "Eliminar definitivamente"
+
+#: src/Profile.php:58
+msgid "Access register (grants, deviations and notes)"
+msgstr "Registro de accesos (otorgamientos, desvíos y notas)"
+
+#: src/Profile.php:63
+msgid "Catalogue (positions, resources, roles, access matrix and SoD rules)"
+msgstr "Catálogo (puestos, recursos, roles, matriz de accesos y reglas SoD)"
+
+#: src/Profile.php:68
+msgid "Recertification reviews"
+msgstr "Revisiones de recertificación"
+
+#: src/Profile.php:70
+msgid "Review accesses"
+msgstr "Revisar accesos"
+
+#: src/Profile.php:70
+msgid "Confirm or revoke accesses in recertification campaigns"
+msgstr "Confirmar o revocar accesos en campañas de recertificación"
+
+#: src/Profile.php:73
+msgid "Approvals (requests and deviations)"
+msgstr "Aprobaciones (solicitudes y desvíos)"
+
+#: src/Profile.php:75
+msgid "Approve"
+msgstr "Aprobar"
+
+#: src/Profile.php:75
+msgid "Approve or reject requests and deviations (never own ones)"
+msgstr "Aprobar o rechazar solicitudes y desvíos (nunca los propios)"
+
+#: src/Profile.php:78
+msgid "Reports and exports"
+msgstr "Reportes y exportaciones"
+
+#: src/Profile.php:80
+msgid "See reports"
+msgstr "Ver reportes"
+
+#: src/Profile.php:80
+msgid "See and export reports"
+msgstr "Ver y exportar reportes"
+
+#: src/Rights.php:117
+msgid ""
+"Maintains the access governance catalogue and register: positions, resources, roles, access matrix and grants. Does "
+"not review or approve."
+msgstr ""
+"Mantiene el catálogo y el registro de gobierno de accesos: puestos, recursos, roles, matriz de accesos y "
+"otorgamientos. No revisa ni aprueba."
+
+#: src/Rights.php:123
+msgid "Sees and updates only the accesses of the resources they own and recertifies them."
+msgstr "Ve y actualiza solo los accesos de los recursos que posee y los recertifica."
+
+#: src/Rights.php:129
+msgid "Read-only access to the whole register, the catalogue and the reports."
+msgstr "Acceso de solo lectura a todo el registro, el catálogo y los reportes."
+
+#: src/Rights.php:135
+msgid "Registers access requests and grants and reads the catalogue. Cannot review or approve."
+msgstr "Registra solicitudes y otorgamientos de acceso y consulta el catálogo. No puede revisar ni aprobar."
 

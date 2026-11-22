@@ -21,6 +21,8 @@
  * Licencia GPL-3.0-or-later.
  */
 
+use GlpiPlugin\Iam\Profile;
+
 define('PLUGIN_IAM_VERSION', '1.0.0');
 define('PLUGIN_IAM_MIN_GLPI', '12.0.0');
 define('PLUGIN_IAM_MAX_GLPI', '12.99.99');
@@ -34,6 +36,8 @@ function plugin_init_iam(): void
     if (!Plugin::isPluginActive('iam')) {
         return;
     }
+
+    Plugin::registerClass(Profile::class, ['addtabon' => ['Profile']]);
 }
 
 /**

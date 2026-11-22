@@ -36,3 +36,13 @@ if (!function_exists('htmlescape')) {
         return htmlspecialchars($str, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
     }
 }
+
+// GLPI rights constants (src/autoload/constants.php)
+foreach (
+    ['READ' => 1, 'UPDATE' => 2, 'CREATE' => 4, 'DELETE' => 8, 'PURGE' => 16, 'ALLSTANDARDRIGHT' => 31,
+          'READNOTE' => 32, 'UPDATENOTE' => 64, 'READ_OWNED' => 1024, 'UPDATE_OWNED' => 2048] as $name => $value
+) {
+    if (!defined($name)) {
+        define($name, $value);
+    }
+}
