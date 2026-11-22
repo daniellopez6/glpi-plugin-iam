@@ -101,16 +101,27 @@ class Position_User extends CommonDBRelation
             && Session::haveAccessToEntity((int) $position->fields['entities_id'], (int) $position->fields['is_recursive'] === 1);
     }
 
-    /** An assignment is visible when its position and its person are. */
+    /** An assignment can be changed when its position and its person are visible (the person in an active entity). */
     private static function rowVisible(int $positionId, int $usersId): bool
     {
         return self::positionVisible($positionId) && self::userVisible($usersId);
     }
 
     /**
-     * Search restriction implementing canViewItem() in SQL (used for the notes of assignments): READ, position visible
-     * in the active entities (recursion-aware) and person visible (an authorization of the person in an active
-     * entity, or a recursive one in an ancestor entity: the same as userVisible()).
+     * An assignment can be read when its position is visible and its person is visible, or is a leaver without any
+     * authorisation left and the session reads the whole register (PersonVisibility): the position is the anchor.
+     */
+    private static function rowReadable(int $positionId, int $usersId): bool
+    {
+        return self::positionVisible($positionId) && self::historyUserVisible($usersId, true);
+    }
+
+    /**
+     * Search restriction implementing canViewItem() in SQL (used for the notes of assignments and the matrix): READ,
+     * position visible in the active entities (recursion-aware) and person visible: an authorization of the person in
+     * an active entity, or a recursive one in an ancestor entity (the same as userVisible()), or no authorization at
+     * all (a leaver; canView() is ACCESS READ, the whole register, so PersonVisibility accepts them, anchored on the
+     * visible position). A person whose authorizations are all in invisible entities stays hidden.
      *
      * @return array<mixed>
      */
@@ -128,17 +139,22 @@ class Position_User extends CommonDBRelation
                 'FROM'   => $pt,
                 'WHERE'  => getEntitiesRestrictCriteria($pt, '', '', true),
             ]),
-            "$t.users_id" => new QuerySubQuery([
-                'SELECT' => "$put.users_id",
-                'FROM'   => $put,
-                'WHERE'  => getEntitiesRestrictCriteria($put, '', '', true),
-            ]),
+            [
+                'OR' => [
+                    ["$t.users_id" => new QuerySubQuery([
+                        'SELECT' => "$put.users_id",
+                        'FROM'   => $put,
+                        'WHERE'  => getEntitiesRestrictCriteria($put, '', '', true),
+                    ])],
+                    ['NOT' => ["$t.users_id" => new QuerySubQuery(['SELECT' => "$put.users_id", 'FROM' => $put])]],
+                ],
+            ],
         ];
     }
 
     public function canViewItem(): bool
     {
-        return self::canView() && self::rowVisible((int) ($this->fields['plugin_iam_positions_id'] ?? 0), (int) ($this->fields['users_id'] ?? 0));
+        return self::canView() && self::rowReadable((int) ($this->fields['plugin_iam_positions_id'] ?? 0), (int) ($this->fields['users_id'] ?? 0));
     }
 
     public function canCreateItem(): bool
@@ -242,10 +258,29 @@ class Position_User extends CommonDBRelation
         return $rows;
     }
 
+    /** The person has an authorization in an active entity (recursion-aware). Required to assign or register. */
     public static function userVisible(int $usersId): bool
     {
         $entities = Profile_User::getUserEntities($usersId, true);
         return $entities !== [] && Session::haveAccessToOneOfEntities($entities);
+    }
+
+    /**
+     * Read-only visibility of a person in the history views (PersonVisibility): userVisible(), or a leaver without
+     * any authorization for a session that reads the whole register, when the anchoring record is visible.
+     */
+    public static function historyUserVisible(int $usersId, bool $anchorVisible): bool
+    {
+        if ($usersId <= 0) {
+            return false;
+        }
+        $entities = Profile_User::getUserEntities($usersId, true);
+        return PersonVisibility::visible(
+            $entities !== [],
+            $entities !== [] && Session::haveAccessToOneOfEntities($entities),
+            Rights::canReadAll(),
+            $anchorVisible
+        );
     }
 
     /** The ticket, when given, must exist and be visible to the current user. */
@@ -354,7 +389,8 @@ class Position_User extends CommonDBRelation
     {
         global $DB;
         $forUser = $item instanceof User;
-        if ($forUser ? !self::userVisible((int) $item->getID()) : !self::positionVisible((int) $item->getID())) {
+        // A leaver's own tab: the rows below are limited to visible positions, which anchor the person
+        if ($forUser ? !self::historyUserVisible((int) $item->getID(), true) : !self::positionVisible((int) $item->getID())) {
             return [];
         }
         $pt = Position::getTable();
@@ -371,7 +407,7 @@ class Position_User extends CommonDBRelation
         $seen = [];
         foreach ($iter as $r) {
             $uid = (int) $r['users_id'];
-            $seen[$uid] ??= self::userVisible($uid);
+            $seen[$uid] ??= self::historyUserVisible($uid, true);
             if ($seen[$uid]) {
                 $rows[] = $r;
             }
@@ -412,7 +448,11 @@ class Position_User extends CommonDBRelation
         $today = date('Y-m-d');
         $rows = [];
         $labels = self::typeLabels();
+        $editable = [];
         foreach (self::visibleRows($item) as $r) {
+            $uid = (int) $r['users_id'];
+            // a leaver's assignment is shown read-only: changing one requires the person in an active entity
+            $editable[$uid] ??= self::userVisible($uid);
             $position = new Position();
             $name = $position->getFromDB((int) $r['plugin_iam_positions_id']) ? (string) $position->fields['completename'] : '#' . $r['plugin_iam_positions_id'];
             $rows[] = [
@@ -425,8 +465,9 @@ class Position_User extends CommonDBRelation
                 'begin'     => (string) $r['date_begin'],
                 'end'       => (string) $r['date_end'],
                 'active'    => PositionPeriod::isActive($r['date_begin'], $r['date_end'], $today),
-                'ticket'    => (int) $r['tickets_id'] > 0 ? (int) $r['tickets_id'] : 0,
+                'ticket'    => (int) $r['tickets_id'] > 0 && self::ticketAllowed((int) $r['tickets_id']) ? (int) $r['tickets_id'] : 0,
                 'page'      => self::getFormURLWithID((int) $r['id']),
+                'editable'  => $editable[$uid],
             ];
         }
         $canAdd = self::canCreate();

@@ -24,7 +24,9 @@ use User;
 /**
  * Data access of the quick case search. Every group goes through the visibility predicate of its own table
  * (Resource / Role / Grant ::visibilityCriteria()); people are limited to those the session may see and, for sessions
- * that see the register only through ownership, to the holders of a visible grant (owners never enumerate people).
+ * that see the register only through ownership, to the active holders of a visible grant (owners never enumerate
+ * people). Whole-register readers also find leavers (inactive accounts, no authorization left) anchored by a visible
+ * assignment or grant.
  * User text only reaches SQL as a bound LIKE value, with the LIKE wildcards escaped so they match literally.
  */
 final class CaseSearch
@@ -88,27 +90,45 @@ final class CaseSearch
     {
         global $DB;
         $ut = User::getTable();
-        $where = ["$ut.is_deleted" => 0, "$ut.is_active" => 1];
+        $gt = Grant::getTable();
+        $visibleGrantHolders = new QuerySubQuery(['SELECT' => "$gt.users_id", 'FROM' => $gt, 'WHERE' => [Grant::visibilityCriteria()]]);
         if (Position_User::canView()) {
+            // Whole register (ACCESS READ): people with an authorization in an active entity, and leavers without any
+            // authorization left that a visible assignment or grant anchors (PersonVisibility); inactive and deleted
+            // accounts included (badge), so the history of leavers stays searchable. People whose authorizations are
+            // all in entities the session cannot see stay hidden.
             $put = Profile_User::getTable();
-            $where["$ut.id"] = new QuerySubQuery([
-                'SELECT' => "$put.users_id",
-                'FROM'   => $put,
-                'WHERE'  => getEntitiesRestrictCriteria($put, '', '', true),
-            ]);
+            $at = Position_User::getTable();
+            $where = [[
+                'OR' => [
+                    ["$ut.id" => new QuerySubQuery([
+                        'SELECT' => "$put.users_id",
+                        'FROM'   => $put,
+                        'WHERE'  => getEntitiesRestrictCriteria($put, '', '', true),
+                    ])],
+                    ['AND' => [
+                        ['NOT' => ["$ut.id" => new QuerySubQuery(['SELECT' => "$put.users_id", 'FROM' => $put])]],
+                        ['OR' => [
+                            ["$ut.id" => new QuerySubQuery(['SELECT' => "$at.users_id", 'FROM' => $at, 'WHERE' => [Position_User::visibilityCriteria()]])],
+                            ["$ut.id" => $visibleGrantHolders],
+                        ]],
+                    ]],
+                ],
+            ]];
         } else {
-            $gt = Grant::getTable();
-            $where["$ut.id"] = new QuerySubQuery(['SELECT' => "$gt.users_id", 'FROM' => $gt, 'WHERE' => [Grant::visibilityCriteria()]]);
+            // Owners: active holders of a visible grant only
+            $where = ["$ut.is_deleted" => 0, "$ut.is_active" => 1, "$ut.id" => $visibleGrantHolders];
         }
         foreach ($words as $w) {
             $where[] = self::userMatch($w, $ut);
         }
         $rows = [];
-        foreach ($DB->request(['SELECT' => ["$ut.id", "$ut.name", "$ut.realname", "$ut.firstname"], 'FROM' => $ut, 'WHERE' => $where, 'ORDER' => ["$ut.realname", "$ut.name"], 'LIMIT' => self::LIMIT]) as $r) {
+        foreach ($DB->request(['SELECT' => ["$ut.id", "$ut.name", "$ut.realname", "$ut.firstname", "$ut.is_active", "$ut.is_deleted"], 'FROM' => $ut, 'WHERE' => $where, 'ORDER' => ["$ut.realname", "$ut.name"], 'LIMIT' => self::LIMIT]) as $r) {
             $rows[] = [
                 'id'    => (int) $r['id'],
                 'label' => formatUserName((int) $r['id'], (string) $r['name'], (string) $r['realname'], (string) $r['firstname']),
                 'login' => (string) $r['name'],
+                'inactive' => (int) $r['is_active'] !== 1 || (int) $r['is_deleted'] === 1,
             ];
         }
         return $rows;

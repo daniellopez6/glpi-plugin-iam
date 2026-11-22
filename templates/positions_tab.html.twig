@@ -53,12 +53,13 @@
                <td><a href="{{ r.page }}" title="{{ __('Open the assignment and its log', 'iam') }}" aria-label="{{ __('Open the assignment and its log', 'iam') }}"><i class="ti ti-notebook"></i></a></td>
                {% if can_edit %}
                <td>
+                  {% if r.editable %}
                   <form method="post" action="{{ action }}" class="d-flex gap-1">
-                     <input type="hidden" name="_glpi_csrf_token" value="{{ csrf_token() }}">
                      <input type="hidden" name="id" value="{{ r.id }}">
                      <input type="date" name="date_end" value="{{ r.end }}" class="form-control form-control-sm" aria-label="{{ __('End date', 'iam') }}">
                      <button type="submit" name="update" class="btn btn-sm btn-outline-primary" title="{{ __('Set the end date', 'iam') }}"><i class="ti ti-device-floppy"></i></button>
                   </form>
+                  {% endif %}
                </td>
                {% endif %}
             </tr>
@@ -71,7 +72,6 @@
    {% if can_add %}
    <div class="card-footer">
       <form method="post" action="{{ action }}" class="row g-2 align-items-end">
-         <input type="hidden" name="_glpi_csrf_token" value="{{ csrf_token() }}">
          {% if for_user %}
             <input type="hidden" name="users_id" value="{{ item_id }}">
          {% else %}

@@ -84,9 +84,9 @@
          <div class="list-group list-group-flush">
             {% for u in results.users %}
                {% if user_links %}
-                  <a class="list-group-item list-group-item-action" href="{{ user_url }}?id={{ u.id }}">{{ u.label }} <span class="text-secondary">({{ u.login }})</span></a>
+                  <a class="list-group-item list-group-item-action" href="{{ user_url }}?id={{ u.id }}">{{ u.label }} <span class="text-secondary">({{ u.login }})</span>{% if u.inactive %} <span class="badge bg-secondary-lt iam-inactive">{{ __('Inactive', 'iam') }}</span>{% endif %}</a>
                {% else %}
-                  <div class="list-group-item">{{ u.label }} <span class="text-secondary">({{ u.login }})</span></div>
+                  <div class="list-group-item">{{ u.label }} <span class="text-secondary">({{ u.login }})</span>{% if u.inactive %} <span class="badge bg-secondary-lt iam-inactive">{{ __('Inactive', 'iam') }}</span>{% endif %}</div>
                {% endif %}
             {% endfor %}
          </div></div>
