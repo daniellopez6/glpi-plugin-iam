@@ -26,6 +26,9 @@ use GlpiPlugin\Iam\Menu;
 use GlpiPlugin\Iam\Position;
 use GlpiPlugin\Iam\Position_User;
 use GlpiPlugin\Iam\Profile;
+use GlpiPlugin\Iam\Resource;
+use GlpiPlugin\Iam\ResourceItemtypes;
+use GlpiPlugin\Iam\Role;
 
 define('PLUGIN_IAM_VERSION', '1.0.0');
 define('PLUGIN_IAM_MIN_GLPI', '12.0.0');
@@ -44,6 +47,9 @@ function plugin_init_iam(): void
     Plugin::registerClass(Profile::class, ['addtabon' => ['Profile']]);
     Plugin::registerClass(Position::class);
     Plugin::registerClass(Position_User::class, ['addtabon' => [User::class, Position::class]]);
+    // "Access (IAM)" tab on every inventory itemtype that can back a resource; roles are a tab of the resource itself
+    Plugin::registerClass(Resource::class, ['addtabon' => ResourceItemtypes::ALLOWED]);
+    Plugin::registerClass(Role::class);
 
     // Own top-level menu sector; the first entry (Menu) gives it its title and hides it without any IAM right
     $PLUGIN_HOOKS[Hooks::MENU_TOADD]['iam'] = [plugin_iam_sector() => [Menu::class]];

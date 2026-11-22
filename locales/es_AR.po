@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  iam\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-22 12:42+0000\n"
+"POT-Creation-Date: 2026-11-22 12:48+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: es_AR\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: setup.php:71
+#: setup.php:77
 msgid "IAM - Identity & Access Governance"
 msgstr "IAM - Gobierno de Identidades y Accesos"
 
@@ -207,6 +207,100 @@ msgstr "Ver reportes"
 msgid "See and export reports"
 msgstr "Ver y exportar reportes"
 
+#: src/Resource.php:161
+msgid "The resource has grants or matrix cells (nothing is deleted). Put it in the trashbin instead."
+msgstr "El recurso tiene otorgamientos o celdas de matriz (no se borra nada). Envíelo a la papelera."
+
+#: src/Resource.php:204 templates/resource_form.html.twig:21 templates/resource_item_tab.html.twig:21
+msgid "Code"
+msgstr "Código"
+
+#: src/Resource.php:205
+msgid "Linked item type"
+msgstr "Tipo de elemento vinculado"
+
+#: src/Resource.php:207 templates/resource_form.html.twig:44 templates/resource_item_tab.html.twig:23
+msgid "Owner (person)"
+msgstr "Dueño (persona)"
+
+#: src/Resource.php:209 templates/resource_form.html.twig:45 templates/resource_item_tab.html.twig:24
+msgid "Owner (group)"
+msgstr "Dueño (grupo)"
+
+#: src/Resource.php:211 templates/resource_form.html.twig:46 templates/resource_item_tab.html.twig:22
+msgid "Criticality"
+msgstr "Criticidad"
+
+#: src/Resource.php:213 templates/resource_form.html.twig:47
+msgid "Review frequency"
+msgstr "Frecuencia de revisión"
+
+#: src/Resource.php:297
+msgid "Access (IAM)"
+msgstr "Accesos (IAM)"
+
+#: src/Resource.php:389
+msgid "The resource must have a name."
+msgstr "El recurso debe tener un nombre."
+
+#: src/Resource.php:393
+msgid "The criticality is not valid."
+msgstr "La criticidad no es válida."
+
+#: src/Resource.php:396
+msgid "The review frequency is not valid."
+msgstr "La frecuencia de revisión no es válida."
+
+#: src/Resource.php:410
+msgid "The linked item type is not allowed."
+msgstr "El tipo de elemento vinculado no está permitido."
+
+#: src/Resource.php:413
+msgid "The linked item does not exist or you are not allowed to see it."
+msgstr "El elemento vinculado no existe o no tiene permiso para verlo."
+
+#: src/Resource.php:428
+msgid "The owner does not exist or you are not allowed to see it."
+msgstr "El dueño no existe o no tiene permiso para verlo."
+
+#: src/Resource.php:48 templates/resource_item_tab.html.twig:20
+msgid "Resource"
+msgid_plural "Resources"
+msgstr[0] "Recurso"
+msgstr[1] "Recursos"
+
+#: src/Resource.php:58
+msgid "Resources"
+msgstr "Recursos"
+
+#: src/Resource.php:66
+msgid "Low"
+msgstr "Baja"
+
+#: src/Resource.php:67
+msgid "Medium"
+msgstr "Media"
+
+#: src/Resource.php:68
+msgid "High"
+msgstr "Alta"
+
+#: src/Resource.php:69
+msgid "Critical"
+msgstr "Crítica"
+
+#: src/Resource.php:77
+msgid "Quarterly"
+msgstr "Trimestral"
+
+#: src/Resource.php:78
+msgid "Semiannual"
+msgstr "Semestral"
+
+#: src/Resource.php:79
+msgid "Annual"
+msgstr "Anual"
+
 #: src/Rights.php:144
 msgid ""
 "Maintains the access governance catalogue and register: positions, resources, roles, access matrix and grants. Does "
@@ -226,6 +320,40 @@ msgstr "Acceso de solo lectura a todo el registro, el catálogo y los reportes."
 #: src/Rights.php:162
 msgid "Registers access requests and grants and reads the catalogue. Cannot review or approve."
 msgstr "Registra solicitudes y otorgamientos de acceso y consulta el catálogo. No puede revisar ni aprobar."
+
+#: src/Role.php:124
+msgid "The role must have a name."
+msgstr "El rol debe tener un nombre."
+
+#: src/Role.php:131
+msgid "The role level is not valid."
+msgstr "El nivel del rol no es válido."
+
+#: src/Role.php:150
+msgid "The resource of the role is not valid."
+msgstr "El recurso del rol no es válido."
+
+#: src/Role.php:43
+msgid "Role"
+msgid_plural "Roles"
+msgstr[0] "Rol"
+msgstr[1] "Roles"
+
+#: src/Role.php:55
+msgid "Standard"
+msgstr "Estándar"
+
+#: src/Role.php:56
+msgid "Sensitive"
+msgstr "Sensible"
+
+#: src/Role.php:57
+msgid "Privileged"
+msgstr "Privilegiado"
+
+#: src/Role.php:90 templates/roles_tab.html.twig:63
+msgid "The role has grants or matrix cells (nothing is deleted)."
+msgstr "El rol tiene otorgamientos o celdas de matriz (no se borra nada)."
 
 #: templates/positions_tab.html.twig:21 templates/positions_tab.html.twig:80
 msgid "Person"
@@ -255,11 +383,13 @@ msgstr "Estado"
 msgid "Ticket"
 msgstr "Ticket"
 
-#: templates/positions_tab.html.twig:42 templates/positions_tab.html.twig:91
+#: templates/positions_tab.html.twig:42 templates/positions_tab.html.twig:91 templates/roles_tab.html.twig:43
+#: templates/roles_tab.html.twig:52 templates/roles_tab.html.twig:88
 msgid "Yes"
 msgstr "Sí"
 
-#: templates/positions_tab.html.twig:42 templates/positions_tab.html.twig:91
+#: templates/positions_tab.html.twig:42 templates/positions_tab.html.twig:91 templates/roles_tab.html.twig:42
+#: templates/roles_tab.html.twig:52 templates/roles_tab.html.twig:88
 msgid "No"
 msgstr "No"
 
@@ -278,4 +408,60 @@ msgstr "Establecer la fecha de fin"
 #: templates/positions_tab.html.twig:62
 msgid "No position assignments."
 msgstr "Sin asignaciones de puesto."
+
+#: templates/resource_form.html.twig:26
+msgid "Linked item deleted"
+msgstr "Elemento vinculado eliminado"
+
+#: templates/resource_form.html.twig:27
+msgid ""
+"The inventory item of this resource no longer exists or is in the trashbin. Link another item or keep the record as "
+"history."
+msgstr ""
+"El elemento de inventario de este recurso ya no existe o está en la papelera. Vincule otro elemento o conserve el "
+"registro como historial."
+
+#: templates/resource_form.html.twig:32 templates/resource_form.html.twig:34
+msgid "Linked item"
+msgstr "Elemento vinculado"
+
+#: templates/resource_form.html.twig:34
+msgid "Change linked item"
+msgstr "Cambiar elemento vinculado"
+
+#: templates/resource_item_tab.html.twig:25
+msgid "Roles"
+msgstr "Roles"
+
+#: templates/resource_item_tab.html.twig:26
+msgid "Grants"
+msgstr "Otorgamientos"
+
+#: templates/resource_item_tab.html.twig:41
+msgid "No resources are linked to this item."
+msgstr "No hay recursos vinculados a este elemento."
+
+#: templates/resource_item_tab.html.twig:48
+msgid "Add a resource"
+msgstr "Agregar un recurso"
+
+#: templates/roles_tab.html.twig:21 templates/roles_tab.html.twig:36 templates/roles_tab.html.twig:81
+msgid "Level"
+msgstr "Nivel"
+
+#: templates/roles_tab.html.twig:22 templates/roles_tab.html.twig:41 templates/roles_tab.html.twig:87
+msgid "Break-glass"
+msgstr "Emergencia (break-glass)"
+
+#: templates/roles_tab.html.twig:46
+msgid "Save"
+msgstr "Guardar"
+
+#: templates/roles_tab.html.twig:63
+msgid "In use"
+msgstr "En uso"
+
+#: templates/roles_tab.html.twig:69
+msgid "No roles defined."
+msgstr "Sin roles definidos."
 

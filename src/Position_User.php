@@ -165,7 +165,7 @@ class Position_User extends CommonDBRelation
         return $rows;
     }
 
-    private static function userVisible(int $usersId): bool
+    public static function userVisible(int $usersId): bool
     {
         $entities = Profile_User::getUserEntities($usersId, true);
         return $entities !== [] && Session::haveAccessToOneOfEntities($entities);

@@ -29,7 +29,7 @@ final class Schema
         'glpi_plugin_iam_reportlogs',
     ];
 
-    private const PREFIX = 'glpi_plugin_iam_';
+    public const PREFIX = 'glpi_plugin_iam_';
 
     /**
      * @param string $sign Sign option of the primary keys of GLPI (e.g. 'unsigned' or '')

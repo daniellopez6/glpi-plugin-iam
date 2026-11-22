@@ -59,6 +59,15 @@ class Menu extends CommonGLPI
                     + (Position::canCreate() ? ['add' => Position::getFormURL(false)] : []),
             ];
         }
+        if (Resource::canView()) {
+            $options[Resource::class] = [
+                'title' => Resource::getTypeName(2),
+                'page'  => Resource::getSearchURL(false),
+                'icon'  => Resource::getIcon(),
+                'links' => ['search' => Resource::getSearchURL(false)]
+                    + (Resource::canCreate() ? ['add' => Resource::getFormURL(false)] : []),
+            ];
+        }
         return [
             'title'   => self::getMenuName(),
             'page'    => self::getSearchURL(false),

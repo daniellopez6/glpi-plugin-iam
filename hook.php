@@ -20,6 +20,9 @@
  */
 
 use GlpiPlugin\Iam\Install\Installer;
+use GlpiPlugin\Iam\Ownership;
+use GlpiPlugin\Iam\Resource;
+use GlpiPlugin\Iam\Rights;
 
 function plugin_iam_install(): bool
 {
@@ -34,12 +37,21 @@ function plugin_iam_uninstall(): bool
 }
 
 /**
- * Search restriction hook; the access-governance itemtypes add their own criteria in later releases.
+ * Search restriction hook. A profile that sees the register only through ownership ("See own") and has no read right
+ * on the catalogue lists just the resources it owns (user or current group). The other itemtypes get their own
+ * criteria in later releases.
  *
  * @param string $itemtype
  * @return array<mixed>
  */
 function plugin_iam_addDefaultWhere($itemtype): array
 {
+    if ($itemtype === Resource::class && Rights::onlyOwn() && !Session::haveRight(Rights::CONFIG, READ)) {
+        return [Ownership::resourceCriteria(
+            (int) Session::getLoginUserID(),
+            array_values(array_map('intval', (array) ($_SESSION['glpigroups'] ?? []))),
+            Resource::getTable()
+        )];
+    }
     return [];
 }

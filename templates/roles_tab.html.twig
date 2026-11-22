@@ -1,0 +1,94 @@
+{#
+ # -------------------------------------------------------------------------
+ # IAM - Identity & Access Governance plugin for GLPI
+ # Copyright (C) 2026 daniellopez6
+ # https://github.com/daniellopez6/glpi-plugin-iam
+ # -------------------------------------------------------------------------
+ # LICENSE
+ #
+ # This program is free software: you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+ # the Free Software Foundation, either version 3 of the License, or
+ # (at your option) any later version. See LICENSE for the full text.
+ # -------------------------------------------------------------------------
+ #}
+<div class="card">
+   <div class="table-responsive">
+      <table class="table table-hover card-table">
+         <thead>
+            <tr>
+               <th>{{ __('Name') }}</th>
+               <th>{{ __('Level', 'iam') }}</th>
+               <th>{{ __('Break-glass', 'iam') }}</th>
+               {% if can_edit or can_purge %}<th></th>{% endif %}
+            </tr>
+         </thead>
+         <tbody>
+         {% for r in rows %}
+            <tr>
+               {% if can_edit %}
+               <td colspan="3">
+                  <form method="post" action="{{ action }}" class="row g-2 align-items-center">
+                     <input type="hidden" name="_glpi_csrf_token" value="{{ csrf_token() }}">
+                     <input type="hidden" name="id" value="{{ r.id }}">
+                     <div class="col-md-5"><input type="text" name="name" value="{{ r.name }}" class="form-control form-control-sm" aria-label="{{ __('Name') }}" required></div>
+                     <div class="col-md-3">
+                        <select name="level" class="form-select form-select-sm" aria-label="{{ __('Level', 'iam') }}">
+                           {% for k, label in levels %}<option value="{{ k }}" {{ k == r.level ? 'selected' }}>{{ label }}</option>{% endfor %}
+                        </select>
+                     </div>
+                     <div class="col-md-2">
+                        <select name="is_breakglass" class="form-select form-select-sm" aria-label="{{ __('Break-glass', 'iam') }}">
+                           <option value="0" {{ r.is_breakglass ? '' : 'selected' }}>{{ __('No', 'iam') }}</option>
+                           <option value="1" {{ r.is_breakglass ? 'selected' }}>{{ __('Yes', 'iam') }}</option>
+                        </select>
+                     </div>
+                     <div class="col-md-2"><button type="submit" name="update" class="btn btn-sm btn-outline-primary" title="{{ __('Save', 'iam') }}"><i class="ti ti-device-floppy"></i></button></div>
+                  </form>
+               </td>
+               {% else %}
+               <td>{{ r.name }}</td>
+               <td>{{ levels[r.level] ?? r.level }}</td>
+               <td>{{ r.is_breakglass ? __('Yes', 'iam') : __('No', 'iam') }}</td>
+               {% endif %}
+               {% if can_edit or can_purge %}
+               <td>
+                  {% if can_purge and r.dependencies == 0 %}
+                  <form method="post" action="{{ action }}">
+                     <input type="hidden" name="_glpi_csrf_token" value="{{ csrf_token() }}">
+                     <input type="hidden" name="id" value="{{ r.id }}">
+                     <button type="submit" name="purge" class="btn btn-sm btn-outline-danger" title="{{ __('Purge') }}"><i class="ti ti-trash"></i></button>
+                  </form>
+                  {% elseif r.dependencies > 0 %}
+                  <span class="badge bg-secondary-lt" title="{{ __('The role has grants or matrix cells (nothing is deleted).', 'iam') }}">{{ __('In use', 'iam') }}</span>
+                  {% endif %}
+               </td>
+               {% endif %}
+            </tr>
+         {% else %}
+            <tr><td colspan="4" class="text-muted">{{ __('No roles defined.', 'iam') }}</td></tr>
+         {% endfor %}
+         </tbody>
+      </table>
+   </div>
+   {% if can_add %}
+   <div class="card-footer">
+      <form method="post" action="{{ action }}" class="row g-2 align-items-end">
+         <input type="hidden" name="_glpi_csrf_token" value="{{ csrf_token() }}">
+         <input type="hidden" name="plugin_iam_resources_id" value="{{ resource }}">
+         <div class="col-md-5"><label class="form-label">{{ __('Name') }}</label><input type="text" name="name" class="form-control" required></div>
+         <div class="col-md-3">
+            <label class="form-label">{{ __('Level', 'iam') }}</label>
+            <select name="level" class="form-select">
+               {% for k, label in levels %}<option value="{{ k }}">{{ label }}</option>{% endfor %}
+            </select>
+         </div>
+         <div class="col-md-2">
+            <label class="form-label">{{ __('Break-glass', 'iam') }}</label>
+            <select name="is_breakglass" class="form-select"><option value="0">{{ __('No', 'iam') }}</option><option value="1">{{ __('Yes', 'iam') }}</option></select>
+         </div>
+         <div class="col-md-2"><button type="submit" name="add" class="btn btn-primary w-100"><i class="ti ti-plus"></i></button></div>
+      </form>
+   </div>
+   {% endif %}
+</div>

@@ -1,0 +1,49 @@
+<?php
+
+/**
+ * -------------------------------------------------------------------------
+ * IAM - Identity & Access Governance plugin for GLPI
+ * Copyright (C) 2026 daniellopez6
+ * https://github.com/daniellopez6/glpi-plugin-iam
+ * -------------------------------------------------------------------------
+ * LICENSE
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version. See LICENSE for the full text.
+ * -------------------------------------------------------------------------
+ */
+
+namespace GlpiPlugin\Iam\Tests\Unit;
+
+use GlpiPlugin\Iam\InputGuard;
+use PHPUnit\Framework\TestCase;
+
+final class InputGuardTest extends TestCase
+{
+    public function testDropsUnknownFields(): void
+    {
+        $out = InputGuard::filter(['name' => 'a', 'evil' => 1, 'id' => 5], ['name'], [], false);
+        $this->assertSame(['name' => 'a'], $out);
+    }
+
+    public function testDropsImmutableOnUpdate(): void
+    {
+        $in = ['users_id' => 3, 'plugin_iam_roles_id' => 4, 'entities_id' => 2, 'comment' => 'x'];
+        $allowed = ['users_id', 'plugin_iam_roles_id', 'entities_id', 'comment'];
+        $immutable = ['users_id', 'plugin_iam_roles_id', 'entities_id'];
+
+        $this->assertSame(['comment' => 'x'], InputGuard::filter($in, $allowed, $immutable, true));
+        $this->assertSame($in, InputGuard::filter($in, $allowed, $immutable, false));
+    }
+
+    public function testEnumRejectsUnknownLevel(): void
+    {
+        $levels = ['standard', 'sensitive', 'privileged'];
+        $this->assertFalse(InputGuard::enum('admin', $levels));
+        $this->assertFalse(InputGuard::enum('', $levels));
+        $this->assertFalse(InputGuard::enum('Standard', $levels));
+        $this->assertTrue(InputGuard::enum('privileged', $levels));
+    }
+}
