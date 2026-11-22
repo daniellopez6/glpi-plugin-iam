@@ -19,16 +19,8 @@
  * Installation and uninstallation of the IAM plugin.
  */
 
-use GlpiPlugin\Iam\Grant;
 use GlpiPlugin\Iam\Install\Installer;
-use GlpiPlugin\Iam\Note;
-use GlpiPlugin\Iam\Ownership;
-use GlpiPlugin\Iam\Resource;
-use GlpiPlugin\Iam\Position;
-use GlpiPlugin\Iam\Position_Role;
-use GlpiPlugin\Iam\Position_User;
-use GlpiPlugin\Iam\Role;
-use Glpi\DBAL\QuerySubQuery;
+use GlpiPlugin\Iam\Scope;
 
 function plugin_iam_install(): bool
 {
@@ -43,60 +35,13 @@ function plugin_iam_uninstall(): bool
 }
 
 /**
- * Search restriction hook. A profile that sees the register only through ownership ("See own") and has no read right
- * on the catalogue lists just the resources it owns (user or current group). The other itemtypes get their own
- * criteria in later releases.
+ * Search restriction hook (search engine and API lists of every plugin itemtype): the SQL form of each class's
+ * canViewItem(), centralised in Scope::criteriaFor() (see the predicate per itemtype there).
  *
  * @param string $itemtype
  * @return array<mixed>
  */
 function plugin_iam_addDefaultWhere($itemtype): array
 {
-    // Grants: the same predicate as Grant::canViewItem() (see Grant::visibilityCriteria()): resource visible in the
-    // active entities, recursion-aware, and owned by the session (user or current group) when it lacks READ
-    if ($itemtype === Grant::class) {
-        return [Grant::visibilityCriteria()];
-    }
-    // Notes: the same predicate as Note::canViewItem(): the target is visible, per target type (see
-    // Note::visibilityCriteria()); assignments: Position_User::canViewItem() (position and person visible)
-    if ($itemtype === Note::class) {
-        return [Note::visibilityCriteria()];
-    }
-    if ($itemtype === Position_User::class) {
-        return [Position_User::visibilityCriteria()];
-    }
-    $where = [];
-    // Cells: the position must be visible to the session (recursion-aware), for every session
-    if ($itemtype === Position_Role::class) {
-        $pt = Position::getTable();
-        $where[] = [Position_Role::getTable() . '.plugin_iam_positions_id' => new QuerySubQuery([
-            'SELECT' => "$pt.id",
-            'FROM'   => $pt,
-            'WHERE'  => getEntitiesRestrictCriteria($pt, '', '', true),
-        ])];
-    }
-    // Same condition as Resource::canViewItem(): without CONFIG READ only owned resources (and their roles) are visible
-    if (($itemtype === Resource::class || $itemtype === Role::class || $itemtype === Position_Role::class) && Resource::ownedOnly()) {
-        $groups = array_values(array_map('intval', (array) ($_SESSION['glpigroups'] ?? [])));
-        $own = Ownership::resourceCriteria((int) Session::getLoginUserID(), $groups, Resource::getTable());
-        if ($itemtype === Resource::class) {
-            return [$own];
-        }
-        $owned = new QuerySubQuery([
-            'SELECT' => Resource::getTable() . '.id',
-            'FROM'   => Resource::getTable(),
-            'WHERE'  => [$own],
-        ]);
-        if ($itemtype === Position_Role::class) {
-            // Cells of the roles of owned resources
-            $where[] = [Position_Role::getTable() . '.plugin_iam_roles_id' => new QuerySubQuery([
-                'SELECT' => Role::getTable() . '.id',
-                'FROM'   => Role::getTable(),
-                'WHERE'  => [Role::getTable() . '.plugin_iam_resources_id' => $owned],
-            ])];
-            return $where;
-        }
-        return [[Role::getTable() . '.plugin_iam_resources_id' => $owned]];
-    }
-    return $where;
+    return Scope::criteriaFor((string) $itemtype);
 }

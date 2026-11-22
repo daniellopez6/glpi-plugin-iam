@@ -19,6 +19,7 @@ namespace GlpiPlugin\Iam;
 
 use CommonDBRelation;
 use CommonDBTM;
+use Glpi\DBAL\QuerySubQuery;
 use Session;
 
 /**
@@ -68,6 +69,22 @@ class Position_Role extends CommonDBRelation
     public function maybeRecursive()
     {
         return false;
+    }
+
+    /**
+     * A cell takes the entity of the role's resource and has no is_recursive column: GLPI's generic entity filter
+     * (search, API lists) would hide the cells of a recursive resource of a parent entity from the child entities.
+     * It is disabled here and replaced by visibilityCriteria() (addDefaultWhere hook) and canViewItem(), which
+     * implement the same predicate. The entities_id column is still written (always the resource's entity).
+     */
+    public function isEntityAssign()
+    {
+        return false;
+    }
+
+    public function getEntityID()
+    {
+        return (int) ($this->fields['entities_id'] ?? -1);
     }
 
     // Rights: CONFIG (CREATE / UPDATE). Removing a cell is "no expectation": it needs UPDATE and is never a PURGE.
@@ -130,6 +147,34 @@ class Position_Role extends CommonDBRelation
     private static function rowVisible(int $positionId, int $roleId): bool
     {
         return self::positionVisible($positionId) && self::roleVisible($roleId);
+    }
+
+    /**
+     * canViewItem() in SQL: the position is visible (active entities, recursion-aware) and the role's resource is
+     * visible (Resource::visibilityCriteria()). Without any view right: nothing.
+     *
+     * @return array<mixed>
+     */
+    public static function visibilityCriteria(): array
+    {
+        $t = self::getTable();
+        if (!self::canView()) {
+            return ["$t.id" => 0];
+        }
+        $pt = Position::getTable();
+        $rt = Role::getTable();
+        return [
+            "$t.plugin_iam_positions_id" => new QuerySubQuery([
+                'SELECT' => "$pt.id",
+                'FROM'   => $pt,
+                'WHERE'  => getEntitiesRestrictCriteria($pt, '', '', true),
+            ]),
+            "$t.plugin_iam_roles_id" => new QuerySubQuery([
+                'SELECT' => "$rt.id",
+                'FROM'   => $rt,
+                'WHERE'  => [Role::visibilityCriteria()],
+            ]),
+        ];
     }
 
     public function canViewItem(): bool

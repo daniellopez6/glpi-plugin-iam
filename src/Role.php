@@ -89,6 +89,18 @@ class Role extends CommonDBChild
         return false;
     }
 
+    /**
+     * Visibility follows the resource, not the role's own entity column: the roles of a recursive resource of a parent
+     * entity are visible from the child entities. GLPI's generic entity filter (search, API lists, dropdowns) would
+     * only compare the role's entities_id (no is_recursive column), so it is disabled here and replaced by
+     * visibilityCriteria() (addDefaultWhere hook, getSystemSQLCriteria() for dropdowns) and canViewItem(), which
+     * implement the same predicate. The entities_id column is still written (always the resource's entity).
+     */
+    public function isEntityAssign()
+    {
+        return false;
+    }
+
     /** Owners (READ_OWNED) see the roles of their resources: visibility follows the parent resource. */
     public static function canView(): bool
     {
@@ -99,6 +111,32 @@ class Role extends CommonDBChild
     {
         $resource = new Resource();
         return $resource->getFromDB((int) ($this->fields['plugin_iam_resources_id'] ?? 0)) && $resource->canViewItem();
+    }
+
+    /**
+     * canViewItem() in SQL: the role's resource is visible to the session (Resource::visibilityCriteria(): active
+     * entities, recursion-aware, and owned without CONFIG READ). Without any view right: nothing.
+     *
+     * @return array<mixed>
+     */
+    public static function visibilityCriteria(?string $table = null): array
+    {
+        $t = $table ?? self::getTable();
+        if (!self::canView()) {
+            return ["$t.id" => 0];
+        }
+        return ["$t.plugin_iam_resources_id" => Scope::visibleResourcesSubQuery()];
+    }
+
+    /**
+     * GLPI adds these criteria to its own lists of roles that do not go through the search engine (dropdowns, API
+     * getItems): with the entity filter disabled, the dropdown of roles stays limited to visible resources.
+     *
+     * @return array<mixed>
+     */
+    public static function getSystemSQLCriteria(?string $tablename = null): array
+    {
+        return self::visibilityCriteria($tablename);
     }
 
     // Nothing is deleted: a role with grants or matrix cells is never purged

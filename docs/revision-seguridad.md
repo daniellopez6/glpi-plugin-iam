@@ -107,3 +107,44 @@ las notas del recurso. Recurso 4 ("Recurso solo con nota (demo IAM T9 fix)", sin
 
 El recurso 4 sigue en la papelera y la nota 12 sigue legible. Los roles no son objetivo de notas (sin cambios en
 `Role`); otorgamientos y asignaciones nunca se purgan.
+
+### Revisión 5 - visibilidad consolidada y recursos recursivos de la entidad padre (Tarea 10)
+
+Cambio: `plugin_iam_addDefaultWhere` delega en `Scope::criteriaFor()`, único punto de entrada; cada clase conserva su
+predicado (`visibilityCriteria()`), que es la forma SQL de su `canViewItem()`. `Role` y `Position_Role` pasan a
+`isEntityAssign() = false` (precedente de `Grant`): sus tablas no tienen `is_recursive`, y el filtro de entidad de GLPI
+ocultaba desde una entidad hija los roles y celdas de un recurso recursivo de la entidad padre aunque `GET` del
+elemento respondiera 200. Predicados:
+
+- Rol: su recurso es visible (`Resource::visibilityCriteria()`: entidades activas con recursión y, sin CONFIG READ,
+  propiedad del usuario o de su grupo actual). Se aplica también a los desplegables de roles (`getSystemSQLCriteria()`).
+- Celda de matriz: el puesto es visible (con recursión) y el recurso del rol es visible.
+- Puesto: sin cambios; el filtro recursivo de GLPI coincide con `canViewItem()` (`checkEntity(true)`).
+- Recurso, otorgamiento, nota y asignación: sin cambios de predicado.
+
+Prueba pura de paridad (`ScopeTest`): toda tabla de `Schema::scope()` con clase en 1.0 está cubierta por
+`Scope::criteriaFor()` y las tablas de tareas posteriores no tienen clase todavía.
+
+Entorno: árbol de la Tarea 10 en 192.168.88.4, caché limpiada. Datos creados (se conservan): recurso 5 "Correo
+corporativo (demo IAM T10, raiz recursivo)" en la entidad raíz (0), recursivo, grupo dueño 5; rol 7 "Buzon (demo IAM
+T10)"; celda 9 (puesto 2 de la entidad 1 × rol 7, `allowed`, entidad 0). Usuarios temporales (borrados al final):
+analista de la entidad 1, dueño (entidad 1, grupo 3), analista de la entidad 2 y auditor (entidad 1), todos sin
+recursión. Listas por API (`GET /<itemtype>` y `search/<itemtype>`), mismo script antes (árbol anterior) y después:
+
+| Sesión | Antes | Después |
+| --- | --- | --- |
+| Analista entidad 1 | Roles 1,3,4,6; celdas 4,5,6 (`GET Role/7` y `GET Position_Role/9` = 200) | Roles 1,3,4,6,**7**; celdas 4,5,6,**9** |
+| Auditor entidad 1 | Roles 1,3,4,6; celdas 4,5,6 | Roles 1,3,4,6,**7**; celdas 4,5,6,**9** |
+| Analista entidad 2 | Recursos 5; roles ninguno (`GET Role/7` = 200); celdas ninguna | Roles **7**; celdas ninguna (el puesto 2 es de la entidad 1; `GET Position_Role/9` = 403) |
+| Dueño (grupo 3) | Recursos 1; roles 1,3,4; celdas 4,5,6; otorgamientos 2,3,5,6,7; notas 1,2,4,5,6,7,9,10,11; `GET` de recurso 5 / rol 7 / celda 9 = 403 | Idéntico |
+| Super-Admin | Todo | Idéntico |
+
+Sin otras diferencias: recursos, otorgamientos, notas, puestos y asignaciones listan exactamente lo mismo antes y
+después en las cinco sesiones.
+
+Desplegable de roles del alta de otorgamiento (`ajax/getDropdownValue.php` con el token IDOR del formulario), analista
+de la entidad 1 sobre el recurso 5: antes `count 0` (GLPI recibía `entity_restrict` vacío porque la entidad 0 no está
+activa); después ofrece el rol 7. Sobre el recurso 1 sigue ofreciendo los roles 1, 3 y 4.
+
+`/var/log/glpi/php-errors.log` sin entradas nuevas (1386 líneas antes y después). Usuarios temporales 43-46 y sus
+filas de perfiles y grupos borrados (verificado 0).
