@@ -456,3 +456,35 @@ W4 owner matrixcell on cells with missing pe iam.dueno                          
 
 PASS 80  FAIL 0  XFAIL 0  XPASS 0
 ```
+
+### Revisión 8 - ola de correcciones de la revisión final
+
+Entorno: GLPI 12.0.2 de laboratorio, árbol de `feat/1.0` en 96d5952 desplegado (`plugin:install --force`, que añade los
+índices nuevos con `Migration::addKey()`; suma md5 de `src/`, `front/`, `ajax/`, `templates/`, `hook.php`, `setup.php`
+y `plugin.xml` idéntica al repositorio). Los perfiles existentes IAM - Analista e IAM - Auditor recibieron `user` y el
+READ de inventario con un script único `ProfileRight::updateProfileRights()` como www-data (el instalador no modifica
+perfiles existentes). Comprobado además por web: el analista y el auditor abren un Software con la pestaña
+"Accesos (IAM)" y un usuario con la pestaña "Otorgamientos (IAM)" (HTTP 200).
+
+Resultado de `api_authz.py`: **PASS 98, FAIL 0**. Casos nuevos:
+
+```
+C1 GET Software/1395                         iam.analista                       200                                200                                          PASS
+C2 GET User/17                               iam.analista                       200                                200                                          PASS
+C1 GET Software/1395                         iam.auditor                        200                                200                                          PASS
+C2 GET User/17                               iam.auditor                        200                                200                                          PASS
+C3 POST Resource linked to Software          iam.auditor                        refused                            HTTP 400 id=None                             PASS
+C4 analyst links a resource to a Software it iam.analista                       201, itemtype=Software             HTTP 201 id=79 item=Software/1395            PASS
+C4 cleanup temporary resource                admin                              purged                             exists=False                                 PASS
+B2 purge Position with a matrix cell         glpi (Super-Admin)                 refused, position and cell kept    HTTP 400 position=200 cell=200               PASS
+B2 purge after removing the cell             iam.analista + glpi                cell removed, position purged      cell HTTP 200 purge HTTP 200 position=404    PASS
+L1 case search finds the inactive person     iam.auditor (web)                  found, inactive badge              HTTP 200 found=True badge=True               PASS
+L2 case search: person of another company    analyst-B (web)                    not found                          HTTP 200 found=False                         PASS
+L3 admin removes every authorization of the  admin                              all removed                        removed 1/1                                  PASS
+L4 GET + list Position_User/18 of the leaver iam.auditor                        200, listed                        HTTP 200 listed=True                         PASS
+L5 GET Grant/17 of the leaver                iam.auditor                        200                                200                                          PASS
+L6 case search finds the leaver without auth iam.auditor (web)                  found, inactive badge              HTTP 200 found=True badge=True               PASS
+L7 GET + list Position_User/18 of the leaver iam.dueno                          403/404, not listed                HTTP 403 listed=False                        PASS
+L7 GET + list Position_User/18 of the leaver analyst-B                          403/404, not listed                HTTP 403 listed=False                        PASS
+L8 admin restores the authorizations (finall admin                              all restored                       restored 1/1                                 PASS
+```
