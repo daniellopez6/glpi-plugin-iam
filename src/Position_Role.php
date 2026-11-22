@@ -18,6 +18,7 @@
 namespace GlpiPlugin\Iam;
 
 use CommonDBRelation;
+use CommonDBTM;
 use Session;
 
 /**
@@ -173,6 +174,24 @@ class Position_Role extends CommonDBRelation
         return null;
     }
 
+    /** The history entries carry the expectation, so a removed cell still tells what it allowed. */
+    private function historyName(CommonDBTM $other): string
+    {
+        $exp = (string) ($this->fields['expectation'] ?? $this->input['expectation'] ?? '');
+        $label = self::expectationLabels()[$exp] ?? $exp;
+        return $other->getNameID(['forceid' => true, 'additional' => true]) . ($label === '' ? '' : ' (' . $label . ')');
+    }
+
+    public function getHistoryNameForItem1(CommonDBTM $item, $case)
+    {
+        return $this->historyName($item);
+    }
+
+    public function getHistoryNameForItem2(CommonDBTM $item, $case)
+    {
+        return $this->historyName($item);
+    }
+
     public function prepareInputForAdd($input)
     {
         if (!is_array($input)) {
@@ -216,6 +235,17 @@ class Position_Role extends CommonDBRelation
         }
         $id = isset($input['id']) ? ['id' => (int) $input['id']] : [];
         $data = InputGuard::filter($input, FieldSets::POSITION_ROLE, FieldSets::POSITION_ROLE_IMMUTABLE, true) + $id;
+        if (array_key_exists('expectation', $data)) {
+            $role = new Role();
+            $resource = new Resource();
+            if (
+                !$role->getFromDB((int) $this->fields['plugin_iam_roles_id'])
+                || !$resource->getFromDB((int) $role->fields['plugin_iam_resources_id'])
+                || $resource->isDeleted()
+            ) {
+                return self::fail(__('The role does not exist or its resource is in the trash.', 'iam'));
+            }
+        }
         if (array_key_exists('expectation', $data) && !InputGuard::enum((string) $data['expectation'], self::EXPECTATIONS)) {
             return self::fail(__('The expectation is not valid.', 'iam'));
         }
@@ -228,6 +258,10 @@ class Position_Role extends CommonDBRelation
      */
     public static function upsert(int $positionId, int $roleId, ?string $expectation): bool
     {
+        // Rights first, whatever the branch: no answer about the existence of a cell without write access
+        if (!self::canUpdate() || !self::rowWritable($positionId, $roleId)) {
+            return false;
+        }
         $existing = self::findCell($positionId, $roleId);
         $cell = new self();
         if ($expectation === null || $expectation === '') {

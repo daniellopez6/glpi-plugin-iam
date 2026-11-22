@@ -28,7 +28,8 @@ if (isset($_POST['add'])) {
     $item->update($_POST);
 } elseif (isset($_POST['delete'])) {
     $item->check((int) $_POST['id'], DELETE);
-    $item->delete(['id' => (int) $_POST['id']], true);
+    // Single delete path: the same rights checks and history as the matrix editor
+    Position_Role::upsert((int) $item->fields['plugin_iam_positions_id'], (int) $item->fields['plugin_iam_roles_id'], null);
 } else {
     throw new \Glpi\Exception\Http\AccessDeniedHttpException();
 }
