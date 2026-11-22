@@ -302,6 +302,62 @@ Clínica Del Valle):
   usa `source=agent`, deja nota permanente con su razonamiento y nunca aprueba
   (solo registra y propone).
 
+## 12 ter. Reportería y evidencia de auditoría
+
+Objetivo: que el dueño y el responsable de seguridad puedan mostrar a un **auditor
+externo de certificación ISO 27001** (etapas 1 y 2, y vigilancia) la evidencia del
+control de acceso, sin armarla a mano.
+
+Todos los reportes: período y **“a la fecha de”** (desde las fotos), filtros por
+entidad/recurso/área, mismos filtros de visibilidad que la pantalla (un dueño solo
+reporta lo suyo), PDF (GLPIPDF, como el reporte de directorio del ERM) y CSV.
+Cada PDF lleva portada con entidad, período, quién lo generó, fecha/hora, filtros
+y **huella SHA-256** del contenido; la generación queda registrada (quién, cuándo,
+qué) para poder demostrar que el documento no se alteró.
+
+**Reporte del dueño** (“Mis activos” → Reporte), por aplicación:
+- Roles y su nivel, quién tiene cada uno (nominal), puesto que lo justifica,
+  ticket y aprobación de origen.
+- Desvíos abiertos/exceptuados/resueltos en el período, con excepciones GRC y vencimiento.
+- Recertificaciones: fecha, quién validó, decisiones (mantener/revocar) y
+  cumplimiento de las revocaciones (fecha del ticket hijo).
+- Privilegiados y usos de cuentas de emergencia.
+
+**Reporte global** (todas las aplicaciones):
+- Tablero ejecutivo: cobertura (aplicaciones con dueño, matriz definida,
+  recertificación al día), desvíos por tipo/severidad y tendencia, privilegiados,
+  conflictos SoD, excepciones por vencer.
+- Matriz RBAC completa a una fecha.
+- Indicadores de eficacia del control (cláusula 9.1): % de recertificaciones en
+  término; tiempo medio entre baja del usuario y revocación de sus accesos;
+  % de accesos con ticket y aprobación; privilegiados con vencimiento y MFA;
+  desvíos cerrados en plazo.
+
+**Paquete de evidencia para auditoría** (un PDF índice + anexos CSV), organizado
+por control del Anexo A:
+
+| Control | Evidencia incluida |
+|---|---|
+| A.5.15 Control de acceso | matriz RBAC aprobada a la fecha, política/metodología IAM |
+| A.5.16 Gestión de identidades | altas, cambios de puesto y bajas del período con sus tiempos |
+| A.5.18 Derechos de acceso | accesos con ticket y aprobación; campañas y decisiones; revocaciones ejecutadas |
+| A.8.2 Acceso privilegiado | inventario de privilegiados, doble aprobación, vencimiento, MFA, cuentas separadas, usos break-glass |
+| A.5.3 Segregación de funciones | reglas SoD, conflictos detectados, resolución o excepción GRC vigente |
+
+- **Muestreo para el auditor**: selección aleatoria reproducible (semilla impresa)
+  de N accesos del período, cada uno con su traza completa
+  ticket → aprobación → acceso → recertificación → notas. Es lo que el auditor
+  suele pedir en etapa 2.
+- Excepciones (GRC) usadas en el período con aprobador y medidas compensatorias.
+- Lo que falta también se informa (“sin evidencia de recertificación en X”):
+  el reporte no maquilla brechas.
+
+El perfil **IAM – Auditor** puede generar todos los reportes en solo lectura; se
+puede dar a un auditor externo un usuario temporal con ese perfil.
+
+Reparto: 1.1 tablero + matriz a fecha (CSV); 1.2 reporte del dueño y reporte global
+en PDF con huella; 1.3 paquete de evidencia por control + muestreo.
+
 ## 13 bis. Ayuda y adopción
 
 Requisito transversal, no una entrega final: cada pantalla sale con su ayuda.
@@ -426,6 +482,7 @@ sin `addDefaultWhere`, derechos a nivel de ítem faltantes y claves de padre mut
 - Opción 1: solo registro de accesos ya otorgados; aprobación en el ticket GLPI.
 - Ayuda adecuada para adopción rápida, tanto para analistas como para el agente.
 - Multi-entidad.
+- Reportería para el dueño y global, apta para mostrar a un auditor externo de certificación ISO.
 - Cumplir buenas prácticas de desarrollo seguro: cero vulnerabilidades conocidas.
 - Repo público nuevo `daniellopez6/glpi-plugin-iam` para publicar a la comunidad.
 
