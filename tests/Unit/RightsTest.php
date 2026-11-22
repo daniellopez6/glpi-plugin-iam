@@ -120,4 +120,22 @@ final class RightsTest extends TestCase
         $this->assertSame(0, $r[Rights::REVIEW]);
         $this->assertSame(READ, $r[Rights::CONFIG]);
     }
+
+    public function testInitialValueUsesRoleDefinitionForRoleProfiles(): void
+    {
+        $comment = 'Whatever ' . Rights::marker('agent');
+        $this->assertSame(READ | CREATE, Rights::initialValue('IAM - Agente', $comment, Rights::ACCESS));
+        $this->assertSame(READ, Rights::initialValue('Renamed', $comment, Rights::CONFIG));
+        $this->assertSame(0, Rights::initialValue('IAM - Agente', $comment, Rights::APPROVE));
+        $this->assertSame(UPDATE, Rights::initialValue('x', Rights::marker('owner'), Rights::REVIEW));
+    }
+
+    public function testInitialValueFallsBackToDefaultsByName(): void
+    {
+        $this->assertSame(0, Rights::initialValue('Technician', '', Rights::ACCESS));
+        $this->assertSame(ALLSTANDARDRIGHT, Rights::initialValue('Super-Admin', 'plain', Rights::CONFIG));
+        $this->assertSame(0, Rights::initialValue('Admin', '[iam:nonexistent]', Rights::APPROVE));
+        $this->assertSame(UPDATE, Rights::initialValue('Super-Admin', '[iam:nonexistent]', Rights::APPROVE));
+        $this->assertSame(0, Rights::initialValue('Custom', '', 'unknown_right'));
+    }
 }

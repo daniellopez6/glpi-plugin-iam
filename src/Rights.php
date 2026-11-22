@@ -81,6 +81,22 @@ final class Rights
     }
 
     /**
+     * Initial value of a newly created right for an existing profile: the role definition when the comment carries
+     * a known [iam:key] marker, otherwise the default by profile name.
+     */
+    public static function initialValue(string $profileName, string $profileComment, string $right): int
+    {
+        $key = self::keyFromComment($profileComment);
+        if ($key !== null) {
+            $roles = self::roleProfiles();
+            if (isset($roles[$key])) {
+                return $roles[$key]['rights'][$right] ?? 0;
+            }
+        }
+        return self::defaults($profileName)[$right] ?? 0;
+    }
+
+    /**
      * Default values at install/update time, by standard GLPI profile name. Only Super-Admin and Admin get
      * access; every other profile (including unknown ones) gets nothing, and nobody can delete or purge.
      *

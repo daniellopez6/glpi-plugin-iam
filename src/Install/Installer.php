@@ -67,7 +67,7 @@ final class Installer
             }
             ProfileRight::addProfileRights([$right]);
             foreach ($DB->request(['FROM' => 'glpi_profiles']) as $profile) {
-                $value = Rights::defaults((string) $profile['name'])[$right] ?? 0;
+                $value = Rights::initialValue((string) $profile['name'], (string) $profile['comment'], $right);
                 if ($profile['interface'] !== 'central') {
                     $value = 0;
                 }
