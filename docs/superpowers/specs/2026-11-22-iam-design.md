@@ -260,6 +260,7 @@ Perfiles creados al instalar (marcados con `[iam:key]` como en ERM):
 | IAM – Analista | todo | configurar, registrar accesos, gestionar desvíos, pedir excepciones |
 | IAM – Dueño de activo | solo sus recursos | ver quién accede, validar/revocar en campañas, anotar |
 | IAM – Auditor | todo, lectura | historial, fotos, notas |
+| IAM – Agente | según alcance de su entidad | solo crear/proponer grants, puestos y notas vía API; nunca aprobar ni revocar sin ticket |
 
 Reglas: nadie valida sus propios accesos; si el dueño es un grupo, cualquier
 integrante valida y queda registrado quién; un técnico sin estos derechos no ve
@@ -338,6 +339,69 @@ Reparto por entrega: 1.0 incluye ayuda en campos, recuadros, leyenda de la matri
 página de Ayuda básica y `api-agente.md`; 1.1 suma el “qué hacer” por desvío y la
 biblioteca de plantillas; 1.2 el checklist, guías, caso completo y PDF de metodología.
 
+## 13 ter. Desarrollo seguro (requisito bloqueante)
+
+Es un plugin de seguridad que concentra quién accede a qué: una fuga de datos o
+una escalada de privilegios aquí es un incidente grave. Ninguna entrega sale con
+una vulnerabilidad conocida. Referencia: **OWASP ASVS 4.0 nivel 2** y OWASP Top 10.
+
+**Lecciones del ERM (ya pagadas, no repetir):** falta de filtro por entidad en
+consultas agregadas (1.5.1), entidad del hijo tomada del input y no del padre
+(1.4.1), búsqueda guardada no revalidada (1.9.2), tablas hijas expuestas por la API
+sin `addDefaultWhere`, derechos a nivel de ítem faltantes y claves de padre mutables
+(2.0.2). Cada una se convierte en una regla y un test desde 1.0.
+
+**Reglas de código:**
+- **Autorización en el servidor, en cada punto de entrada**: `front/`, `ajax/`,
+  pestañas, acciones masivas, cron, API REST. Verificar derecho + entidad + ítem
+  (`canViewItem`/`canUpdateItem`) en cada lectura y escritura; nunca confiar en que
+  la UI ocultó un botón. Default deny.
+- **API**: `addDefaultWhere` en **todas** las tablas (incluidas hijas y de relación),
+  restricción por entidad y “lo mío”; derechos a nivel de ítem en las relaciones.
+- **Sin SQL armado a mano**: solo el query builder/iterator de GLPI con parámetros;
+  ningún valor del usuario concatenado (incluidos `ORDER BY`, nombres de campo e
+  `itemtype`, que se validan contra listas blancas).
+- **`itemtype` polimórfico** (recurso, notas): lista blanca de clases permitidas;
+  nunca instanciar una clase recibida del input sin validarla.
+- **Asignación masiva**: `prepareInputForAdd/Update` con lista blanca de campos;
+  campos inmutables (persona, rol, padre, entidad heredada, autor y fecha de nota)
+  se descartan del input y se toman del servidor. La entidad de un hijo siempre
+  sale del padre.
+- **Append-only real**: notas y registros de uso sin `UPDATE`/`DELETE` en ninguna
+  capa (clase, UI, API, acciones masivas); `canPurge/canDelete` en falso; tests
+  que lo intentan por API y fallan.
+- **XSS**: Twig con autoescape, sin `|raw` salvo HTML sanitizado por GLPI; datos
+  hacia JS por `data-*`/JSON codificado, nunca interpolados en scripts. La matriz
+  y el panel nominal escapan todo texto (nombres, notas, comentarios).
+- **CSRF**: `csrf_compliant` y token en todo POST/AJAX que modifica.
+- **Separación de funciones en el propio plugin**: nadie valida sus accesos; el
+  aprobador de seguridad no puede ser quien solicita ni el beneficiario; el agente
+  (`source=agent`) no puede aprobar ni cerrar campañas.
+- **Exportaciones (CSV/PDF)**: aplican los mismos filtros de visibilidad; CSV
+  neutraliza inyección de fórmulas (`= + - @` al inicio).
+- **Datos sensibles**: el plugin no guarda contraseñas ni secretos (solo referencia
+  a Accounts Inventory); no se escriben datos personales en logs.
+- **Errores**: sin trazas ni SQL hacia el usuario; mensajes con código estable.
+- **Integraciones** (GRC, Accounts, ERM) protegidas: si la clase no existe o el
+  usuario no tiene derecho en el otro plugin, no se lee ni se escribe.
+
+**Verificación en cada entrega:**
+- Tests de autorización por perfil (Analista, Dueño, Auditor, técnico sin derecho,
+  dueño de otra entidad) sobre UI y API: cada caso “no debe ver / no debe modificar”
+  es un test.
+- PHPStan (nivel 5 mínimo, objetivo 6+), PHPCS, PHPUnit, y **Semgrep** (reglas
+  PHP/OWASP) en CI; `composer audit` para dependencias de desarrollo.
+- Revisión de seguridad del diff antes de cada release (`/security-review`) y
+  documento `docs/revision-seguridad.md` actualizado con el modelo de amenazas
+  (STRIDE de alto nivel: analista malicioso, dueño curioso, técnico sin derecho,
+  token de API robado, agente con prompt manipulado vía ticket).
+- **Agente con prompt injection**: el texto del ticket es dato no confiable; la API
+  limita al agente a crear/proponer con su propio usuario de servicio de mínimo
+  privilegio (perfil “IAM – Agente”), toda acción queda con nota y es reversible.
+- `SECURITY.md` con canal de reporte; releases solo con CI en verde.
+- Checklist de release del ERM aplica tal cual (regenerar locales, CI verde antes
+  de `gh release create`).
+
 ## 14. Entregas sugeridas
 
 1. **1.0** Catálogos (puestos, persona↔puesto, recursos, roles), matriz, grants,
@@ -362,6 +426,7 @@ biblioteca de plantillas; 1.2 el checklist, guías, caso completo y PDF de metod
 - Opción 1: solo registro de accesos ya otorgados; aprobación en el ticket GLPI.
 - Ayuda adecuada para adopción rápida, tanto para analistas como para el agente.
 - Multi-entidad.
+- Cumplir buenas prácticas de desarrollo seguro: cero vulnerabilidades conocidas.
 - Repo público nuevo `daniellopez6/glpi-plugin-iam` para publicar a la comunidad.
 
 ## 16. Llamadas de Claude (revisables)
