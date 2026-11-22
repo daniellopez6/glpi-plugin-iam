@@ -93,13 +93,7 @@ class Resource extends CommonDBTM
             return true;
         }
         return (bool) Session::haveRight(Rights::ACCESS, READ_OWNED)
-            && Ownership::isOwner($this->fields, (int) Session::getLoginUserID(), self::sessionGroups());
-    }
-
-    /** @return list<int> */
-    private static function sessionGroups(): array
-    {
-        return array_values(array_map('intval', (array) ($_SESSION['glpigroups'] ?? [])));
+            && Ownership::isOwner($this->fields, (int) Session::getLoginUserID(), Rights::currentGroupIds());
     }
 
     /**
@@ -116,7 +110,7 @@ class Resource extends CommonDBTM
         }
         $where = getEntitiesRestrictCriteria($t, '', '', true);
         if (self::ownedOnly()) {
-            $where[] = Ownership::resourceCriteria((int) Session::getLoginUserID(), self::sessionGroups(), $t);
+            $where[] = Ownership::resourceCriteria((int) Session::getLoginUserID(), Rights::currentGroupIds(), $t);
         }
         return $where;
     }
@@ -142,7 +136,7 @@ class Resource extends CommonDBTM
             "$t.is_deleted" => 0,
         ] + getEntitiesRestrictCriteria($t, '', '', true);
         if (self::ownedOnly()) {
-            $where[] = Ownership::resourceCriteria((int) Session::getLoginUserID(), self::sessionGroups(), $t);
+            $where[] = Ownership::resourceCriteria((int) Session::getLoginUserID(), Rights::currentGroupIds(), $t);
         }
         $rows = [];
         foreach ($DB->request(['FROM' => $t, 'WHERE' => $where, 'ORDER' => ["$t.name", "$t.id"]]) as $r) {

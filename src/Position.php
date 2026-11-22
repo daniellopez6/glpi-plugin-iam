@@ -119,10 +119,20 @@ class Position extends CommonTreeDropdown
         return countElementsInTable(Position_User::getTable(), ['plugin_iam_positions_id' => $id]);
     }
 
-    /** A position with assignment history is never purged; it can be deactivated instead. */
+    /** Number of direct sub-positions of a position. */
+    public static function childCount(int $id): int
+    {
+        return $id > 0 ? countElementsInTable(self::getTable(), ['plugin_iam_positions_id' => $id]) : 0;
+    }
+
+    /**
+     * A position with assignment history is never purged (it can be deactivated instead), nor one with sub-positions:
+     * GLPI would silently re-parent them, changing the tree the matrix and the expected access are built on.
+     */
     public function canPurgeItem(): bool
     {
-        return parent::canPurgeItem() && self::assignmentCount((int) ($this->fields['id'] ?? 0)) === 0;
+        $id = (int) ($this->fields['id'] ?? 0);
+        return parent::canPurgeItem() && self::assignmentCount($id) === 0 && self::childCount($id) === 0;
     }
 
     public function pre_deleteItem()
@@ -130,6 +140,14 @@ class Position extends CommonTreeDropdown
         if (self::assignmentCount((int) $this->getID()) > 0) {
             Session::addMessageAfterRedirect(
                 __('The position has assignments (the history is kept). Deactivate it instead of deleting it.', 'iam'),
+                false,
+                ERROR
+            );
+            return false;
+        }
+        if (self::childCount((int) $this->getID()) > 0) {
+            Session::addMessageAfterRedirect(
+                __('The position has sub-positions. Move or delete them first, or deactivate it instead of deleting it.', 'iam'),
                 false,
                 ERROR
             );

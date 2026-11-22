@@ -17,6 +17,8 @@
 
 namespace GlpiPlugin\Iam;
 
+use Group;
+use Group_User;
 use Profile as GlpiProfile;
 use Session;
 
@@ -61,6 +63,55 @@ final class Rights
     public static function canReadAll(): bool
     {
         return (bool) Session::haveRight(self::ACCESS, READ);
+    }
+
+    /** @var array<string, list<int>> memo of currentGroupIds() for this request, keyed by user and active entities */
+    private static array $groupsMemo = [];
+
+    /**
+     * Groups of the logged-in user as they are NOW in the database (glpi_groups_users), with the semantics of GLPI 12
+     * Session::loadGroups(): groups of the active entities (recursion-aware), plus child groups through
+     * recursive_membership. Ownership never trusts $_SESSION['glpigroups'], which a long-lived legacy API session keeps
+     * from its login (GLPI refreshes it in a kernel listener that runs before the API restores the token session).
+     * Memoized for the duration of the request.
+     *
+     * @return list<int>
+     */
+    public static function currentGroupIds(): array
+    {
+        global $DB;
+        $uid = (int) Session::getLoginUserID();
+        if ($uid <= 0) {
+            return [];
+        }
+        $active = array_map('intval', (array) ($_SESSION['glpiactiveentities'] ?? []));
+        $key = $uid . ':' . implode(',', $active);
+        if (isset(self::$groupsMemo[$key])) {
+            return self::$groupsMemo[$key];
+        }
+        $gt = Group::getTable();
+        $gut = Group_User::getTable();
+        $restrict = getEntitiesRestrictCriteria($gt, 'entities_id', $active, true);
+        $direct = [];
+        $recursive = false;
+        foreach (
+            $DB->request([
+                'SELECT'     => ["$gut.groups_id", "$gt.recursive_membership"],
+                'FROM'       => $gut,
+                'INNER JOIN' => [$gt => ['ON' => [$gt => 'id', $gut => 'groups_id']]],
+                'WHERE'      => ["$gut.users_id" => $uid] + $restrict,
+            ]) as $row
+        ) {
+            $direct[] = $row;
+            $recursive = $recursive || (int) ($row['recursive_membership'] ?? 0) === 1;
+        }
+        $candidates = [];
+        if ($recursive) {
+            foreach ($DB->request(['SELECT' => ["$gt.id", "$gt.groups_id", "$gt.recursive_membership"], 'FROM' => $gt, 'WHERE' => $restrict]) as $row) {
+                $candidates[] = $row;
+            }
+        }
+        return self::$groupsMemo[$key] = GroupMembership::expand($direct, $candidates);
     }
 
     /** The user can only see own records. */

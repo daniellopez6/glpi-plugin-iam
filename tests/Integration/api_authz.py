@@ -22,8 +22,8 @@ Python 3 standard library only. Credentials never live in the repository:
   IAM_ADMIN_TOKEN   user token of a Super-Admin (overrides the file): group membership changes, reference reads.
   IAM_GLPI_URL      base URL of GLPI (default http://192.168.88.4).
 
-Every case prints one line (case, user, expected, got, PASS/FAIL). Known plugin bugs are listed as XFAIL and do not
-change the exit code. Exit code: 0 all PASS, 1 any FAIL, 2 configuration error.
+Every case prints one line (case, user, expected, got, PASS/FAIL). Known plugin bugs, when a case is marked xfail, are
+listed separately as XFAIL and do not change the exit code (none at the moment). Exit code: 0 all PASS, 1 any FAIL, 2 configuration error.
 
 Side effects on the demo data (append-only register, cannot be purged by design): each run adds one grant
 (source=agent, justification "[iam-authz] ...") and one note on it. Temporary positions are purged at the end;
@@ -373,7 +373,7 @@ def main():
             check('F4 after restore GET Resource/%d' % RES_SAPFI, 'iam.dueno (new API session + web)', '200, 200', '%s, %s' % (code, code_web),
                   code == 200 and code_web == 200)
 
-    # -- Known plugin bug (ledger): purge of a position with child positions must be refused -------------------------
+    # -- Tree integrity: purge of a position with child positions is refused (even for Super-Admin) -------------------------
     stamp = time.strftime('%H%M%S')
     code, parent, _ = analyst.add('Position', {'name': '[iam-authz] T13 parent ' + stamp, 'entities_id': ENT_FIN, 'comment': RUN_TAG})
     code2, child, _ = analyst.add('Position', {'name': '[iam-authz] T13 child ' + stamp, 'entities_id': ENT_FIN, 'plugin_iam_positions_id': parent or 0,
@@ -386,9 +386,9 @@ def main():
         code, _ = admin.delete('Position', parent, True)
         p_code, _ = admin.get('Position', parent)
         _, child_row = admin.get('Position', child)
-        check('B1 purge Position with a child position', 'glpi (Super-Admin)', 'refused, parent kept',
+        check('B1 purge Position with a child position', 'glpi (Super-Admin)', 'refused, parent kept, child unchanged',
               'HTTP %s parent_exists=%s child.parent=%s' % (code, p_code == 200, child_row.get('plugin_iam_positions_id')),
-              denied(code) and p_code == 200, xfail=True)
+              denied(code) and p_code == 200 and int(child_row.get('plugin_iam_positions_id') or 0) == parent)
         admin.delete('Position', child, True)
         admin.delete('Position', parent, True)
         leftover = [i for i in (parent, child) if admin.get('Position', i)[0] == 200]

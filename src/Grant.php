@@ -153,12 +153,6 @@ class Grant extends CommonDBTM
         return (int) Session::getLoginUserID();
     }
 
-    /** @return list<int> */
-    private static function sessionGroups(): array
-    {
-        return array_values(array_map('intval', (array) ($_SESSION['glpigroups'] ?? [])));
-    }
-
     private static function fullEditor(): bool
     {
         return (bool) Session::haveRight(self::$rightname, UPDATE);
@@ -185,7 +179,7 @@ class Grant extends CommonDBTM
     /** @param array<string,mixed> $resource */
     private static function owns(array $resource): bool
     {
-        return Ownership::isOwner($resource, self::sessionUser(), self::sessionGroups());
+        return Ownership::isOwner($resource, self::sessionUser(), Rights::currentGroupIds());
     }
 
     /**
@@ -222,7 +216,7 @@ class Grant extends CommonDBTM
         }
         $where = getEntitiesRestrictCriteria($rt, '', '', true);
         if (!Rights::canReadAll()) {
-            $where[] = Ownership::resourceCriteria(self::sessionUser(), self::sessionGroups(), $rt);
+            $where[] = Ownership::resourceCriteria(self::sessionUser(), Rights::currentGroupIds(), $rt);
         }
         return ["$t.plugin_iam_resources_id" => new QuerySubQuery(['SELECT' => "$rt.id", 'FROM' => $rt, 'WHERE' => $where])];
     }

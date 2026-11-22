@@ -151,8 +151,7 @@ class Note extends CommonDBTM
             return false;
         }
         $resource = self::resourceOf($target);
-        $groups = array_values(array_map('intval', (array) ($_SESSION['glpigroups'] ?? [])));
-        return $resource !== null && Ownership::isOwner($resource, (int) Session::getLoginUserID(), $groups);
+        return $resource !== null && Ownership::isOwner($resource, (int) Session::getLoginUserID(), Rights::currentGroupIds());
     }
 
     // Item rights

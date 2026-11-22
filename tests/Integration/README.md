@@ -23,7 +23,10 @@ python3 tests/Integration/api_authz.py
 Prints one line per case (case, user, expected, got, PASS/FAIL), then the known plugin bugs (XFAIL, or XPASS once
 fixed). Exit code 0 when every non-XFAIL case passes, 1 on any failure, 2 on a configuration error.
 
-## Side effects
+## Side effects (by design)
+
+The cases never assume fixed row counts: lists are compared with what an administrator reads in the same run, so the
+rows left by earlier runs do not change the result.
 
 - Each run adds one grant (`source=agent`, justification `[iam-authz] T13 run ...`) and one note on it: the register is
   append-only by design and cannot be purged.
