@@ -6,15 +6,13 @@ and resources already registered in your GLPI inventory.
 
 > Status: **1.0.0 (beta)**. Available in English, Spanish (Argentina) and Spanish (Spain).
 
-![Access matrix with the people of a cell open](docs/screenshots/matrix.png)
-
 ## What 1.0 does
 
 - **Positions** (organisation functions grouped in areas, tree) and **person-to-position assignments** with
   holder / substitute / temporary type and active period. A person may hold several positions; only active ones
   count for the expected access.
-- **Resources**: any GLPI inventory item (computer, software, appliance, network equipment, custom assets...) is
-  registered as a protected resource with an owner (user or group), criticality and review frequency. A tab on the
+- **Resources**: a GLPI inventory item (software, appliance, computer, network equipment, database or database
+  instance, domain, certificate or supplier) is registered as a protected resource with an owner (user or group), criticality and review frequency. A tab on the
   inventory item shows its roles and accesses.
 - **Roles** per resource with level (standard / sensitive / privileged) and break-glass flag.
 - **Access matrix** (position x resource/role): allowed, on request or forbidden. The visual matrix collapses to
@@ -24,7 +22,8 @@ and resources already registered in your GLPI inventory.
 - **Access register (grants)**: a named access of a person on a role with ticket, approver, security approver,
   expiry, MFA flag and justification. Grants are never deleted: they are revoked. Tabs on users and tickets.
 - **Permanent audit notes**: append-only notes on grants, resources and assignments. Nobody can edit or delete them.
-- **Quick case search** across grants, people, resources and tickets.
+- **Quick case search** across grants, people, resources and tickets. Whole-register readers also find inactive
+  accounts and leavers (people without any authorization left), whose history stays visible to them.
 - **In-app help and glossary** by role, "What is this?" boxes with ISO 27001:2022 references.
 - **Role-based access** per profile and entity, with an "own resources" scope for asset owners, and four
   ready-to-assign profiles (see below). Entity of every record follows the entity of the resource.
@@ -45,14 +44,18 @@ The plugin supports your ISMS evidence; it does not make an organisation complia
 
 ## Profiles and rights
 
-The installer creates four profiles (existing profiles are never modified):
+The installer creates four profiles. Only Super-Admin and Admin receive IAM rights at install; no core rights of
+existing profiles are changed; the IAM role profiles are created with the core read rights they need:
 
-| Profile | Purpose |
-| --- | --- |
-| IAM - Analista | Maintains catalogue, matrix and register. Does not review or approve. |
-| IAM - Dueño de activo | Sees and updates only the resources they own. |
-| IAM - Auditor | Read-only on everything, including the catalogue. |
-| IAM - Agente | Registers requests and grants, reads the catalogue (for API/AI agents). Cannot review or approve. |
+| Profile | Purpose | Core GLPI rights |
+| --- | --- | --- |
+| IAM - Analista | Maintains catalogue, matrix and register. Does not review or approve. | Tickets (see all), users and inventory read |
+| IAM - Dueño de activo | Sees and updates only the resources they own. | None |
+| IAM - Auditor | Read-only on everything, including the catalogue. | Users and inventory read |
+| IAM - Agente | Registers requests and grants, reads the catalogue (for API/AI agents). Cannot review or approve. | Tickets (see all), users read |
+
+"Inventory read" is READ on every item type that can back a resource: `software`, `appliance`, `computer`,
+`networking`, `database` (databases and instances), `domain`, `certificate` and `contact_enterprise` (suppliers).
 
 Rights: `plugin_iam` (access), `plugin_iam_config` (catalogue and matrix), `plugin_iam_review`,
 `plugin_iam_approve` and `plugin_iam_report`, configurable in Administration > Profiles > "Access governance (IAM)".
@@ -79,11 +82,7 @@ Tabs on core items (User, Ticket, inventory) additionally need the core read rig
 
 ## Screenshots
 
-![Quick case search](docs/screenshots/search.png)
-
-![In-app help](docs/screenshots/help.png)
-
-(Screenshots show the Spanish interface with fictitious demo data.)
+Screenshots: coming soon.
 
 ## Installation
 
@@ -97,8 +96,19 @@ php ../bin/console plugin:activate iam
 php ../bin/console cache:clear
 ```
 
-Logged-in users must log in again (or switch profile) to see the new menu. Upgrade note: the installer never
-modifies existing role profiles; an existing "IAM - Agente" profile needs the core right `user` READ set manually.
+Logged-in users must log in again (or switch profile) to see the new menu. If you installed a pre-release build,
+the installer does not update the existing IAM role profiles: set their core rights as in the table above
+(Administration > Profiles).
+
+## Uninstall and data retention
+
+**Uninstalling the plugin deletes the access register.** It drops every `glpi_plugin_iam_*` table (positions,
+resources, matrix, grants and the append-only notes, i.e. your audit evidence) and the IAM rights. Back up or export
+the `glpi_plugin_iam_*` tables first; to stop using the plugin without losing the evidence, deactivate it instead.
+
+**Do not purge a GLPI entity that holds IAM data; reassign it first.** GLPI does not move plugin rows when an entity
+is purged: the IAM records keep the deleted entity and become invisible to every session (they stay in the database
+and can only be recovered by SQL).
 
 Documentation (Spanish): [user manual](docs/manual-usuario.md), [AI-agent API guide](docs/api-agente.md).
 

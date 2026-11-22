@@ -207,6 +207,17 @@ Se crean al instalar el plugin y se reconocen por la marca `[iam:clave]` al fina
 | IAM - Auditor | Todo, solo lectura | Leer registro, catálogo y notas |
 | IAM - Agente | Según su entidad | Por API: leer el catálogo, crear otorgamientos con ticket y notas. Nunca aprueba ni revoca. Ver `docs/api-agente.md` |
 
+Además de los derechos IAM, los perfiles traen los derechos de lectura del núcleo de GLPI que necesitan:
+el Analista y el Auditor leen personas (`user`) y los elementos de inventario que respaldan recursos
+(software, appliances, computadoras, equipos de red, bases de datos, dominios, certificados y proveedores);
+el Analista y el Agente ven los tickets; el Agente lee personas. El Dueño de activo no recibe derechos del núcleo.
+Al instalar, solo Super-Admin y Admin reciben derechos IAM; no se cambia ningún derecho del núcleo de los
+perfiles existentes.
+
+Con lectura de todo el registro (Analista, Auditor) también se ven las **bajas**: una persona sin ninguna
+autorización en GLPI conserva sus asignaciones y otorgamientos visibles, y la búsqueda rápida muestra las
+cuentas inactivas con la insignia *Inactivo*.
+
 Un técnico sin derechos IAM no ve el menú ni las pestañas. El menú *Ayuda y glosario* lo ve cualquiera
 que pueda abrir alguna pantalla de IAM; muestra primero la guía del rol del perfil activo (si el
 perfil no es un perfil IAM, la del analista).
@@ -216,6 +227,18 @@ perfil no es un perfil IAM, la del analista).
 La entidad de un otorgamiento es la de su recurso: la visibilidad sigue al dueño de la aplicación, no a
 la entidad de la persona. Un analista de una entidad solo ve los recursos y otorgamientos de sus
 entidades activas (con subentidades si están incluidas).
+
+**No purgue una entidad que tenga datos IAM; reasígnelos antes.** GLPI no traslada las filas del plugin al
+purgar una entidad: recursos, roles, celdas, otorgamientos, notas, puestos y asignaciones conservan la
+entidad borrada y quedan invisibles para todos (siguen en la base y solo se recuperan por SQL).
+
+## 7 bis. Desinstalación y conservación de datos
+
+**Desinstalar el plugin borra el registro.** La desinstalación elimina todas las tablas
+`glpi_plugin_iam_*` (puestos, recursos, matriz, otorgamientos y notas permanentes, es decir, la evidencia)
+y los derechos IAM de los perfiles. Antes de desinstalar, respalde o exporte esas tablas
+(por ejemplo `mysqldump glpi $(mysql -N -e "SHOW TABLES LIKE 'glpi\_plugin\_iam\_%'" glpi)`). Para dejar de
+usar el plugin sin perder la evidencia, desactívelo en lugar de desinstalarlo.
 
 ## 8. Límites de la versión 1.0
 

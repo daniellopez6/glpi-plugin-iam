@@ -1,7 +1,7 @@
 # Revisión de seguridad (OWASP ASVS 4.0 L2)
 
 Modelo de amenazas y verificación de autorización del plugin IAM 1.0 (spec §12, §12 bis, §13 ter). Fecha de esta
-revisión: 2026-11-22 (Tarea 13), sobre la rama `feat/1.0` desplegada en el laboratorio GLPI 12.0.2 (192.168.88.4).
+revisión: 2026-11-22 (Tarea 13), sobre la rama `feat/1.0` desplegada en un GLPI 12.0.2 de laboratorio.
 La revisión de seguridad de todo el diff de la rama la hace la revisión final de la rama (reemplaza el paso
 `/security-review` del plan).
 
@@ -76,8 +76,11 @@ La revisión de seguridad de todo el diff de la rama la hace la revisión final 
 | --- | --- | --- |
 | R-1 | **Sesión de API viva conservaba los grupos del login.** El plugin decidía "lo mío" con `$_SESSION['glpigroups']`. En la web GLPI 12 lo refresca en cada petición (`SessionVariables` compara `glpigroups_cache_date` con `last_group_change`), pero la API legacy restaura la sesión del token dentro del controlador (`API::retrieveSession()`), después de ese listener: un dueño quitado del grupo seguía viendo el recurso con la misma sesión de API (api_authz F4, Revisión 6). | **Corregido** (Tarea 13, ronda 1): `Rights::currentGroupIds()` lee las pertenencias actuales de `glpi_groups_users` en cada petición; ningún camino de propiedad usa `$_SESSION['glpigroups']`. F4 pasa (Revisión 7). |
 | R-2 | **Purga de un puesto con puestos hijos.** GLPI (`CommonTreeDropdown::pre_deleteItem`) re-colgaba los hijos del abuelo sin aviso (Super-Admin: HTTP 200, el hijo pasaba a la raíz). | **Corregido** (Tarea 13, ronda 1): `Position::canPurgeItem()` y `pre_deleteItem()` rechazan la purga si hay subpuestos ("El puesto tiene subpuestos…"). B1 pasa como rechazo esperado (Revisión 7). |
-| R-3 | **Purga de una entidad** (no ejecutado, análisis de GLPI 12): `Entity::pre_deleteItem()` solo impide la raíz y entidades con sub-entidades; `cleanDBonPurge()` borra `Profile_User` de la entidad y relaciones de KB/recordatorios/RSS; `CommonDBTM::cleanRelationData()` mueve a la entidad 0 (`_replace_by` o 0) las filas de las tablas declaradas en `inc/relation.constant.php` (tickets, usuarios, grupos, inventario…). El plugin no declara `plugin_iam_getDatabaseRelations`, así que sus filas **conservan el `entities_id` de la entidad borrada**: recursos, roles, celdas, otorgamientos, notas, puestos y asignaciones quedan invisibles para todas las sesiones (ninguna tiene esa entidad activa) pero no se pierden; los tickets referenciados pasan a la raíz. Si se declararan relaciones, GLPI llamaría `update(['entities_id'=>0])`, que el plugin descarta (inmutable) o rechaza. | Aceptado para 1.0: documentar en el manual "no purgar una entidad con datos IAM; reasignar antes"; la evidencia sigue en la base y es recuperable por SQL. Evaluar en 1.1 un bloqueo (`pre_deleteItem` hook sobre Entity). |
-| D-1 | Perfiles Analista y Agente con `ticket` READALL: procesan pedidos de acceso desde tickets y el otorgamiento debe referenciar un ticket visible. **Ampliado (Tarea 14, ronda 1):** el perfil Agente también lee personas (`user` READ, para resolver al beneficiario). **Alcance real:** ese derecho del núcleo de GLPI da al agente la lectura completa de `User` en sus entidades activas (búsqueda, logins, correos, teléfonos, subelementos de perfiles y grupos), y el agente es conducido por texto de tickets no confiable (riesgo de exfiltración de datos personales por inyección de instrucciones; se mitiga con el mínimo de entidades del usuario de servicio y las reglas de la guía). No tiene derechos sobre seguimientos. Pendiente de decisión: leer validaciones de tickets exige un bit de crear o validar de `ticketvalidation` (READ solo no basta, comprobado en la VM), por lo que no se concedió. El texto del ticket y los comentarios de las validaciones son entrada no confiable para el agente. Una asignación persona-puesto creada en sesión de agente exige `tickets_id` (`agent_requires_ticket`, defensa en profundidad). | Aceptado (ledger Tareas 8 y 14). |
+| R-3 | **Purga de una entidad** (no ejecutado, análisis de GLPI 12): `Entity::pre_deleteItem()` solo impide la raíz y entidades con sub-entidades; `cleanDBonPurge()` borra `Profile_User` de la entidad y relaciones de KB/recordatorios/RSS; `CommonDBTM::cleanRelationData()` mueve a la entidad 0 (`_replace_by` o 0) las filas de las tablas declaradas en `inc/relation.constant.php` (tickets, usuarios, grupos, inventario…). El plugin no declara `plugin_iam_getDatabaseRelations`, así que sus filas **conservan el `entities_id` de la entidad borrada**: recursos, roles, celdas, otorgamientos, notas, puestos y asignaciones quedan invisibles para todas las sesiones (ninguna tiene esa entidad activa) pero no se pierden; los tickets referenciados pasan a la raíz. Si se declararan relaciones, GLPI llamaría `update(['entities_id'=>0])`, que el plugin descarta (inmutable) o rechaza. | Aceptado para 1.0 y documentado en el README y el manual ("no purgar una entidad con datos IAM; reasignar antes"); la evidencia sigue en la base y es recuperable por SQL. Evaluar en 1.1 un bloqueo (`pre_deleteItem` hook sobre Entity). |
+| R-4 | **Purga de un puesto con celdas de la matriz.** Las expectativas (`Position_Role`) del puesto quedaban huérfanas. | **Corregido** (revisión final): `Position::canPurgeItem()` y `pre_deleteItem()` rechazan la purga mientras el puesto tenga celdas ("quite primero sus expectativas de la matriz"). api_authz B2. |
+| R-5 | **Bajas (leavers) invisibles.** Una persona sin ninguna autorización (`Profile_User`) desaparecía de las asignaciones y de la búsqueda de casos, ocultando su historial al auditor. | **Corregido** (revisión final): con lectura de todo el registro (`plugin_iam` READ) se ve a quien no tiene ninguna autorización cuando su asignación (puesto visible) u otorgamiento es visible; solo lectura (cambiar la asignación sigue exigiendo a la persona en una entidad activa). Quien tiene autorizaciones solo en entidades no visibles sigue oculto; los dueños no cambian. La búsqueda muestra cuentas inactivas con insignia. `PersonVisibilityTest`; api_authz L1-L8. |
+| R-6 | **La desinstalación borra el registro.** `plugin_iam_uninstall` elimina todas las tablas `glpi_plugin_iam_*` (evidencia incluida). | Aceptado para 1.0 y documentado (README y manual: respaldar o exportar antes de desinstalar). Evaluar en 1.1 conservar las tablas. |
+| D-1 | Derechos del núcleo de GLPI de los perfiles de rol. **Analista:** `ticket` READALL (procesa pedidos desde tickets; el otorgamiento referencia un ticket visible), `user` READ y READ de inventario detrás de los recursos (`software`, `appliance`, `computer`, `networking`, `database` —Database y DatabaseInstance—, `domain`, `certificate`, `contact_enterprise` —Supplier—) para vincular recursos y abrir las pestañas IAM. **Auditor:** `user` READ y el mismo READ de inventario, sin tickets. **Agente:** `ticket` READALL y `user` READ (resolver al beneficiario); sin seguimientos ni `ticketvalidation` (GLPI exige un bit de crear o validar: la aprobación la comprueba el analista). **Dueño:** ninguno. Alcance real: `user` READ es la lectura completa de usuarios en las entidades activas (logins, correos, teléfonos), y el agente es conducido por texto de tickets no confiable (riesgo de exfiltración por inyección de instrucciones; mitigado con el mínimo de entidades del usuario de servicio y las reglas de `docs/api-agente.md`). Una asignación creada en sesión de agente exige `tickets_id` (`agent_requires_ticket`). El instalador no modifica perfiles existentes: en una instalación previa estos derechos se ajustan a mano. | Aceptado (ledger Tareas 8 y 14, revisión final). |
 | D-2 | `isEntityAssign()=false` en Grant, Role, Position_Role y Note: el filtro de entidad de GLPI se desactiva y `visibilityCriteria()` (+ `canViewItem()`) es el único predicado. Un error ahí expone todo; por eso la paridad está pinneada (`ScopeTest`) y verificada por API (E1, F2, O1). | Aceptado (ledger Tareas 8 y 10). |
 | D-3 | La insignia "agente" en la bitácora se infiere de los perfiles actuales del autor: es una pista visual, no evidencia. La evidencia es `Grant.source` (servidor). | Aceptado (ledger Tarea 9). |
 | D-4 | CSRF: GLPI 12 lo aplica en el kernel (`CheckCsrfListener`/`CsrfChecker`: Sec-Fetch-Site/Origin) para todo front de plugin; no se usa `csrf_token()`. Las plantillas de pestañas de puestos/roles todavía llaman `csrf_token()` (aviso de deprecación, menor). | Aceptado. |
@@ -90,7 +93,7 @@ La revisión de seguridad de todo el diff de la rama la hace la revisión final 
 
 ### Revisión 3 - recurso vinculado a un elemento de inventario eliminado (Tarea 6)
 
-Entorno: GLPI 12.0.2 en 192.168.88.4, entidad Finandina (id 1), sesión Super-Admin.
+Entorno: GLPI 12.0.2 de laboratorio, entidad Empresa A (demo) (id 1), sesión Super-Admin.
 
 1. Se creó el Software descartable id 1410 ("Disposable test software (IAM T6)") y el recurso id 2 apuntando a él.
 2. Se envió el Software a la papelera (API, `is_deleted=1`): el formulario del recurso responde HTTP 200 y muestra la
@@ -121,7 +124,7 @@ Entorno: GLPI 12.0.2 en 192.168.88.4, entidad Finandina (id 1), sesión Super-Ad
 
 ### Revisión 4 - notas permanentes: solo inserción (Tarea 9)
 
-Entorno: GLPI 12.0.2 en 192.168.88.4, árbol de la Tarea 9 desplegado y caché limpiada. Usuarios temporales (borrados al
+Entorno: GLPI 12.0.2 de laboratorio, árbol de la Tarea 9 desplegado y caché limpiada. Usuarios temporales (borrados al
 final): auditor (perfil "IAM - Auditor", entidad 1), dueño (perfil "IAM - Dueño de activo", entidad 1, miembro del grupo
 3 = dueño del recurso 1), analista de la entidad 2 y agente (perfil "IAM - Agente", entidad 1).
 
@@ -209,7 +212,7 @@ elemento respondiera 200. Predicados:
 Prueba pura de paridad (`ScopeTest`): toda tabla de `Schema::scope()` con clase en 1.0 está cubierta por
 `Scope::criteriaFor()` y las tablas de tareas posteriores no tienen clase todavía.
 
-Entorno: árbol de la Tarea 10 en 192.168.88.4, caché limpiada. Datos creados (se conservan): recurso 5 "Correo
+Entorno: árbol de la Tarea 10 en el GLPI de laboratorio, caché limpiada. Datos creados (se conservan): recurso 5 "Correo
 corporativo (demo IAM T10, raiz recursivo)" en la entidad raíz (0), recursivo, grupo dueño 5; rol 7 "Buzon (demo IAM
 T10)"; celda 9 (puesto 2 de la entidad 1 × rol 7, `allowed`, entidad 0). Usuarios temporales (borrados al final):
 analista de la entidad 1, dueño (entidad 1, grupo 3), analista de la entidad 2 y auditor (entidad 1), todos sin
@@ -235,14 +238,14 @@ filas de perfiles y grupos borrados (verificado 0).
 
 ### Revisión 6 - verificación de autorización por perfil, API y web (Tarea 13)
 
-Entorno: GLPI 12.0.2 en 192.168.88.4, árbol de `feat/1.0` en 80443c2 desplegado (sumas md5 de `src/`, `front/`,
+Entorno: GLPI 12.0.2 de laboratorio, árbol de `feat/1.0` en 80443c2 desplegado (sumas md5 de `src/`, `front/`,
 `ajax/`, `templates/`, `hook.php` y `setup.php` idénticas al repositorio), datos de demo de la Tarea 15 y
-`demo_iam.php --profiles` re-ejecutado con el nuevo usuario `iam.clinica` (perfil IAM - Analista solo en la entidad 2,
-Clínica Del Valle, sin recursión; contraseñas y tokens rotados, fuera del repositorio).
+`demo_iam.php --profiles` re-ejecutado con un nuevo usuario analista de la Empresa B (`analyst-B` en la salida; perfil IAM - Analista solo en la entidad 2,
+Empresa B (demo), sin recursión; contraseñas y tokens rotados, fuera del repositorio).
 
 Herramienta: `tests/Integration/api_authz.py` (Python 3, solo stdlib; ver `tests/Integration/README.md`). Usuarios:
 `iam.analista`, `iam.dueno` (grupo 8, dueño de SAP-FI), `iam.auditor`, `iam.agente`, `iam.tecnico` (perfil por defecto
-Self-Service y perfil Technician), `iam.clinica` y un Super-Admin. Casos web con sesión de cookies (formulario de login
+Self-Service y perfil Technician), `analyst-B` y un Super-Admin. Casos web con sesión de cookies (formulario de login
 de GLPI 12, cambio de perfil por `POST /Session/ChangeProfile`).
 
 Hallazgos:
@@ -256,7 +259,7 @@ Hallazgos:
    purgar puestos (sin PURGE en CONFIG, B0).
 3. El resto (77 casos) pasa: técnico sin acceso por API ni web y sin menú (cierra el pendiente de la Tarea 5), dueño
    limitado a sus recursos y sin datos de "faltantes" en la matriz, servicio compartido (otorgamiento 54) visible solo
-   desde la entidad del recurso, analista de la entidad 2 sin filas de Finandina en los 7 itemtypes, auditor solo
+   desde la entidad del recurso, analista de la entidad 2 sin filas de Empresa A en los 7 itemtypes, auditor solo
    lectura, agente sin activar sin ticket ni revocar, notas inalterables también para Super-Admin, `itemtype=User`
    rechazado e inyección en `searchText` inocua.
 
@@ -291,19 +294,19 @@ O3 GET Grant/10 (own resource)               iam.dueno                          
 O4 PUT Grant/10 users_id                     iam.dueno                          users_id unchanged                 HTTP 200 users_id 17->17                     PASS
 O5 GET Resource/7                            iam.dueno                          200                                200                                          PASS
 O5 GET Resource/6                            iam.dueno                          403                                403                                          PASS
-F2 GET Grant/54 + in list                    iam.clinica (entity 2)             200, listed                        200 listed=True                              PASS
+F2 GET Grant/54 + in list                    analyst-B (Empresa B (demo))       200, listed                        200 listed=True                              PASS
 F2 GET Grant/54 + in list                    iam.analista (entity 1)            403/404, not listed                403 listed=False                             PASS
 F2 GET Grant/54 + in list                    iam.dueno (entity 1, not owner of  403/404, not listed                403 listed=False                             PASS
-E1 list Resource: no entity-1 rows           iam.clinica                        no entities_id=1                   HTTP 200 rows=3 entity1=                     PASS
-E1 list Role: no entity-1 rows               iam.clinica                        no entities_id=1                   HTTP 200 rows=6 entity1=                     PASS
-E1 list Position: no entity-1 rows           iam.clinica                        no entities_id=1                   HTTP 200 rows=5 entity1=                     PASS
-E1 list Position_Role: no entity-1 rows      iam.clinica                        no entities_id=1                   HTTP 200 rows=11 entity1=                    PASS
-E1 list Position_User: no entity-1 rows      iam.clinica                        no entities_id=1                   HTTP 200 rows=4 entity1=                     PASS
-E1 list Grant: no entity-1 rows              iam.clinica                        no entities_id=1                   HTTP 200 rows=6 entity1=                     PASS
-E1 list Note: no entity-1 rows               iam.clinica                        no entities_id=1                   HTTP 200 rows=2 entity1=                     PASS
-E1 list Grant: own entity visible            iam.clinica                        entity-2 grants listed             rows=6                                       PASS
-E2 POST Grant on Finandina resource          iam.clinica                        refused                            HTTP 400 id=None                             PASS
-E3 GET Resource/6 (Finandina)                iam.clinica                        403/404                            403                                          PASS
+E1 list Resource: no entity-1 rows           analyst-B                          no entities_id=1                   HTTP 200 rows=3 entity1=                     PASS
+E1 list Role: no entity-1 rows               analyst-B                          no entities_id=1                   HTTP 200 rows=6 entity1=                     PASS
+E1 list Position: no entity-1 rows           analyst-B                          no entities_id=1                   HTTP 200 rows=5 entity1=                     PASS
+E1 list Position_Role: no entity-1 rows      analyst-B                          no entities_id=1                   HTTP 200 rows=11 entity1=                    PASS
+E1 list Position_User: no entity-1 rows      analyst-B                          no entities_id=1                   HTTP 200 rows=4 entity1=                     PASS
+E1 list Grant: no entity-1 rows              analyst-B                          no entities_id=1                   HTTP 200 rows=6 entity1=                     PASS
+E1 list Note: no entity-1 rows               analyst-B                          no entities_id=1                   HTTP 200 rows=2 entity1=                     PASS
+E1 list Grant: own entity visible            analyst-B                          entity-2 grants listed             rows=6                                       PASS
+E2 POST Grant on Empresa A resource          analyst-B                          refused                            HTTP 400 id=None                             PASS
+E3 GET Resource/6 (Empresa A)                analyst-B                          403/404                            403                                          PASS
 A1 POST Grant                                iam.auditor                        refused                            HTTP 400 id=None                             PASS
 A2 GET Grant list + Grant/22                 iam.auditor                        200, rows>0                        HTTP 200 rows=52 GET=200                     PASS
 G1 POST Grant without ticket                 iam.agente                         refused                            HTTP 400 id=None                             PASS
@@ -358,7 +361,7 @@ PASS 77  FAIL 2  XFAIL 1  XPASS 0
 ### Revisión 7 - ronda de corrección 1 (Tarea 13): grupos actuales y purga de puestos con subpuestos
 
 Cambios: `Rights::currentGroupIds()` + `GroupMembership::expand()` reemplazan `$_SESSION['glpigroups']` en
-`Resource`, `Grant` y `Note` (R-1); `Position` no se purga con subpuestos (R-2). Desplegado en 192.168.88.4 (md5 de
+`Resource`, `Grant` y `Note` (R-1); `Position` no se purga con subpuestos (R-2). Desplegado en el GLPI de laboratorio (md5 de
 `src/`, `front/`, `ajax/`, `templates/`, `locales/`, `hook.php`, `setup.php` idénticas al árbol local) y
 `bin/console cache:clear`. El caso B1 dejó de ser XFAIL y es un rechazo esperado. `/var/log/glpi/php-errors.log` sin
 entradas del plugin.
@@ -392,19 +395,19 @@ O3 GET Grant/10 (own resource)               iam.dueno                          
 O4 PUT Grant/10 users_id                     iam.dueno                          users_id unchanged                 HTTP 200 users_id 17->17                     PASS
 O5 GET Resource/7                            iam.dueno                          200                                200                                          PASS
 O5 GET Resource/6                            iam.dueno                          403                                403                                          PASS
-F2 GET Grant/54 + in list                    iam.clinica (entity 2)             200, listed                        200 listed=True                              PASS
+F2 GET Grant/54 + in list                    analyst-B (Empresa B (demo))       200, listed                        200 listed=True                              PASS
 F2 GET Grant/54 + in list                    iam.analista (entity 1)            403/404, not listed                403 listed=False                             PASS
 F2 GET Grant/54 + in list                    iam.dueno (entity 1, not owner of  403/404, not listed                403 listed=False                             PASS
-E1 list Resource: no entity-1 rows           iam.clinica                        no entities_id=1                   HTTP 200 rows=3 entity1=                     PASS
-E1 list Role: no entity-1 rows               iam.clinica                        no entities_id=1                   HTTP 200 rows=6 entity1=                     PASS
-E1 list Position: no entity-1 rows           iam.clinica                        no entities_id=1                   HTTP 200 rows=5 entity1=                     PASS
-E1 list Position_Role: no entity-1 rows      iam.clinica                        no entities_id=1                   HTTP 200 rows=11 entity1=                    PASS
-E1 list Position_User: no entity-1 rows      iam.clinica                        no entities_id=1                   HTTP 200 rows=4 entity1=                     PASS
-E1 list Grant: no entity-1 rows              iam.clinica                        no entities_id=1                   HTTP 200 rows=6 entity1=                     PASS
-E1 list Note: no entity-1 rows               iam.clinica                        no entities_id=1                   HTTP 200 rows=2 entity1=                     PASS
-E1 list Grant: own entity visible            iam.clinica                        entity-2 grants listed             rows=6                                       PASS
-E2 POST Grant on Finandina resource          iam.clinica                        refused                            HTTP 400 id=None                             PASS
-E3 GET Resource/6 (Finandina)                iam.clinica                        403/404                            403                                          PASS
+E1 list Resource: no entity-1 rows           analyst-B                          no entities_id=1                   HTTP 200 rows=3 entity1=                     PASS
+E1 list Role: no entity-1 rows               analyst-B                          no entities_id=1                   HTTP 200 rows=6 entity1=                     PASS
+E1 list Position: no entity-1 rows           analyst-B                          no entities_id=1                   HTTP 200 rows=5 entity1=                     PASS
+E1 list Position_Role: no entity-1 rows      analyst-B                          no entities_id=1                   HTTP 200 rows=11 entity1=                    PASS
+E1 list Position_User: no entity-1 rows      analyst-B                          no entities_id=1                   HTTP 200 rows=4 entity1=                     PASS
+E1 list Grant: no entity-1 rows              analyst-B                          no entities_id=1                   HTTP 200 rows=6 entity1=                     PASS
+E1 list Note: no entity-1 rows               analyst-B                          no entities_id=1                   HTTP 200 rows=2 entity1=                     PASS
+E1 list Grant: own entity visible            analyst-B                          entity-2 grants listed             rows=6                                       PASS
+E2 POST Grant on Empresa A resource          analyst-B                          refused                            HTTP 400 id=None                             PASS
+E3 GET Resource/6 (Empresa A)                analyst-B                          403/404                            403                                          PASS
 A1 POST Grant                                iam.auditor                        refused                            HTTP 400 id=None                             PASS
 A2 GET Grant list + Grant/22                 iam.auditor                        200, rows>0                        HTTP 200 rows=53 GET=200                     PASS
 G1 POST Grant without ticket                 iam.agente                         refused                            HTTP 400 id=None                             PASS
