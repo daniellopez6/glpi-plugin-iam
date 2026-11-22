@@ -41,7 +41,8 @@ class Menu extends CommonGLPI
 
     public static function getSearchURL($full = true)
     {
-        return plugin_iam_url('front/position.php', $full);
+        // The matrix is the landing page of the sector: every IAM profile that may open the menu may open it
+        return plugin_iam_url('front/matrix.php', $full);
     }
 
     public static function getMenuContent()
@@ -50,6 +51,13 @@ class Menu extends CommonGLPI
             return false;
         }
         $options = [];
+        if (Matrix::canView()) {
+            $options['matrix'] = [
+                'title' => __('Access matrix', 'iam'),
+                'page'  => self::getSearchURL(false),
+                'icon'  => 'ti ti-table',
+            ];
+        }
         if (Position::canView()) {
             $options[Position::class] = [
                 'title' => Position::getTypeName(2),
@@ -77,7 +85,7 @@ class Menu extends CommonGLPI
                     + (Grant::canCreate() ? ['add' => Grant::getFormURL(false)] : []),
             ];
         }
-        // Landing page: the first entry the profile can open (owners have no catalogue right)
+        // Landing page: the first entry the profile can open (the matrix for every IAM profile but a REPORT-only one)
         $first = reset($options);
         return [
             'title'   => self::getMenuName(),

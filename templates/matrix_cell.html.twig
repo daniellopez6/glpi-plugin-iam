@@ -1,0 +1,72 @@
+{#
+ # -------------------------------------------------------------------------
+ # IAM - Identity & Access Governance plugin for GLPI
+ # Copyright (C) 2026 daniellopez6
+ # https://github.com/daniellopez6/glpi-plugin-iam
+ # -------------------------------------------------------------------------
+ # LICENSE
+ #
+ # This program is free software: you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+ # the Free Software Foundation, either version 3 of the License, or
+ # (at your option) any later version. See LICENSE for the full text.
+ # -------------------------------------------------------------------------
+ #}
+{# Nominal panel of one matrix cell (fragment loaded into the offcanvas; already filtered to what the session may see) #}
+{% set glyphs = {'allowed': 'ti-check', 'on_request': 'ti-circle-half-2', 'forbidden': 'ti-ban'} %}
+{% set chips = {
+   'ok': {'icon': 'ti-circle-check', 'class': 'iam-chip-ok'},
+   'missing': {'icon': 'ti-point-filled', 'class': 'iam-chip-miss'},
+   'unexpected': {'icon': 'ti-alert-triangle', 'class': 'iam-chip-dev'},
+   'forbidden_held': {'icon': 'ti-ban', 'class': 'iam-chip-dev'}
+} %}
+<div class="iam-cell-head mb-3">
+   <div class="text-secondary small">{{ __('Position', 'iam') }}</div>
+   <div class="fw-bold mb-2">
+      {% if position %}{{ position }}{% else %}<i class="ti ti-user-question me-1" aria-hidden="true"></i>{{ __('No active position', 'iam') }}{% endif %}
+   </div>
+   <div class="text-secondary small">{{ __('Resource', 'iam') }} › {{ __('Role', 'iam') }}</div>
+   <div class="fw-bold mb-2">
+      {{ resource }} › {{ role }}
+      {% if level == 'privileged' %}<span class="badge bg-red-lt ms-1"><i class="ti ti-shield-half-filled me-1" aria-hidden="true"></i>{{ levels.privileged }}</span>
+      {% elseif level == 'sensitive' %}<span class="badge bg-orange-lt ms-1">{{ levels.sensitive }}</span>{% endif %}
+   </div>
+   <div class="text-secondary small">{{ __('Expectation', 'iam') }}</div>
+   <div>
+      {% if expectation %}
+         <i class="ti {{ glyphs[expectation] }} iam-e-{{ expectation }}" aria-hidden="true"></i> {{ expectations[expectation] }}
+      {% else %}
+         <span class="iam-e-none" aria-hidden="true">·</span> {{ __('No expectation', 'iam') }}
+      {% endif %}
+   </div>
+</div>
+
+{% if not members_visible %}
+   <p class="text-secondary small"><i class="ti ti-info-circle me-1" aria-hidden="true"></i>{{ __('Only people holding an access you can see are listed.', 'iam') }}</p>
+{% endif %}
+
+{% if holders is empty %}
+   <p class="text-secondary">{{ __('Nobody in this cell.', 'iam') }}</p>
+{% else %}
+   <ul class="list-group list-group-flush iam-holders">
+      {% for h in holders %}
+         {% set chip = chips[h.state] %}
+         <li class="list-group-item px-0">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+               <span class="fw-bold">
+                  {% if h.user_url %}<a href="{{ h.user_url }}">{{ h.name }}</a>{% else %}{{ h.name }}{% endif %}
+               </span>
+               <span class="iam-chip {{ chip.class }}"><i class="ti {{ chip.icon }}" aria-hidden="true"></i>{{ states[h.state] }}</span>
+            </div>
+            {% if h.grant %}
+               <div class="small text-secondary mt-1 d-flex flex-wrap gap-3">
+                  <a href="{{ h.grant_url }}"><i class="ti ti-lock-access me-1" aria-hidden="true"></i>{{ __('Grant', 'iam') }} #{{ h.grant }}</a>
+                  <span>{{ h.grant_status }}</span>
+                  {% if h.date_end %}<span><i class="ti ti-calendar-due me-1" aria-hidden="true"></i>{{ h.date_end }}</span>{% endif %}
+                  {% if h.ticket %}<a href="{{ path('/front/ticket.form.php') }}?id={{ h.ticket }}"><i class="ti ti-ticket me-1" aria-hidden="true"></i>{{ __('Ticket', 'iam') }} #{{ h.ticket }}</a>{% endif %}
+               </div>
+            {% endif %}
+         </li>
+      {% endfor %}
+   </ul>
+{% endif %}

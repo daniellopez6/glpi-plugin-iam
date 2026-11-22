@@ -28,6 +28,9 @@ final class MatrixBuilder
 {
     public const HELD_STATUSES = ['active', 'revoke_pending', 'modify_pending'];
 
+    /** Row id of the "No active position" bucket (see withoutPosition()). */
+    public const NO_POSITION = 0;
+
     /** Expectations that justify a held grant ('on_request' needs no grant, but justifies one when it exists). */
     private const JUSTIFYING = ['allowed' => true, 'on_request' => true];
 
@@ -199,6 +202,64 @@ final class MatrixBuilder
         }
 
         return ['rows' => $rows, 'cols' => $cols, 'cells' => $outCells, 'holders' => $outHolders];
+    }
+
+    /**
+     * The "No active position" row: people who hold a grant on a column role but have no active assignment at all
+     * (ended, future or none). Every such grant is unexpected: no position justifies it.
+     *
+     * Same input shapes as build(); the row id is NO_POSITION, so keys are "0:roleId". One holder entry per person and
+     * role (lowest grant id), sorted by users_id.
+     *
+     * @param list<array<string,mixed>> $roles
+     * @param list<array<string,mixed>> $assignments
+     * @param list<array<string,mixed>> $grants
+     *
+     * @return array{
+     *     cells: array<string, array{expectation:?string, ok:int, expected:int, unexpected:int, forbidden_held:int}>,
+     *     holders: array<string, list<array{users_id:int, state:string, grants_id:?int}>>
+     * }
+     */
+    public static function withoutPosition(array $roles, array $assignments, array $grants, string $today): array
+    {
+        $isRole = [];
+        foreach ($roles as $r) {
+            $isRole[(int) ($r['id'] ?? 0)] = true;
+        }
+        $placed = [];
+        foreach ($assignments as $a) {
+            $begin = isset($a['date_begin']) ? (string) $a['date_begin'] : null;
+            $end = isset($a['date_end']) ? (string) $a['date_end'] : null;
+            if ((int) ($a['plugin_iam_positions_id'] ?? 0) > 0 && PositionPeriod::isActive($begin, $end, $today)) {
+                $placed[(int) ($a['users_id'] ?? 0)] = true;
+            }
+        }
+        // role => person => lowest grant id
+        $held = [];
+        $heldStatuses = array_flip(self::HELD_STATUSES);
+        foreach ($grants as $g) {
+            $roleId = (int) ($g['plugin_iam_roles_id'] ?? 0);
+            $user = (int) ($g['users_id'] ?? 0);
+            if ($user <= 0 || isset($placed[$user]) || !isset($isRole[$roleId]) || !isset($heldStatuses[(string) ($g['status'] ?? '')])) {
+                continue;
+            }
+            $gid = (int) ($g['id'] ?? 0);
+            if (!isset($held[$roleId][$user]) || $gid < $held[$roleId][$user]) {
+                $held[$roleId][$user] = $gid;
+            }
+        }
+        $cells = [];
+        $holders = [];
+        foreach ($held as $roleId => $users) {
+            ksort($users);
+            $key = self::NO_POSITION . ':' . $roleId;
+            $cells[$key] = self::emptyCell(null);
+            $cells[$key]['unexpected'] = count($users);
+            foreach ($users as $user => $gid) {
+                $holders[$key][] = ['users_id' => $user, 'state' => 'unexpected', 'grants_id' => $gid];
+            }
+        }
+        return ['cells' => $cells, 'holders' => $holders];
     }
 
     /** @return array{expectation:?string, ok:int, expected:int, unexpected:int, forbidden_held:int} */

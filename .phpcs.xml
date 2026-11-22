@@ -5,6 +5,7 @@
     <file>hook.php</file>
     <file>src</file>
     <file>front</file>
+    <file>ajax</file>
     <file>tests</file>
     <arg name="extensions" value="php" />
     <rule ref="PSR12">
@@ -12,8 +13,9 @@
         <exclude name="Generic.Files.LineLength" />
     </rule>
     <rule ref="PSR1.Files.SideEffects">
-        <!-- GLPI front controllers and setup.php define functions and run code by design -->
+        <!-- GLPI front and ajax controllers and setup.php define functions and run code by design -->
         <exclude-pattern>front/*</exclude-pattern>
+        <exclude-pattern>ajax/*</exclude-pattern>
         <exclude-pattern>setup.php</exclude-pattern>
         <exclude-pattern>hook.php</exclude-pattern>
         <exclude-pattern>tests/bootstrap.php</exclude-pattern>

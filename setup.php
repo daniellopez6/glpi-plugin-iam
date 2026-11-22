@@ -61,6 +61,22 @@ function plugin_init_iam(): void
 
     // Own top-level menu sector; the first entry (Menu) gives it its title and hides it without any IAM right
     $PLUGIN_HOOKS[Hooks::MENU_TOADD]['iam'] = [plugin_iam_sector() => [Menu::class]];
+
+    // Styles and scripts only on the plugin's own pages (served from public/), never on every GLPI page
+    $page = plugin_iam_own_page((string) ($_SERVER['REQUEST_URI'] ?? ''));
+    if ($page !== null) {
+        $PLUGIN_HOOKS[Hooks::ADD_CSS]['iam'] = ['css/iam.css'];
+        if ($page === 'matrix.php') {
+            $PLUGIN_HOOKS[Hooks::ADD_JAVASCRIPT]['iam'] = ['js/matrix.js'];
+        }
+    }
+}
+
+/** File name of the plugin page (front controller) the request targets, whatever the GLPI root URL; null otherwise. */
+function plugin_iam_own_page(string $requestUri): ?string
+{
+    $path = (string) parse_url($requestUri, PHP_URL_PATH);
+    return preg_match('#/plugins/iam/front/([a-z_.]+\.php)$#', $path, $m) === 1 ? $m[1] : null;
 }
 
 /** URL of a plugin file (relative to the GLPI root or absolute). */

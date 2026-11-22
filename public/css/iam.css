@@ -1,0 +1,243 @@
+/**
+ * -------------------------------------------------------------------------
+ * IAM - Identity & Access Governance plugin for GLPI
+ * Copyright (C) 2026 daniellopez6
+ * https://github.com/daniellopez6/glpi-plugin-iam
+ * -------------------------------------------------------------------------
+ * LICENSE
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version. See LICENSE for the full text.
+ * -------------------------------------------------------------------------
+ */
+
+/* Styles of the plugin pages. Only GLPI/Tabler CSS variables: light and dark themes follow GLPI. States are told apart
+   by an icon AND a colour, never by colour alone. */
+
+.iam-matrix-page {
+    --iam-allowed: var(--tblr-green);
+    --iam-request: var(--tblr-azure);
+    --iam-forbidden: var(--tblr-secondary);
+    --iam-dev: var(--tblr-red);
+    --iam-dev-rgb: var(--tblr-red-rgb);
+    --iam-miss: var(--tblr-secondary);
+    --iam-priv: var(--tblr-purple);
+    --iam-bg: var(--tblr-orange);
+    --iam-open-rgb: var(--tblr-azure-rgb);
+    --iam-line: var(--tblr-border-color);
+    --iam-surface: var(--tblr-bg-surface);
+    --iam-surface-alt: var(--tblr-bg-surface-secondary);
+}
+
+/* ---- KPIs and legend --------------------------------------------------------------------------------------------- */
+.iam-kpi {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .2rem .6rem;
+    border: 1px solid var(--iam-line);
+    border-radius: 999px;
+    background: var(--iam-surface);
+    font-size: .8rem;
+    white-space: nowrap;
+}
+.iam-kpi-dev { color: var(--iam-dev); border-color: rgba(var(--iam-dev-rgb), .35); }
+.iam-kpi-forbidden { color: var(--iam-dev); border-color: rgba(var(--iam-dev-rgb), .35); }
+.iam-kpi-miss { color: var(--iam-miss); }
+
+.iam-legend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .35rem 1.1rem;
+    padding: .45rem .75rem;
+    margin-bottom: .5rem;
+    border: 1px solid var(--iam-line);
+    border-radius: var(--tblr-border-radius);
+    background: var(--iam-surface-alt);
+    font-size: .78rem;
+}
+.iam-legend > span { display: inline-flex; align-items: center; gap: .3rem; }
+.iam-legend-title { font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--tblr-secondary); }
+
+/* ---- Glyphs and badges (shared by the table, the legend and the panel) ------------------------------------------- */
+.iam-e-allowed { color: var(--iam-allowed); font-weight: 700; }
+.iam-e-on_request { color: var(--iam-request); }
+.iam-e-forbidden { color: var(--iam-forbidden); }
+.iam-e-none { color: var(--tblr-secondary); font-weight: 700; }
+.iam-mixed { color: var(--tblr-secondary); font-weight: 700; margin-left: -.1rem; }
+.iam-priv { color: var(--iam-priv); }
+.iam-bg { color: var(--iam-bg); }
+
+.iam-count {
+    font-variant-numeric: tabular-nums;
+    font-size: .75rem;
+    color: var(--tblr-body-color);
+}
+.iam-dev,
+.iam-miss {
+    display: inline-flex;
+    align-items: center;
+    gap: .1rem;
+    padding: 0 .3rem;
+    border-radius: 999px;
+    font-size: .7rem;
+    font-weight: 700;
+    line-height: 1.35;
+    font-variant-numeric: tabular-nums;
+}
+.iam-dev { color: var(--tblr-red-fg, #fff); background: var(--iam-dev); }
+.iam-miss { color: var(--iam-miss); background: transparent; border: 1px dashed var(--iam-miss); }
+.iam-dev .ti,
+.iam-miss .ti { font-size: .75rem; }
+
+/* ---- Matrix table ------------------------------------------------------------------------------------------------- */
+.iam-matrix-wrap {
+    overflow: auto;
+    max-height: calc(100vh - 15rem);
+    min-height: 18rem;
+}
+.iam-matrix {
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: .8rem;
+    width: max-content;
+    min-width: 100%;
+}
+.iam-matrix th,
+.iam-matrix td {
+    border-right: 1px solid var(--iam-line);
+    border-bottom: 1px solid var(--iam-line);
+    padding: .25rem .4rem;
+    background: var(--iam-surface);
+}
+
+/* Sticky header and first column */
+.iam-matrix thead th {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    vertical-align: bottom;
+    background: var(--iam-surface-alt);
+}
+.iam-matrix tbody th {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    text-align: left;
+    font-weight: 500;
+}
+.iam-matrix thead th.iam-corner {
+    left: 0;
+    z-index: 4;
+    min-width: 14rem;
+    text-align: left;
+    color: var(--tblr-secondary);
+    font-weight: 500;
+}
+
+/* Resource and role headers: vertical names keep 60 resources on screen */
+.iam-res,
+.iam-role {
+    min-width: 2.6rem;
+    text-align: center;
+}
+.iam-res-btn {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .2rem;
+    border: 0;
+    background: transparent;
+    color: var(--tblr-body-color);
+    font-weight: 600;
+    padding: 0;
+    cursor: pointer;
+}
+.iam-res-name,
+.iam-role-name {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    max-height: 9.5rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.iam-role { font-weight: 400; background: rgba(var(--iam-open-rgb), .07) !important; }
+.iam-role .ti { display: block; margin: 0 auto .15rem; }
+.iam-res-badges { display: flex; flex-direction: column; align-items: center; gap: .15rem; margin-top: .2rem; }
+.iam-chev { transition: transform .15s ease; color: var(--tblr-secondary); }
+.iam-res.iam-open .iam-chev { transform: rotate(90deg); }
+.iam-res.iam-open { box-shadow: inset 0 -3px 0 var(--iam-request); }
+
+/* Cells */
+.iam-matrix td {
+    text-align: center;
+    white-space: nowrap;
+    cursor: pointer;
+    min-width: 2.6rem;
+}
+.iam-matrix td > * + * { margin-left: .2rem; }
+.iam-matrix td:hover { outline: 2px solid var(--iam-request); outline-offset: -2px; }
+.iam-matrix td.iam-has-dev { background: rgba(var(--iam-dev-rgb), .08); }
+.iam-matrix td.iam-has-forbidden { box-shadow: inset 3px 0 0 var(--iam-dev); }
+.iam-matrix td.iam-open { background: rgba(var(--iam-open-rgb), .07); }
+.iam-matrix td.iam-rc { background-color: rgba(var(--iam-open-rgb), .03); }
+.iam-matrix td.iam-rc.iam-has-dev { background: rgba(var(--iam-dev-rgb), .1); }
+.iam-matrix td.iam-saving { opacity: .55; }
+.iam-matrix .iam-filtered { display: none; }
+
+/* Edit mode: every role cell is a target */
+.iam-matrix.iam-editing td.iam-rc { cursor: cell; }
+.iam-matrix.iam-editing td.iam-rc:empty::after { content: "+"; color: var(--tblr-secondary); opacity: .5; }
+.iam-matrix.iam-editing td.iam-rc:hover { outline-color: var(--tblr-primary); }
+.iam-edit-menu { z-index: 1060; min-width: 11rem; }
+
+/* Rows, area groups and the "No active position" bucket */
+.iam-pos { min-width: 14rem; max-width: 22rem; }
+.iam-pos-name { display: inline-block; max-width: 15rem; overflow: hidden; text-overflow: ellipsis; vertical-align: bottom; white-space: nowrap; }
+.iam-pos .iam-dev,
+.iam-pos .iam-miss { margin-left: .3rem; }
+.iam-area-row th {
+    position: static;
+    background: var(--iam-surface-alt) !important;
+    padding: .3rem .4rem;
+}
+.iam-area-btn {
+    position: sticky;
+    left: .4rem;
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    border: 0;
+    background: transparent;
+    color: var(--tblr-body-color);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    font-size: .72rem;
+    padding: 0;
+    cursor: pointer;
+}
+.iam-collapsed .iam-area-btn .iam-chev { transform: rotate(-90deg); }
+.iam-collapsed tr[data-pos] { display: none; }
+.iam-bucket th { border-top: 2px solid var(--iam-dev); color: var(--iam-dev); }
+.iam-bucket td { border-top: 2px solid var(--iam-dev); }
+.iam-matrix tr[data-pos]:hover > th { background: var(--iam-surface-alt); }
+
+/* ---- Side panel -------------------------------------------------------------------------------------------------- */
+.iam-panel { --tblr-offcanvas-width: 28rem; }
+.iam-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .25rem;
+    padding: .05rem .5rem;
+    border-radius: 999px;
+    font-size: .75rem;
+    border: 1px solid transparent;
+}
+.iam-chip-ok { color: var(--iam-allowed); border-color: var(--iam-allowed); }
+.iam-chip-miss { color: var(--iam-miss); border: 1px dashed var(--iam-miss); }
+.iam-chip-dev { color: var(--tblr-red-fg, #fff); background: var(--iam-dev); }
