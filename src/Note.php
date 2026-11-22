@@ -369,7 +369,7 @@ class Note extends CommonDBTM
         foreach (
             $DB->request([
                 'FROM'  => $t,
-                'WHERE' => ["$t.itemtype" => $item::class, "$t.items_id" => (int) $item->getID()],
+                'WHERE' => NoteRules::targetCriteria($item::class, (int) $item->getID()),
                 'ORDER' => ["$t.date_creation DESC", "$t.id DESC"],
             ]) as $r
         ) {

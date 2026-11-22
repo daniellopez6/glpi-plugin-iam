@@ -90,6 +90,17 @@ final class NoteRules
     }
 
     /**
+     * Criteria selecting the notes of a target (DBmysqlIterator style, on the notes table): used for the log tab and
+     * for the purge guards of targets that can be purged (a target with notes is never purged).
+     *
+     * @return array{itemtype:string,items_id:int}
+     */
+    public static function targetCriteria(string $itemtype, int $itemsId): array
+    {
+        return ['itemtype' => $itemtype, 'items_id' => $itemsId];
+    }
+
+    /**
      * A corrected note must belong to the same target as the correction.
      *
      * @param array<string,mixed> $note the referenced note row

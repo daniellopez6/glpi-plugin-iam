@@ -64,7 +64,7 @@ ES: dict = {
  ("Position assignment", "Position assignments"): ("Asignación de puesto", "Asignaciones de puesto"),
  "The person does not exist or you are not allowed to see it.": "La persona no existe o no tiene permiso para verla.",
  "The parent position does not exist or is not available in this entity.": "El puesto padre no existe o no está disponible en esta entidad.",
- "The resource has grants or matrix cells (nothing is deleted). Put it in the trashbin instead.": "El recurso tiene otorgamientos o celdas de matriz (no se borra nada). Envíelo a la papelera.",
+ "The resource has grants, matrix cells or log entries (nothing is deleted). Put it in the trashbin instead.": "El recurso tiene otorgamientos, celdas de matriz o entradas de bitácora (no se borra nada). Envíelo a la papelera.",
  "Code": "Código",
  "Linked item type": "Tipo de elemento vinculado",
  "Owner (person)": "Dueño (persona)",

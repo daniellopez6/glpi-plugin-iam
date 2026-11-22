@@ -93,3 +93,17 @@ con las sesiones de auditor, dueño y analista de la entidad 2, y para PUT con l
 
 Pestaña "Bitácora (IAM)": HTTP 200 en otorgamiento, recurso y página de la asignación para admin y auditor; 403 para el
 dueño en el otorgamiento 4 y en la asignación. `/var/log/glpi/php-errors.log` sin entradas nuevas.
+
+**Corrección (revisión de la Tarea 9): un recurso con notas no se purga.** `Resource::dependencyCount()` cuenta también
+las notas del recurso. Recurso 4 ("Recurso solo con nota (demo IAM T9 fix)", sin roles ni otorgamientos) con la nota 12:
+
+| Intento (Super-Admin) | Resultado |
+| --- | --- |
+| `DELETE /Resource/4?force_purge=1` (activo) | HTTP 400 `ERROR_GLPI_DELETE` |
+| `DELETE /Resource/4` (papelera) | HTTP 200, `is_deleted=1` |
+| `DELETE /Resource/4?force_purge=1` (en la papelera) | HTTP 400 |
+| POST `purge` en `front/resource.form.php` | HTTP 403 |
+| Capa de clase: `delete(['id' => 4], true)` | `false`, mensaje "El recurso tiene otorgamientos, celdas de matriz o entradas de bitácora (no se borra nada). Envíelo a la papelera." |
+
+El recurso 4 sigue en la papelera y la nota 12 sigue legible. Los roles no son objetivo de notas (sin cambios en
+`Role`); otorgamientos y asignaciones nunca se purgan.

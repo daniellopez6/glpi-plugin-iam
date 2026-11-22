@@ -151,9 +151,10 @@ class Resource extends CommonDBTM
         return $rows;
     }
 
-    // Nothing is deleted: a resource with roles that have grants or matrix cells can be trashed but never purged
+    // Nothing is deleted: a resource with grants, matrix cells or log entries can be trashed but never purged (purging
+    // it would make its append-only log unreadable)
 
-    /** Grants and matrix cells that depend on the resource (directly or through its roles). */
+    /** Grants, matrix cells (directly or through its roles) and log entries that depend on the resource. */
     public static function dependencyCount(int $id): int
     {
         $roles = new QuerySubQuery([
@@ -162,7 +163,8 @@ class Resource extends CommonDBTM
             'WHERE'  => ['plugin_iam_resources_id' => $id],
         ]);
         return countElementsInTable(Schema::PREFIX . 'grants', ['OR' => ['plugin_iam_resources_id' => $id, 'plugin_iam_roles_id' => $roles]])
-            + countElementsInTable(Schema::PREFIX . 'positions_roles', ['plugin_iam_roles_id' => $roles]);
+            + countElementsInTable(Schema::PREFIX . 'positions_roles', ['plugin_iam_roles_id' => $roles])
+            + countElementsInTable(Schema::PREFIX . 'notes', NoteRules::targetCriteria(self::class, $id));
     }
 
     public function canPurgeItem(): bool
@@ -174,7 +176,7 @@ class Resource extends CommonDBTM
     {
         if ($force && self::dependencyCount((int) ($input['id'] ?? 0)) > 0) {
             Session::addMessageAfterRedirect(
-                __('The resource has grants or matrix cells (nothing is deleted). Put it in the trashbin instead.', 'iam'),
+                __('The resource has grants, matrix cells or log entries (nothing is deleted). Put it in the trashbin instead.', 'iam'),
                 false,
                 ERROR
             );

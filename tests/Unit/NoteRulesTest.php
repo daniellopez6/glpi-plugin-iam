@@ -106,4 +106,11 @@ final class NoteRulesTest extends TestCase
         $this->assertFalse(NoteRules::sameTarget(['itemtype' => Grant::class, 'items_id' => 8], Grant::class, 7));
         $this->assertFalse(NoteRules::sameTarget(['itemtype' => Resource::class, 'items_id' => 7], Grant::class, 7));
     }
+
+    public function testTargetCriteriaSelectsTheNotesOfOneTarget(): void
+    {
+        // Used by the log tab and by Resource::dependencyCount() (a resource with notes is never purged)
+        $this->assertSame(['itemtype' => Resource::class, 'items_id' => 3], NoteRules::targetCriteria(Resource::class, 3));
+        $this->assertSame(['itemtype' => Grant::class, 'items_id' => 7], NoteRules::targetCriteria(Grant::class, 7));
+    }
 }
