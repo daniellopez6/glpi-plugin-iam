@@ -13,6 +13,8 @@
 # -------------------------------------------------------------------------
 """
 Authorization verification of the IAM plugin against a live GLPI 12 with the demo data (spec 13 ter, Task 13).
+Needs a GLPI seeded with the two-company demo data set (the demo seeder is not published yet): the record ids below
+refer to it.
 
 Python 3 standard library only. Credentials never live in the repository:
   IAM_AUTHZ_TOKENS  path of the JSON written by the demo script (`demo_iam.php --profiles`), default
@@ -20,7 +22,10 @@ Python 3 standard library only. Credentials never live in the repository:
                     Optional keys: "base_url", "app_token", "admin" {"api_token"}.
   IAM_APP_TOKEN     API client app token (overrides the file).
   IAM_ADMIN_TOKEN   user token of a Super-Admin (overrides the file): group membership changes, reference reads.
-  IAM_GLPI_URL      base URL of GLPI (default http://192.168.88.4).
+  IAM_GLPI_URL      base URL of GLPI (required; or "base_url" in the tokens file).
+  IAM_ENTITY_A / IAM_ENTITY_B            ids of the two demo companies (default 1 and 2; or "entities": {"a", "b"}).
+  IAM_ENTITY_A_NAME / IAM_ENTITY_B_NAME  labels used in the output (default "Empresa A (demo)", "Empresa B (demo)").
+  IAM_ENTITY_B_USER login of the IAM - Analista limited to company B (default iam.empresab; or "entity_b_user").
 
 Every case prints one line (case, user, expected, got, PASS/FAIL). Known plugin bugs, when a case is marked xfail, are
 listed separately as XFAIL and do not change the exit code (none at the moment). Exit code: 0 all PASS, 1 any FAIL, 2 configuration error.
@@ -46,17 +51,17 @@ TOKENS_PATH = os.environ.get('IAM_AUTHZ_TOKENS') or os.path.join(REPO, '..', 'gl
 NS = 'GlpiPlugin%5CIam%5C'
 ITEMTYPES = ['Resource', 'Role', 'Position', 'Position_Role', 'Position_User', 'Grant', 'Note']
 
-# Demo data (Task 15 report): profiles, entities, resources, roles, grants, users
+# Demo data set (two companies A and B): profiles, resources, roles, grants, users
 P_SUPERADMIN, P_ANALYST, P_OWNER, P_AUDITOR, P_AGENT, P_TECH = 4, 15, 16, 17, 18, 6
-ENT_FIN, ENT_CLI = 1, 2
 RES_CORE, RES_SAPFI, RES_HIS = 6, 7, 13
 ROLE_SAPFI_CONSULTA, ROLE_HOMEBANKING_SOPORTE = 11, 14
-GRANT_SAPFI = 10          # vrios, SAP-FI Consulta (resource owned by the group of iam.dueno)
-GRANT_CORE = 22           # fmolina, Core Banking Administrador (another owner)
-GRANT_SHARED = 54         # ssilva (Finandina person) -> HIS (Clinica resource): Review Focus 2
+GRANT_SAPFI = 10          # a company-A person, SAP-FI Consulta (resource owned by the group of iam.dueno)
+GRANT_CORE = 22           # a company-A person, Core Banking Administrador (another owner)
+GRANT_SHARED = 54         # a company-A person -> HIS (company-B resource): Review Focus 2
+GRANT_LEAVER = 17         # grant of an inactive company-A person (leaver) with closed position assignments
 GROUP_FINANZAS = 8        # owner group of SAP-FI
-CLINICA_PERSON = 28       # person with a profile in entity 2 (visible to the Clinica analyst)
-TICKET = 47               # ticket of entity 1 (viewable by the agent: ticket READALL)
+ENTITY_B_PERSON = 28      # person with a profile in company B (visible to the company-B analyst)
+TICKET = 47               # ticket of company A (viewable by the agent: ticket READALL)
 INJECTION = "' OR 1=1 -- "
 
 
@@ -71,12 +76,23 @@ try:
 except (OSError, ValueError) as exc:
     die('cannot read the tokens file given by IAM_AUTHZ_TOKENS (%s)' % type(exc).__name__)
 
-BASE = (os.environ.get('IAM_GLPI_URL') or TOKENS.get('base_url') or 'http://192.168.88.4').rstrip('/')
+BASE = (os.environ.get('IAM_GLPI_URL') or TOKENS.get('base_url') or '').rstrip('/')
+if not BASE:
+    die('IAM_GLPI_URL (or "base_url" in the tokens file) is required')
+_ENTITIES = TOKENS.get('entities') or {}
+try:
+    ENT_A = int(os.environ.get('IAM_ENTITY_A') or _ENTITIES.get('a') or 1)
+    ENT_B = int(os.environ.get('IAM_ENTITY_B') or _ENTITIES.get('b') or 2)
+except ValueError:
+    die('IAM_ENTITY_A / IAM_ENTITY_B must be entity ids')
+NAME_A = os.environ.get('IAM_ENTITY_A_NAME') or 'Empresa A (demo)'
+NAME_B = os.environ.get('IAM_ENTITY_B_NAME') or 'Empresa B (demo)'
+USER_B = os.environ.get('IAM_ENTITY_B_USER') or TOKENS.get('entity_b_user') or 'iam.empresab'
 APP_TOKEN = os.environ.get('IAM_APP_TOKEN') or TOKENS.get('app_token') or ''
 ADMIN_TOKEN = os.environ.get('IAM_ADMIN_TOKEN') or (TOKENS.get('admin') or {}).get('api_token') or ''
 if not APP_TOKEN or not ADMIN_TOKEN:
     die('IAM_APP_TOKEN and IAM_ADMIN_TOKEN (or "app_token"/"admin" in the tokens file) are required')
-for login in ('iam.analista', 'iam.dueno', 'iam.auditor', 'iam.agente', 'iam.tecnico', 'iam.clinica'):
+for login in ('iam.analista', 'iam.dueno', 'iam.auditor', 'iam.agente', 'iam.tecnico', USER_B):
     if login not in TOKENS:
         die('user %s missing in the tokens file (run demo_iam.php --profiles)' % login)
 
@@ -124,7 +140,8 @@ class Api:
 
     def list(self, itemtype, query=''):
         code, body = self.call('GET', '/%s%s?range=0-4999%s' % (NS, itemtype, query))
-        return code, (body if isinstance(body, list) else [])
+        # an error body is a list of strings ([code, message]): no rows
+        return code, ([r for r in body if isinstance(r, dict)] if isinstance(body, list) else [])
 
     def add(self, itemtype, fields):
         code, body = self.call('POST', '/%s%s' % (NS, itemtype), {'input': fields})
@@ -207,13 +224,13 @@ def short(values, limit=8):
 def main():
     admin = Api('admin', ADMIN_TOKEN, P_SUPERADMIN)
     tok = {k: v['api_token'] for k, v in TOKENS.items() if isinstance(v, dict) and 'api_token' in v}
-    analyst = Api('iam.analista', tok['iam.analista'], P_ANALYST, ENT_FIN)
-    owner = Api('iam.dueno', tok['iam.dueno'], P_OWNER, ENT_FIN)
-    auditor = Api('iam.auditor', tok['iam.auditor'], P_AUDITOR, ENT_FIN)
-    agent = Api('iam.agente', tok['iam.agente'], P_AGENT, ENT_FIN)
-    tech = Api('iam.tecnico', tok['iam.tecnico'], P_TECH, ENT_FIN)
+    analyst = Api('iam.analista', tok['iam.analista'], P_ANALYST, ENT_A)
+    owner = Api('iam.dueno', tok['iam.dueno'], P_OWNER, ENT_A)
+    auditor = Api('iam.auditor', tok['iam.auditor'], P_AUDITOR, ENT_A)
+    agent = Api('iam.agente', tok['iam.agente'], P_AGENT, ENT_A)
+    tech = Api('iam.tecnico', tok['iam.tecnico'], P_TECH, ENT_A)
     tech_default = Api('iam.tecnico(default)', tok['iam.tecnico'])
-    clinic = Api('iam.clinica', tok['iam.clinica'], P_ANALYST, ENT_CLI, False)
+    clinic = Api('analyst-B', tok[USER_B], P_ANALYST, ENT_B, False)
 
     # -- Technician without IAM rights: API ----------------------------------------------------------------------
     for sess, label in ((tech, 'iam.tecnico/Technician'), (tech_default, 'iam.tecnico/default')):
@@ -243,7 +260,7 @@ def main():
     code, _ = owner.get('Grant', GRANT_SAPFI)
     check('O3 GET Grant/%d (own resource)' % GRANT_SAPFI, 'iam.dueno', '200', code, code == 200)
     _, before = admin.get('Grant', GRANT_SAPFI)
-    code, _ = owner.update('Grant', GRANT_SAPFI, {'users_id': CLINICA_PERSON})
+    code, _ = owner.update('Grant', GRANT_SAPFI, {'users_id': ENTITY_B_PERSON})
     _, after = admin.get('Grant', GRANT_SAPFI)
     check('O4 PUT Grant/%d users_id' % GRANT_SAPFI, 'iam.dueno', 'users_id unchanged',
           'HTTP %s users_id %s->%s' % (code, before.get('users_id'), after.get('users_id')),
@@ -253,10 +270,10 @@ def main():
         exp = 200 if iid in owned else 403
         check('O5 GET %s/%d' % (it, iid), 'iam.dueno', exp, code, code == exp or (exp == 403 and code == 404))
 
-    # -- Review Focus 2: shared service grant (Finandina person on a Clinica resource) ------------------------------
+    # -- Review Focus 2: shared service grant (company-A person on a company-B resource) -----------------------------
     code, _ = clinic.get('Grant', GRANT_SHARED)
     _, rows = clinic.list('Grant')
-    check('F2 GET Grant/%d + in list' % GRANT_SHARED, 'iam.clinica (entity 2)', '200, listed', '%s listed=%s' % (code, GRANT_SHARED in ids(rows)),
+    check('F2 GET Grant/%d + in list' % GRANT_SHARED, 'analyst-B (%s)' % NAME_B, '200, listed', '%s listed=%s' % (code, GRANT_SHARED in ids(rows)),
           code == 200 and GRANT_SHARED in ids(rows))
     for sess, label in ((analyst, 'iam.analista (entity 1)'), (owner, 'iam.dueno (entity 1, not owner of HIS)')):
         code, _ = sess.get('Grant', GRANT_SHARED)
@@ -264,18 +281,18 @@ def main():
         check('F2 GET Grant/%d + in list' % GRANT_SHARED, label, '403/404, not listed', '%s listed=%s' % (code, GRANT_SHARED in ids(rows)),
               code in (403, 404) and GRANT_SHARED not in ids(rows))
 
-    # -- Entity-2-only analyst: no Finandina rows, cannot write on Finandina -----------------------------------------
+    # -- Company-B-only analyst: no company-A rows, cannot write on company A -----------------------------------------
     for it in ITEMTYPES:
         code, rows = clinic.list(it)
-        fin = [r['id'] for r in rows if int(r.get('entities_id') or 0) == ENT_FIN]
-        check('E1 list %s: no entity-1 rows' % it, 'iam.clinica', 'no entities_id=1', 'HTTP %s rows=%d entity1=%s' % (code, len(rows), short(fin)),
+        fin = [r['id'] for r in rows if int(r.get('entities_id') or 0) == ENT_A]
+        check('E1 list %s: no entity-1 rows' % it, 'analyst-B', 'no entities_id=1', 'HTTP %s rows=%d entity1=%s' % (code, len(rows), short(fin)),
               code in (200, 206) and not fin)
     code, rows = clinic.list('Grant')
-    check('E1 list Grant: own entity visible', 'iam.clinica', 'entity-2 grants listed', 'rows=%d' % len(rows), any(int(r['entities_id']) == ENT_CLI for r in rows))
-    code, new_id, body = clinic.add('Grant', {'plugin_iam_roles_id': ROLE_HOMEBANKING_SOPORTE, 'users_id': CLINICA_PERSON, 'justification': RUN_TAG + ' must fail'})
-    check('E2 POST Grant on Finandina resource', 'iam.clinica', 'refused', 'HTTP %s id=%s' % (code, new_id), denied(code) and not new_id)
+    check('E1 list Grant: own entity visible', 'analyst-B', 'entity-2 grants listed', 'rows=%d' % len(rows), any(int(r['entities_id']) == ENT_B for r in rows))
+    code, new_id, body = clinic.add('Grant', {'plugin_iam_roles_id': ROLE_HOMEBANKING_SOPORTE, 'users_id': ENTITY_B_PERSON, 'justification': RUN_TAG + ' must fail'})
+    check('E2 POST Grant on company-A resource', 'analyst-B', 'refused', 'HTTP %s id=%s' % (code, new_id), denied(code) and not new_id)
     code, _ = clinic.get('Resource', RES_CORE)
-    check('E3 GET Resource/%d (Finandina)' % RES_CORE, 'iam.clinica', '403/404', code, code in (403, 404))
+    check('E3 GET Resource/%d (company A)' % RES_CORE, 'analyst-B', '403/404', code, code in (403, 404))
 
     # -- Auditor ---------------------------------------------------------------------------------------------------
     code, new_id, _ = auditor.add('Grant', {'plugin_iam_roles_id': ROLE_HOMEBANKING_SOPORTE, 'users_id': int(before['users_id']), 'tickets_id': TICKET,
@@ -285,6 +302,33 @@ def main():
     code2, _ = auditor.get('Grant', GRANT_CORE)
     check('A2 GET Grant list + Grant/%d' % GRANT_CORE, 'iam.auditor', '200, rows>0', 'HTTP %s rows=%d GET=%s' % (code, len(rows), code2),
           code in (200, 206) and rows and code2 == 200)
+
+    # -- Catalogue reads (core read rights of the role profiles): the analyst links a resource to a Software item -----
+    software = first_item(admin, 'Software', ENT_A)
+    person = int(before['users_id'])
+    if software is None:
+        check('C0 precondition: a Software of company A', 'admin', 'found', 'none', False)
+    else:
+        for sess in (analyst, auditor):
+            code, _ = sess.call('GET', '/Software/%d' % software)
+            check('C1 GET Software/%d' % software, sess.label, '200', code, code == 200)
+            code, _ = sess.call('GET', '/User/%d' % person)
+            check('C2 GET User/%d' % person, sess.label, '200', code, code == 200)
+        fields = {'name': RUN_TAG + ' linked to Software', 'itemtype': 'Software', 'items_id': software, 'entities_id': ENT_A,
+                  'users_id_owner': owner_uid, 'criticality': 'low', 'review_frequency': 'annual'}
+        code, new_id, _ = auditor.add('Resource', dict(fields))
+        check('C3 POST Resource linked to Software', 'iam.auditor', 'refused', 'HTTP %s id=%s' % (code, new_id), denied(code) and not new_id)
+        if new_id:
+            admin.delete('Resource', new_id, True)
+        code, res_id, _ = analyst.add('Resource', dict(fields))
+        row = admin.get('Resource', res_id)[1] if res_id else {}
+        check('C4 analyst links a resource to a Software item', 'iam.analista', '201, itemtype=Software',
+              'HTTP %s id=%s item=%s/%s' % (code, res_id, row.get('itemtype'), row.get('items_id')),
+              code == 201 and row.get('itemtype') == 'Software' and int(row.get('items_id') or 0) == software)
+        if res_id:
+            admin.delete('Resource', res_id, True)
+            check('C4 cleanup temporary resource', 'admin', 'purged', 'exists=%s' % (admin.get('Resource', res_id)[0] == 200),
+                  admin.get('Resource', res_id)[0] != 200)
 
     # -- Agent -----------------------------------------------------------------------------------------------------
     beneficiary = int(before['users_id'])
@@ -308,7 +352,7 @@ def main():
     note_id = agent_note or 1
     _, note_before = admin.get('Note', note_id)
     for sess, label in ((agent, 'iam.agente'), (analyst, 'iam.analista'), (admin, 'glpi (Super-Admin)')):
-        for verb, fn in (('PUT', lambda s: s.update('Note', note_id, {'content': 'tampered', 'users_id': CLINICA_PERSON})),
+        for verb, fn in (('PUT', lambda s: s.update('Note', note_id, {'content': 'tampered', 'users_id': ENTITY_B_PERSON})),
                          ('DELETE', lambda s: s.delete('Note', note_id)),
                          ('DELETE force_purge', lambda s: s.delete('Note', note_id, True))):
             code, _ = fn(sess)
@@ -318,7 +362,7 @@ def main():
 
     # -- Anyone: polymorphic itemtype whitelist and searchText injection ---------------------------------------------
     for sess in (analyst, admin):
-        code, new_id, _ = sess.add('Resource', {'name': RUN_TAG + ' user as resource', 'itemtype': 'User', 'items_id': 2, 'entities_id': ENT_FIN})
+        code, new_id, _ = sess.add('Resource', {'name': RUN_TAG + ' user as resource', 'itemtype': 'User', 'items_id': 2, 'entities_id': ENT_A})
         check('X1 POST Resource itemtype=User', sess.label, 'refused', 'HTTP %s id=%s' % (code, new_id), denied(code) and not new_id)
         if new_id:
             admin.delete('Resource', new_id, True)
@@ -354,7 +398,7 @@ def main():
             check('F4 GET Grant/%d after removal' % GRANT_SAPFI, 'iam.dueno', '403/404', code, code in (403, 404))
             code, _, _ = owner_web.get(form)
             check('F4 next web request after removal', 'iam.dueno (web)', '403', code, code == 403)
-            fresh = Api('iam.dueno(new session)', tok['iam.dueno'], P_OWNER, ENT_FIN)
+            fresh = Api('iam.dueno(new session)', tok['iam.dueno'], P_OWNER, ENT_A)
             code, _ = fresh.get('Resource', RES_SAPFI)
             check('F4 new API session after removal', 'iam.dueno (new API session)', '403/404', code, code in (403, 404))
             fresh.close()
@@ -366,7 +410,7 @@ def main():
             restored = code == 201
             check('F4 admin restores the membership (finally)', 'admin', '201', code, restored)
         if restored:
-            fresh = Api('iam.dueno(new session)', tok['iam.dueno'], P_OWNER, ENT_FIN)
+            fresh = Api('iam.dueno(new session)', tok['iam.dueno'], P_OWNER, ENT_A)
             code, _ = fresh.get('Resource', RES_SAPFI)
             fresh.close()
             code_web, _, _ = owner_web.get(form)
@@ -375,8 +419,8 @@ def main():
 
     # -- Tree integrity: purge of a position with child positions is refused (even for Super-Admin) -------------------------
     stamp = time.strftime('%H%M%S')
-    code, parent, _ = analyst.add('Position', {'name': '[iam-authz] T13 parent ' + stamp, 'entities_id': ENT_FIN, 'comment': RUN_TAG})
-    code2, child, _ = analyst.add('Position', {'name': '[iam-authz] T13 child ' + stamp, 'entities_id': ENT_FIN, 'plugin_iam_positions_id': parent or 0,
+    code, parent, _ = analyst.add('Position', {'name': '[iam-authz] T13 parent ' + stamp, 'entities_id': ENT_A, 'comment': RUN_TAG})
+    code2, child, _ = analyst.add('Position', {'name': '[iam-authz] T13 child ' + stamp, 'entities_id': ENT_A, 'plugin_iam_positions_id': parent or 0,
                                                'comment': RUN_TAG})
     if parent and child:
         code, _ = analyst.delete('Position', parent, True)
@@ -396,10 +440,113 @@ def main():
     else:
         check('B1 setup positions', 'iam.analista', '201,201', '%s,%s' % (code, code2), False)
 
+    # -- Matrix integrity: purge of a position with matrix expectations is refused until the cells are removed ----------
+    code, pos, _ = analyst.add('Position', {'name': '[iam-authz] T13 cells ' + stamp, 'entities_id': ENT_A, 'comment': RUN_TAG})
+    code2, cell, _ = analyst.add('Position_Role', {'plugin_iam_positions_id': pos or 0, 'plugin_iam_roles_id': ROLE_SAPFI_CONSULTA,
+                                                   'expectation': 'allowed'}) if pos else (None, None, None)
+    if pos and cell:
+        code, _ = admin.delete('Position', pos, True)
+        p_code, _ = admin.get('Position', pos)
+        c_code, _ = admin.get('Position_Role', cell)
+        check('B2 purge Position with a matrix cell', 'glpi (Super-Admin)', 'refused, position and cell kept',
+              'HTTP %s position=%s cell=%s' % (code, p_code, c_code), denied(code) and p_code == 200 and c_code == 200)
+        # cells are removed through the matrix (Position_Role is never deleted through the API)
+        analyst_web = Web('iam.analista')
+        analyst_web.change_profile(P_ANALYST)
+        code, _, _ = analyst_web.request('POST', '/plugins/iam/ajax/matrixedit.php',
+                                         {'position': str(pos), 'role': str(ROLE_SAPFI_CONSULTA), 'expectation': ''}, ajax=True)
+        code2, _ = admin.delete('Position', pos, True)
+        p_code, _ = admin.get('Position', pos)
+        check('B2 purge after removing the cell', 'iam.analista + glpi', 'cell removed, position purged',
+              'cell HTTP %s purge HTTP %s position=%s' % (code, code2, p_code), code == 200 and code2 == 200 and p_code != 200)
+    else:
+        check('B2 setup position + cell', 'iam.analista', '201,201', '%s,%s' % (code, code2), False)
+        if pos:
+            admin.delete('Position', pos, True)
+
+    # -- Leavers: an inactive person without authorizations keeps their history visible to whole-register readers -------
+    leaver_cases(admin, auditor, owner, clinic)
+
     for sess in (analyst, owner, auditor, agent, tech, tech_default, clinic, admin):
         sess.close()
 
     web_cases()
+
+
+def first_item(admin, itemtype, entity):
+    """First non-deleted item of a core itemtype in the entity (reference read as Super-Admin)."""
+    _, rows = admin.call('GET', '/%s?range=0-4999' % itemtype)
+    for r in rows if isinstance(rows, list) else []:
+        if int(r.get('entities_id') or 0) == entity and not int(r.get('is_deleted') or 0):
+            return int(r['id'])
+    return None
+
+
+def leaver_cases(admin, auditor, owner, clinic):
+    _, grant = admin.get('Grant', GRANT_LEAVER)
+    uid = int((grant or {}).get('users_id') or 0)
+    _, user = admin.call('GET', '/User/%d' % uid) if uid else (None, {})
+    _, auths = admin.call('GET', '/User/%d/Profile_User' % uid) if uid else (None, [])
+    auths = auths if isinstance(auths, list) else []
+    _, assigns = admin.list('Position_User', '&searchText[users_id]=^%d$' % uid) if uid else (None, [])
+    assigns = [a for a in assigns if int(a.get('users_id') or 0) == uid]
+    login = (user or {}).get('name') or ''
+    if not uid or int((user or {}).get('is_active') or 0) != 0 or not assigns or not login:
+        check('L0 precondition: inactive person of Grant/%d with assignments' % GRANT_LEAVER, 'admin', 'found',
+              'uid=%s active=%s assignments=%d' % (uid, (user or {}).get('is_active'), len(assigns)), False)
+        return
+    assign = int(assigns[0]['id'])
+
+    def visible(sess):
+        code, _ = sess.get('Position_User', assign)
+        _, rows = sess.list('Position_User')
+        return code, assign in ids(rows)
+
+    def search_hit(web):
+        code, page, _ = web.get('/plugins/iam/front/search.php?q=' + urllib.parse.quote(login))
+        return code, ('(%s)' % html.escape(login)) in page, 'iam-inactive' in page
+
+    auditor_web = Web('iam.auditor')
+    auditor_web.change_profile(P_AUDITOR)
+    code, hit, badge = search_hit(auditor_web)
+    check('L1 case search finds the inactive person', 'iam.auditor (web)', 'found, inactive badge', 'HTTP %s found=%s badge=%s' % (code, hit, badge),
+          code == 200 and hit and badge)
+    b_web = Web(USER_B)
+    b_web.change_profile(P_ANALYST)
+    code, hit, _ = search_hit(b_web)
+    check('L2 case search: person of another company', 'analyst-B (web)', 'not found', 'HTTP %s found=%s' % (code, hit), code == 200 and not hit)
+
+    removed = []
+    try:
+        # the leaver loses every authorization (Profile_User) for the duration of the check
+        for a in auths:
+            code, _ = admin.call('DELETE', '/Profile_User/%d?force_purge=1' % int(a['id']))
+            if code == 200:
+                removed.append(a)
+        check('L3 admin removes every authorization of the leaver', 'admin', 'all removed', 'removed %d/%d' % (len(removed), len(auths)),
+              len(removed) == len(auths))
+        code, listed = visible(auditor)
+        check('L4 GET + list Position_User/%d of the leaver' % assign, 'iam.auditor', '200, listed', 'HTTP %s listed=%s' % (code, listed),
+              code == 200 and listed)
+        code, _ = auditor.get('Grant', GRANT_LEAVER)
+        check('L5 GET Grant/%d of the leaver' % GRANT_LEAVER, 'iam.auditor', '200', code, code == 200)
+        code, hit, badge = search_hit(auditor_web)
+        check('L6 case search finds the leaver without authorizations', 'iam.auditor (web)', 'found, inactive badge',
+              'HTTP %s found=%s badge=%s' % (code, hit, badge), code == 200 and hit and badge)
+        for sess, label in ((owner, 'iam.dueno'), (clinic, 'analyst-B')):
+            code, listed = visible(sess)
+            check('L7 GET + list Position_User/%d of the leaver' % assign, label, '403/404, not listed', 'HTTP %s listed=%s' % (code, listed),
+                  code in (403, 404) and not listed)
+    finally:
+        back = 0
+        for a in removed:
+            code, _ = admin.call('POST', '/Profile_User', {'input': {
+                'users_id': uid, 'profiles_id': int(a['profiles_id']), 'entities_id': int(a['entities_id']),
+                'is_recursive': int(a.get('is_recursive') or 0), 'is_dynamic': int(a.get('is_dynamic') or 0),
+                'is_default_profile': int(a.get('is_default_profile') or 0)}})
+            back += 1 if code == 201 else 0
+        check('L8 admin restores the authorizations (finally)', 'admin', 'all restored', 'restored %d/%d' % (back, len(removed)),
+              back == len(removed))
 
 
 def user_id(admin, login):
