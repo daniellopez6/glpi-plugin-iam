@@ -17,6 +17,7 @@
 
 namespace GlpiPlugin\Iam\Tests\Unit;
 
+use GlpiPlugin\Iam\ResourceItemtypes;
 use GlpiPlugin\Iam\Rights;
 use PHPUnit\Framework\TestCase;
 
@@ -100,6 +101,8 @@ final class RightsTest extends TestCase
         $this->assertSame(0, $r[Rights::ACCESS] & READ);
         $this->assertSame(UPDATE, $r[Rights::REVIEW]);
         $this->assertSame(0, $r[Rights::CONFIG]);
+        $this->assertSame(0, $r[Rights::APPROVE]);
+        $this->assertSame(0, $r[Rights::REPORT]);
     }
 
     public function testAuditorIsReadOnly(): void
@@ -119,6 +122,44 @@ final class RightsTest extends TestCase
         $this->assertSame(0, $r[Rights::APPROVE]);
         $this->assertSame(0, $r[Rights::REVIEW]);
         $this->assertSame(READ, $r[Rights::CONFIG]);
+        $this->assertSame(0, $r[Rights::REPORT]);
+    }
+
+    /** GLPI 12 rightnames of the itemtypes that can back a resource (checked against the GLPI 12 sources). */
+    private const ITEMTYPE_RIGHTS = [
+        'Software'         => 'software',
+        'Appliance'        => 'appliance',
+        'Computer'         => 'computer',
+        'NetworkEquipment' => 'networking',
+        'Database'         => 'database',
+        'DatabaseInstance' => 'database',
+        'Domain'           => 'domain',
+        'Certificate'      => 'certificate',
+        'Supplier'         => 'contact_enterprise',
+    ];
+
+    public function testInventoryRightsCoverEveryResourceItemtype(): void
+    {
+        $this->assertSame(ResourceItemtypes::ALLOWED, array_keys(self::ITEMTYPE_RIGHTS));
+        $expected = array_values(array_unique(self::ITEMTYPE_RIGHTS));
+        $this->assertSame($expected, Rights::INVENTORY_RIGHTS);
+    }
+
+    public function testAnalystAndAuditorReadPeopleAndInventory(): void
+    {
+        $roles = Rights::roleProfiles();
+        foreach (['analyst', 'auditor'] as $key) {
+            $r = $roles[$key]['rights'];
+            $this->assertSame(READ, $r['user'], $key);
+            foreach (Rights::INVENTORY_RIGHTS as $right) {
+                $this->assertSame(READ, $r[$right], "$key $right");
+            }
+        }
+        foreach (['owner', 'agent'] as $key) {
+            foreach (Rights::INVENTORY_RIGHTS as $right) {
+                $this->assertArrayNotHasKey($right, $roles[$key]['rights'], "$key $right");
+            }
+        }
     }
 
     public function testAgentResolvesPeopleButHasNoFollowupRights(): void

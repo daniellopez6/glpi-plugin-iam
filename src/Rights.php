@@ -43,6 +43,14 @@ final class Rights
     /** Ticket::READALL (see all tickets of the active entities), kept literal so the class loads without GLPI. */
     public const TICKET_READALL = 1024;
 
+    /**
+     * Core read rights of the inventory itemtypes that can back a resource (ResourceItemtypes::ALLOWED), by GLPI 12
+     * rightname: Database and DatabaseInstance share 'database', Supplier uses 'contact_enterprise'.
+     */
+    public const INVENTORY_RIGHTS = [
+        'software', 'appliance', 'computer', 'networking', 'database', 'domain', 'certificate', 'contact_enterprise',
+    ];
+
     /** @return list<string> */
     public static function all(): array
     {
@@ -190,15 +198,17 @@ final class Rights
      */
     public static function roleProfiles(): array
     {
-        // Minimal GLPI navigation: no inventory, no tickets
+        // Minimal GLPI navigation; inventory, people and tickets are added per role below
         $base = ['knowbase' => READ, 'personalization' => READ | UPDATE, 'password_update' => 1, 'document' => READ];
         // Who registers grants must be able to see the originating ticket (a grant only references visible tickets)
         $tickets = ['ticket' => self::TICKET_READALL];
+        // Who maintains or audits the catalogue must see the people and the inventory items resources are linked to
+        $catalogue = ['user' => READ] + array_fill_keys(self::INVENTORY_RIGHTS, READ);
         $roles = [
             'analyst' => [
                 'name'    => 'IAM - Analista',
                 'comment' => __('Maintains the access governance catalogue and register: positions, resources, roles, access matrix and grants. Does not review or approve.', 'iam'),
-                'rights'  => $base + $tickets + [self::ACCESS => READ | CREATE | UPDATE, self::CONFIG => READ | CREATE | UPDATE,
+                'rights'  => $base + $tickets + $catalogue + [self::ACCESS => READ | CREATE | UPDATE, self::CONFIG => READ | CREATE | UPDATE,
                     self::REVIEW => 0, self::APPROVE => 0, self::REPORT => READ],
             ],
             'owner' => [
@@ -210,7 +220,7 @@ final class Rights
             'auditor' => [
                 'name'    => 'IAM - Auditor',
                 'comment' => __('Read-only access to the whole register, the catalogue and the reports.', 'iam'),
-                'rights'  => $base + [self::ACCESS => READ, self::CONFIG => READ,
+                'rights'  => $base + $catalogue + [self::ACCESS => READ, self::CONFIG => READ,
                     self::REVIEW => 0, self::APPROVE => 0, self::REPORT => READ],
             ],
             'agent' => [
