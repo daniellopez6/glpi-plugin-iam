@@ -33,6 +33,7 @@ use User;
 class Position_User extends CommonDBRelation
 {
     public static string $rightname = Rights::ACCESS;
+    public bool $dohistory = true;
 
     public static ?string $itemtype_1 = Position::class;
     public static ?string $items_id_1 = 'plugin_iam_positions_id';
@@ -91,26 +92,34 @@ class Position_User extends CommonDBRelation
         return false;
     }
 
+    /** Recursion-aware visibility of a position (own entity, or a recursive position of an ancestor entity). */
+    private static function positionVisible(int $positionId): bool
+    {
+        $position = new Position();
+        return $position->getFromDB($positionId)
+            && Session::haveAccessToEntity((int) $position->fields['entities_id'], (int) $position->fields['is_recursive'] === 1);
+    }
+
+    /** An assignment is visible when its position and its person are. */
+    private static function rowVisible(int $positionId, int $usersId): bool
+    {
+        return self::positionVisible($positionId) && self::userVisible($usersId);
+    }
+
     public function canViewItem(): bool
     {
-        return self::canView() && Session::haveAccessToEntity((int) ($this->fields['entities_id'] ?? 0));
+        return self::canView() && self::rowVisible((int) ($this->fields['plugin_iam_positions_id'] ?? 0), (int) ($this->fields['users_id'] ?? 0));
     }
 
     public function canCreateItem(): bool
     {
-        $position = new Position();
-        if (!self::canCreate() || !$position->getFromDB((int) ($this->input['plugin_iam_positions_id'] ?? 0))) {
-            return false;
-        }
-        if (!self::userVisible((int) ($this->input['users_id'] ?? 0))) {
-            return false;
-        }
-        return Session::haveAccessToEntity((int) $position->fields['entities_id']);
+        return self::canCreate()
+            && self::rowVisible((int) ($this->input['plugin_iam_positions_id'] ?? 0), (int) ($this->input['users_id'] ?? 0));
     }
 
     public function canUpdateItem(): bool
     {
-        return self::canUpdate() && Session::haveAccessToEntity((int) ($this->fields['entities_id'] ?? 0));
+        return self::canUpdate() && self::rowVisible((int) ($this->fields['plugin_iam_positions_id'] ?? 0), (int) ($this->fields['users_id'] ?? 0));
     }
 
     public function canDeleteItem(): bool
@@ -239,15 +248,10 @@ class Position_User extends CommonDBRelation
         if (!is_array($input)) {
             return false;
         }
-        // The position, the person and the entity never change: close the assignment and create a new one
-        unset($input['plugin_iam_positions_id'], $input['users_id'], $input['entities_id']);
-        $allowed = array_flip(['id', 'type', 'is_primary', 'date_begin', 'date_end', 'tickets_id']);
-        $input = self::cleanDates(array_intersect_key($input, $allowed));
+        // Only the end date and the ticket can change; position, person, entity, type, primary flag and begin
+        // date are corrected by closing the assignment and creating a new one
+        $input = self::cleanDates(PositionPeriod::filterUpdate($input));
         $merged = array_merge($this->fields, $input);
-        if (array_key_exists('is_primary', $input)) {
-            $input['is_primary'] = empty($input['is_primary']) ? 0 : 1;
-            $merged['is_primary'] = $input['is_primary'];
-        }
         $errors = PositionPeriod::validate($merged, self::otherRows((int) $this->fields['users_id'], (int) $this->getID()), date('Y-m-d'));
         if ($errors !== []) {
             return self::fail(self::errorMessage($errors[0]));
@@ -261,26 +265,60 @@ class Position_User extends CommonDBRelation
         return $input;
     }
 
+    /**
+     * Assignments of a person or of a position that the session may see (position and person visible).
+     *
+     * @return list<array<string,mixed>>
+     */
+    private static function visibleRows(CommonDBTM $item): array
+    {
+        global $DB;
+        $forUser = $item instanceof User;
+        if ($forUser ? !self::userVisible((int) $item->getID()) : !self::positionVisible((int) $item->getID())) {
+            return [];
+        }
+        $pt = Position::getTable();
+        $t = self::getTable();
+        $iter = $DB->request([
+            'SELECT'     => ["$t.*"],
+            'FROM'       => $t,
+            'INNER JOIN' => [$pt => ['ON' => [$t => 'plugin_iam_positions_id', $pt => 'id']]],
+            'WHERE'      => ["$t." . ($forUser ? 'users_id' : 'plugin_iam_positions_id') => $item->getID()]
+                + getEntitiesRestrictCriteria($pt, '', '', true),
+            'ORDER'      => ["$t.date_end IS NULL DESC", "$t.date_begin DESC", "$t.id DESC"],
+        ]);
+        $rows = [];
+        $seen = [];
+        foreach ($iter as $r) {
+            $uid = (int) $r['users_id'];
+            $seen[$uid] ??= self::userVisible($uid);
+            if ($seen[$uid]) {
+                $rows[] = $r;
+            }
+        }
+        return $rows;
+    }
+
     public function getTabNameForItem(CommonGLPI $item, $withtemplate = 0)
     {
         if (!$item instanceof CommonDBTM || $item->isNewItem() || !self::canView()) {
             return '';
         }
         if ($item instanceof User) {
-            $n = countElementsInTable(self::getTable(), ['users_id' => $item->getID()]
-                + getEntitiesRestrictCriteria(self::getTable(), '', '', false));
-            return self::createTabEntry(__('Positions (IAM)', 'iam'), $n, null, self::getIcon());
+            return self::createTabEntry(__('Positions (IAM)', 'iam'), count(self::visibleRows($item)), null, self::getIcon());
         }
         if ($item instanceof Position) {
-            $n = countElementsInTable(self::getTable(), ['plugin_iam_positions_id' => $item->getID()]
-                + getEntitiesRestrictCriteria(self::getTable(), '', '', false));
-            return self::createTabEntry(__('Assignments', 'iam'), $n, null, self::getIcon());
+            return self::createTabEntry(__('Assignments', 'iam'), count(self::visibleRows($item)), null, self::getIcon());
         }
         return '';
     }
 
     public static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtemplate = 0)
     {
+        // The tab loader calls this directly from the tab id: the right is checked here too
+        if (!self::canView()) {
+            return false;
+        }
         if ($item instanceof User || $item instanceof Position) {
             self::showFor($item);
             return true;
@@ -290,18 +328,11 @@ class Position_User extends CommonDBRelation
 
     private static function showFor(CommonDBTM $item): void
     {
-        global $DB;
         $forUser = $item instanceof User;
         $today = date('Y-m-d');
         $rows = [];
-        $iter = $DB->request([
-            'FROM'  => self::getTable(),
-            'WHERE' => [($forUser ? 'users_id' : 'plugin_iam_positions_id') => $item->getID()]
-                + getEntitiesRestrictCriteria(self::getTable(), '', '', false),
-            'ORDER' => ['date_end IS NULL DESC', 'date_begin DESC', 'id DESC'],
-        ]);
         $labels = self::typeLabels();
-        foreach ($iter as $r) {
+        foreach (self::visibleRows($item) as $r) {
             $position = new Position();
             $name = $position->getFromDB((int) $r['plugin_iam_positions_id']) ? (string) $position->fields['completename'] : '#' . $r['plugin_iam_positions_id'];
             $rows[] = [

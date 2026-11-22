@@ -63,6 +63,56 @@ class Position extends CommonTreeDropdown
         return $tab;
     }
 
+    /** The parent must be visible to the session and in the child's entity or a recursive ancestor of it. */
+    private function parentRefused(int $parentId, int $childEntity): bool
+    {
+        if ($parentId <= 0) {
+            return false;
+        }
+        $parent = new self();
+        if (
+            !$parent->getFromDB($parentId) || !$parent->canViewItem()
+            || !PositionScope::parentAllowed(
+                (int) $parent->fields['entities_id'],
+                (int) $parent->fields['is_recursive'] === 1,
+                $childEntity,
+                array_keys(getAncestorsOf('glpi_entities', $childEntity))
+            )
+        ) {
+            Session::addMessageAfterRedirect(__('The parent position does not exist or is not available in this entity.', 'iam'), false, ERROR);
+            return true;
+        }
+        return false;
+    }
+
+    public function prepareInputForAdd($input)
+    {
+        if (!is_array($input)) {
+            return false;
+        }
+        if ($this->parentRefused((int) ($input[self::getForeignKeyField()] ?? 0), (int) ($input['entities_id'] ?? 0))) {
+            return false;
+        }
+        return parent::prepareInputForAdd($input);
+    }
+
+    public function prepareInputForUpdate($input)
+    {
+        if (!is_array($input)) {
+            return false;
+        }
+        $fk = self::getForeignKeyField();
+        if (isset($input[$fk]) || isset($input['entities_id'])) {
+            $parentId = (int) ($input[$fk] ?? $this->fields[$fk]);
+            $entity = (int) ($input['entities_id'] ?? $this->fields['entities_id']);
+            $changed = $parentId !== (int) $this->fields[$fk] || $entity !== (int) $this->fields['entities_id'];
+            if ($changed && $this->parentRefused($parentId, $entity)) {
+                return false;
+            }
+        }
+        return parent::prepareInputForUpdate($input);
+    }
+
     /** Number of assignments (active or ended) of a position. */
     public static function assignmentCount(int $id): int
     {

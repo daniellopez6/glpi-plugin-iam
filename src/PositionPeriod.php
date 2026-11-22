@@ -24,6 +24,21 @@ final class PositionPeriod
 {
     public const TYPES = ['holder', 'substitute', 'temporary'];
 
+    /** Fields of an existing assignment that can still change; the rest is corrected by closing it and creating a new one. */
+    public const UPDATABLE = ['date_end', 'tickets_id'];
+
+    /**
+     * Input of an update reduced to the updatable fields (and the id).
+     *
+     * @param array<string, mixed> $input
+     *
+     * @return array<string, mixed>
+     */
+    public static function filterUpdate(array $input): array
+    {
+        return array_intersect_key($input, array_flip(array_merge(['id'], self::UPDATABLE)));
+    }
+
     /** Whether the period includes today (begin null or <= today; end null or >= today). Dates are 'Y-m-d'. */
     public static function isActive(?string $dateBegin, ?string $dateEnd, string $today): bool
     {

@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  iam\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-22 12:36+0000\n"
+"POT-Creation-Date: 2026-11-22 12:42+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: es_AR\n"
@@ -23,6 +23,10 @@ msgstr "IAM - Gobierno de Identidades y Accesos"
 msgid "Access governance (IAM)"
 msgstr "Gobierno de accesos (IAM)"
 
+#: src/Position.php:132
+msgid "The position has assignments (the history is kept). Deactivate it instead of deleting it."
+msgstr "El puesto tiene asignaciones (el historial se conserva). Desactívelo en lugar de eliminarlo."
+
 #: src/Position.php:34 templates/positions_tab.html.twig:21 templates/positions_tab.html.twig:78
 msgid "Position"
 msgid_plural "Positions"
@@ -38,72 +42,72 @@ msgid "Job title"
 msgstr "Cargo (título)"
 
 #: src/Position.php:82
-msgid "The position has assignments (the history is kept). Deactivate it instead of deleting it."
-msgstr "El puesto tiene asignaciones (el historial se conserva). Desactívelo en lugar de eliminarlo."
+msgid "The parent position does not exist or is not available in this entity."
+msgstr "El puesto padre no existe o no está disponible en esta entidad."
 
-#: src/Position_User.php:130
+#: src/Position_User.php:139
 msgid "The end date cannot be before the begin date."
 msgstr "La fecha de fin no puede ser anterior a la fecha de inicio."
 
-#: src/Position_User.php:131
+#: src/Position_User.php:140
 msgid "A date is not valid (expected format YYYY-MM-DD)."
 msgstr "Una fecha no es válida (formato esperado AAAA-MM-DD)."
 
-#: src/Position_User.php:132
+#: src/Position_User.php:141
 msgid "The person already has an active primary position."
 msgstr "La persona ya tiene un puesto principal activo."
 
-#: src/Position_User.php:133
+#: src/Position_User.php:142
 msgid "The assignment type is not valid."
 msgstr "El tipo de asignación no es válido."
 
-#: src/Position_User.php:134
+#: src/Position_User.php:143
 msgid "The assignment is not valid."
 msgstr "La asignación no es válida."
 
-#: src/Position_User.php:197
+#: src/Position_User.php:206
 msgid "Select a position."
 msgstr "Seleccione un puesto."
 
-#: src/Position_User.php:200
+#: src/Position_User.php:209
 msgid "The position is not active."
 msgstr "El puesto no está activo."
 
-#: src/Position_User.php:205
+#: src/Position_User.php:214
 msgid "Select a person."
 msgstr "Seleccione una persona."
 
-#: src/Position_User.php:209
+#: src/Position_User.php:218
 msgid "The person does not exist or you are not allowed to see it."
 msgstr "La persona no existe o no tiene permiso para verla."
 
-#: src/Position_User.php:225 src/Position_User.php:258
+#: src/Position_User.php:234 src/Position_User.php:262
 msgid "The ticket does not exist or you are not allowed to see it."
 msgstr "El ticket no existe o no tiene permiso para verlo."
 
-#: src/Position_User.php:272
+#: src/Position_User.php:308
 msgid "Positions (IAM)"
 msgstr "Puestos (IAM)"
 
-#: src/Position_User.php:277
+#: src/Position_User.php:311
 msgid "Assignments"
 msgstr "Asignaciones"
 
-#: src/Position_User.php:47
+#: src/Position_User.php:48
 msgid "Position assignment"
 msgid_plural "Position assignments"
 msgstr[0] "Asignación de puesto"
 msgstr[1] "Asignaciones de puesto"
 
-#: src/Position_User.php:59
+#: src/Position_User.php:60
 msgid "Holder"
 msgstr "Titular"
 
-#: src/Position_User.php:60
+#: src/Position_User.php:61
 msgid "Substitute"
 msgstr "Suplente"
 
-#: src/Position_User.php:61
+#: src/Position_User.php:62
 msgid "Temporary"
 msgstr "Temporal"
 

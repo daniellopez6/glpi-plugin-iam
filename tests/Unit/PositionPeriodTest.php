@@ -95,4 +95,11 @@ final class PositionPeriodTest extends TestCase
         $input = ['type' => 'temporary', 'is_primary' => 0, 'date_begin' => '', 'date_end' => ''];
         $this->assertSame([], PositionPeriod::validate($input, [], self::TODAY));
     }
+
+    public function testUpdateKeepsOnlyEndDateTicketAndId(): void
+    {
+        $in = ['id' => 4, 'type' => 'holder', 'is_primary' => 1, 'date_begin' => '2020-01-01', 'date_end' => '2026-12-31',
+               'tickets_id' => 9, 'users_id' => 3, 'plugin_iam_positions_id' => 2, 'entities_id' => 5];
+        $this->assertSame(['id' => 4, 'date_end' => '2026-12-31', 'tickets_id' => 9], PositionPeriod::filterUpdate($in));
+    }
 }
