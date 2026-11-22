@@ -74,6 +74,36 @@ final class Scope
         return new QuerySubQuery(['SELECT' => "$rt.id", 'FROM' => $rt, 'WHERE' => [Resource::visibilityCriteria()]]);
     }
 
+    /** Itemtypes with an explicit predicate in criteriaFor(). */
+    public const HANDLED = [
+        Position::class,
+        Resource::class,
+        Role::class,
+        Position_Role::class,
+        Grant::class,
+        Note::class,
+        Position_User::class,
+    ];
+
+    /**
+     * Fail-closed guard of criteriaFor(): true for an itemtype with its own predicate, false for an itemtype that is
+     * not a covered plugin class (no restriction added), and an exception for a covered class without a predicate
+     * (a list of it would otherwise come back unfiltered).
+     *
+     * @param list<string> $covered
+     * @param list<string> $handled
+     */
+    public static function isHandled(string $itemtype, array $covered, array $handled): bool
+    {
+        if (in_array($itemtype, $handled, true)) {
+            return true;
+        }
+        if (in_array($itemtype, $covered, true)) {
+            throw new \LogicException("IAM: no visibility predicate for $itemtype");
+        }
+        return false;
+    }
+
     /**
      * Criteria added to every list of a plugin itemtype (addDefaultWhere hook).
      *
@@ -81,6 +111,9 @@ final class Scope
      */
     public static function criteriaFor(string $itemtype): array
     {
+        if (!self::isHandled($itemtype, self::coveredItemtypes(), self::HANDLED)) {
+            return [];
+        }
         return match ($itemtype) {
             Position::class      => [],
             Resource::class      => Resource::ownedOnly() ? [Resource::visibilityCriteria()] : [],
@@ -89,7 +122,7 @@ final class Scope
             Grant::class         => [Grant::visibilityCriteria()],
             Note::class          => [Note::visibilityCriteria()],
             Position_User::class => [Position_User::visibilityCriteria()],
-            default              => [],
+            default              => throw new \LogicException("IAM: no visibility predicate for $itemtype"),
         };
     }
 }

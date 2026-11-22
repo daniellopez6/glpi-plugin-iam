@@ -57,8 +57,6 @@ class Menu extends CommonGLPI
                 'page'  => self::getSearchURL(false),
                 'icon'  => 'ti ti-table',
             ];
-        }
-        if (Matrix::canView()) {
             $options['search'] = [
                 'title' => __('Case search', 'iam'),
                 'page'  => plugin_iam_url('front/search.php', false),

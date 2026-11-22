@@ -46,7 +46,14 @@ final class Installer
             }
         }
 
-        // Later releases add columns here with $m->addField()/addKey(), guarded by fieldExists().
+        // Keys added after a table was first created (Migration::addKey() skips the existing ones)
+        foreach (Schema::keys() as $table => $keys) {
+            foreach ($keys as $name => $columns) {
+                $m->addKey($table, $columns, $name);
+            }
+        }
+
+        // Later releases add columns here with $m->addField(), guarded by fieldExists().
 
         self::installRights();
 

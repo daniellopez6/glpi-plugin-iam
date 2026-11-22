@@ -31,7 +31,6 @@
                {% if can_edit %}
                <td colspan="3">
                   <form method="post" action="{{ action }}" class="row g-2 align-items-center">
-                     <input type="hidden" name="_glpi_csrf_token" value="{{ csrf_token() }}">
                      <input type="hidden" name="id" value="{{ r.id }}">
                      <div class="col-md-5"><input type="text" name="name" value="{{ r.name }}" class="form-control form-control-sm" aria-label="{{ __('Name') }}" required></div>
                      <div class="col-md-3">
@@ -57,7 +56,6 @@
                <td>
                   {% if can_purge and r.dependencies == 0 %}
                   <form method="post" action="{{ action }}">
-                     <input type="hidden" name="_glpi_csrf_token" value="{{ csrf_token() }}">
                      <input type="hidden" name="id" value="{{ r.id }}">
                      <button type="submit" name="purge" class="btn btn-sm btn-outline-danger" title="{{ __('Purge') }}"><i class="ti ti-trash"></i></button>
                   </form>
@@ -76,7 +74,6 @@
    {% if can_add %}
    <div class="card-footer">
       <form method="post" action="{{ action }}" class="row g-2 align-items-end">
-         <input type="hidden" name="_glpi_csrf_token" value="{{ csrf_token() }}">
          <input type="hidden" name="plugin_iam_resources_id" value="{{ resource }}">
          <div class="col-md-5"><label class="form-label">{{ __('Name') }}</label><input type="text" name="name" class="form-control" required></div>
          <div class="col-md-3">

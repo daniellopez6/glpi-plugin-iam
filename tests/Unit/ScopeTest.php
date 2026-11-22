@@ -68,4 +68,21 @@ final class ScopeTest extends TestCase
             $this->assertNotContains(rtrim($base, 's'), $classes, "$table has a class: cover it in Scope::criteriaFor()");
         }
     }
+
+    public function testEveryCoveredItemtypeHasAPredicate(): void
+    {
+        $handled = Scope::HANDLED;
+        $covered = Scope::coveredItemtypes();
+        sort($handled);
+        sort($covered);
+        $this->assertSame($covered, $handled);
+    }
+
+    public function testCriteriaGuardFailsClosed(): void
+    {
+        $this->assertTrue(Scope::isHandled('A', ['A', 'B'], ['A']));
+        $this->assertFalse(Scope::isHandled('Computer', ['A', 'B'], ['A']));
+        $this->expectException(\LogicException::class);
+        Scope::isHandled('B', ['A', 'B'], ['A']);
+    }
 }

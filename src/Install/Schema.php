@@ -67,6 +67,7 @@ final class Schema
             KEY `name` (`name`),
             KEY `plugin_iam_positions_id` (`plugin_iam_positions_id`),
             KEY `entities_id` (`entities_id`),
+            KEY `usertitles_id` (`usertitles_id`),
             KEY `groups_id` (`groups_id`)",
 
             self::PREFIX . 'positions_users' => "
@@ -165,7 +166,10 @@ final class Schema
             KEY `plugin_accounts_accounts_id` (`plugin_accounts_accounts_id`),
             KEY `tickets_id` (`tickets_id`),
             KEY `status` (`status`),
-            KEY `date_end` (`date_end`)",
+            KEY `date_end` (`date_end`),
+            KEY `users_id_approver` (`users_id_approver`),
+            KEY `users_id_approver_security` (`users_id_approver_security`),
+            KEY `users_id_recorder` (`users_id_recorder`)",
 
             self::PREFIX . 'notes' => "
             {$id},
@@ -315,6 +319,25 @@ final class Schema
             PRIMARY KEY (`id`),
             UNIQUE KEY `entities_id` (`entities_id`)",
         ];
+    }
+
+    /**
+     * Secondary (non-unique) keys of every table, parsed from tables(): the installer adds the missing ones to tables
+     * that already exist, so a reinstall over existing tables gets the keys of this release.
+     *
+     * @return array<string, array<string, list<string>>> table => key name => columns
+     */
+    public static function keys(): array
+    {
+        $keys = [];
+        foreach (self::tables('') as $table => $body) {
+            $keys[$table] = [];
+            preg_match_all('/^\s*KEY `(\w+)` \(([^)]+)\)/m', $body, $m, PREG_SET_ORDER);
+            foreach ($m as $k) {
+                $keys[$table][$k[1]] = array_map(static fn (string $c): string => trim($c, " `"), explode(',', $k[2]));
+            }
+        }
+        return $keys;
     }
 
     /**
