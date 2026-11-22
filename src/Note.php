@@ -229,6 +229,11 @@ class Note extends CommonDBTM
 
     public static function errorMessage(string $code): string
     {
+        return ErrorMessage::format($code, self::errorText($code));
+    }
+
+    private static function errorText(string $code): string
+    {
         return match ($code) {
             'target_invalid'    => __('The item does not exist or you are not allowed to add a log entry to it.', 'iam'),
             'content_empty'     => __('The log entry is empty.', 'iam'),
@@ -252,7 +257,8 @@ class Note extends CommonDBTM
         }
         $errors = NoteRules::errors($input);
         if ($errors !== []) {
-            return self::fail($errors[0]);
+            Session::addMessageAfterRedirect(ErrorMessage::combine(array_map(self::errorMessage(...), $errors)), false, ERROR);
+            return false;
         }
         $data = NoteRules::prepareAdd($input, (int) Session::getLoginUserID(), (string) ($_SESSION['glpi_currenttime'] ?? date('Y-m-d H:i:s')));
         if ($data === false) {

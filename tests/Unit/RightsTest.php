@@ -121,6 +121,15 @@ final class RightsTest extends TestCase
         $this->assertSame(READ, $r[Rights::CONFIG]);
     }
 
+    public function testAgentResolvesPeopleButHasNoFollowupRights(): void
+    {
+        $r = Rights::roleProfiles()['agent']['rights'];
+        $this->assertSame(READ, $r['user']);
+        $this->assertArrayNotHasKey('ticketvalidation', $r);
+        $this->assertArrayNotHasKey('followup', $r);
+        $this->assertArrayNotHasKey('user', Rights::roleProfiles()['owner']['rights']);
+    }
+
     public function testWhoRegistersGrantsSeesTickets(): void
     {
         $roles = Rights::roleProfiles();

@@ -273,4 +273,5 @@ ES: dict = {
  "Meaning": "Significado",
  "Example": "Ejemplo",
  "ISO 27001:2022": "ISO 27001:2022",
+ "The agent can only assign a position with its ticket.": "El agente solo puede asignar un puesto con su ticket.",
 }

@@ -284,6 +284,11 @@ class Grant extends CommonDBTM
     /** User-facing message of an error code (GrantRules or reference checks). */
     public static function errorMessage(string $code): string
     {
+        return ErrorMessage::format($code, self::errorText($code));
+    }
+
+    private static function errorText(string $code): string
+    {
         return match ($code) {
             'date_invalid'                         => __('A date is not valid (expected format YYYY-MM-DD).', 'iam'),
             'date_order'                           => __('The end date cannot be before the begin date.', 'iam'),
@@ -306,6 +311,11 @@ class Grant extends CommonDBTM
             'owner_request_required'               => __('As owner you can only request a revocation or a modification, with its justification.', 'iam'),
             'owner_justification_required'         => __('A revocation or modification request needs a justification.', 'iam'),
             'account_invalid'                      => __('The account does not exist or you are not allowed to see it.', 'iam'),
+            'role_required'                        => __('Select a role.', 'iam'),
+            'role_invalid'                         => __('The role does not exist or its resource is in the trash.', 'iam'),
+            'role_resource_mismatch'               => __('The role does not belong to the selected resource.', 'iam'),
+            'resource_invalid'                     => __('The resource does not exist or you are not allowed to see it.', 'iam'),
+            'person_invalid'                       => __('The person does not exist or you are not allowed to see it.', 'iam'),
             default                                => __('The grant is not valid.', 'iam'),
         };
     }
@@ -313,15 +323,11 @@ class Grant extends CommonDBTM
     /** @param list<string> $codes */
     private static function failAll(array $codes): false
     {
-        foreach (array_unique($codes) as $code) {
-            Session::addMessageAfterRedirect(self::errorMessage($code), false, ERROR);
-        }
-        return false;
-    }
-
-    private static function fail(string $message): false
-    {
-        Session::addMessageAfterRedirect($message, false, ERROR);
+        Session::addMessageAfterRedirect(
+            ErrorMessage::combine(array_map(self::errorMessage(...), array_values(array_unique($codes)))),
+            false,
+            ERROR
+        );
         return false;
     }
 
@@ -422,21 +428,21 @@ class Grant extends CommonDBTM
         $data = self::sanitize($input, false);
         $role = new Role();
         if (!$role->getFromDB((int) ($data['plugin_iam_roles_id'] ?? 0))) {
-            return self::fail(__('Select a role.', 'iam'));
+            return self::failAll(['role_required']);
         }
         $resource = new Resource();
         if (!$resource->getFromDB((int) $role->fields['plugin_iam_resources_id']) || $resource->isDeleted()) {
-            return self::fail(__('The role does not exist or its resource is in the trash.', 'iam'));
+            return self::failAll(['role_invalid']);
         }
         if ((int) ($data['plugin_iam_resources_id'] ?? 0) > 0 && (int) $data['plugin_iam_resources_id'] !== (int) $resource->getID()) {
-            return self::fail(__('The role does not belong to the selected resource.', 'iam'));
+            return self::failAll(['role_resource_mismatch']);
         }
         if (!$resource->canViewItem()) {
-            return self::fail(__('The resource does not exist or you are not allowed to see it.', 'iam'));
+            return self::failAll(['resource_invalid']);
         }
         $usersId = (int) ($data['users_id'] ?? 0);
         if ($usersId <= 0 || !self::userExists($usersId) || !Position_User::userVisible($usersId)) {
-            return self::fail(__('The person does not exist or you are not allowed to see it.', 'iam'));
+            return self::failAll(['person_invalid']);
         }
 
         // Taken from the server, never from the request

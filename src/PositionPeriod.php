@@ -94,6 +94,18 @@ final class PositionPeriod
         return $errors;
     }
 
+    /**
+     * Defence in depth and data quality: an assignment created in an AI agent session must cite its ticket.
+     *
+     * @param array<string, mixed> $input
+     *
+     * @return list<string> error codes: agent_requires_ticket
+     */
+    public static function agentErrors(array $input, ?string $roleKey): array
+    {
+        return $roleKey === 'agent' && (int) ($input['tickets_id'] ?? 0) <= 0 ? ['agent_requires_ticket'] : [];
+    }
+
     private static function normalize(?string $date): ?string
     {
         $date = $date === null ? '' : trim($date);

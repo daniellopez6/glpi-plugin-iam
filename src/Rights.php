@@ -216,7 +216,7 @@ final class Rights
             'agent' => [
                 'name'    => 'IAM - Agente',
                 'comment' => __('Registers access requests and grants and reads the catalogue. Cannot review or approve.', 'iam'),
-                'rights'  => $base + $tickets + [self::ACCESS => READ | CREATE, self::CONFIG => READ,
+                'rights'  => $base + $tickets + ['user' => READ, self::ACCESS => READ | CREATE, self::CONFIG => READ,
                     self::REVIEW => 0, self::APPROVE => 0, self::REPORT => 0],
             ],
         ];

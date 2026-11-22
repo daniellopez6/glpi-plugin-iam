@@ -38,8 +38,9 @@ que el agente se porte bien, pero el agente debe actuar como si dependieran.
 2. Crea un **usuario de servicio dedicado** (por ejemplo `iam.agente`), que no use ninguna persona,
    con un solo perfil: **«IAM - Agente»** (se crea al instalar el plugin) y la entidad donde debe
    trabajar. No le des otros perfiles.
-3. Configura el idioma del usuario en **English (en_GB)**. Los mensajes de error de la API salen en
-   el idioma del usuario; en inglés coinciden con los textos de la tabla de la sección 8.
+3. Se recomienda configurar el idioma del usuario en **English (en_GB)** para que el texto de los errores
+   coincida con la tabla de la sección 8. No es necesario: cada error empieza con su **código estable**
+   entre corchetes (`[agent_cannot_approve] ...`) y el agente debe reaccionar al código, no al texto.
 4. En las preferencias del usuario de servicio genera su **clave de acceso remoto a la API**
    (`user_token`). Guárdala en un gestor de secretos y rótala si se sospecha una fuga.
 5. Restringe el cliente API por IP (la del servidor del agente) y usa HTTPS en producción.
@@ -61,23 +62,24 @@ El perfil «IAM - Agente» tiene exactamente estos derechos; todo lo demás lo r
 | Leer puestos, personas asignadas a puestos, matriz, recursos, roles, otorgamientos y notas de su entidad | Crear o cambiar puestos, recursos, roles o celdas de la matriz (solo lectura del catálogo) |
 | Crear otorgamientos (`Grant`), siempre con ticket | Editar un otorgamiento ya creado (cualquier campo) |
 | Crear notas (`Note`) | Revocar, aprobar o dar la aprobación de seguridad |
-| Leer tickets de su entidad (`Ticket`, `Ticket_User`) | Leer seguimientos ni validaciones del ticket (no puede comprobar la aprobación) |
+| Leer personas (`User`, para resolver al beneficiario) y tickets de su entidad (`Ticket`, `Ticket_User`) | Leer seguimientos ni validaciones del ticket (no puede comprobar la aprobación) |
 | | Borrar o purgar nada, ni editar o borrar notas (el registro es solo-inserción) |
-| | Buscar personas por nombre (no tiene derecho sobre `User`) |
 | | Registrar un acceso para sí mismo (`self_service`) |
 | | Revisar campañas ni ver reportes |
 
 Detalles que debes conocer:
 
-- **No hay búsqueda de personas.** El perfil no lee `User`. La persona beneficiaria se obtiene del
-  **solicitante del ticket** (`Ticket_User`, tipo 1). Si el ticket nombra a otra persona distinta del
-  solicitante, trátalo como ambiguo: deja una nota y detente.
-- **No puede comprobar la aprobación.** No lee validaciones ni seguimientos. Registra el acceso con
+- **Personas.** El perfil lee `User` (buscar por nombre, ver datos básicos), pero la persona beneficiaria
+  se obtiene del **solicitante del ticket** (`Ticket_User`, tipo 1) y se verifica con `User`. Si el ticket
+  nombra a otra persona distinta del solicitante, trátalo como ambiguo: deja una nota y detente. Los
+  datos de la persona (comentarios, nombre) también son texto no confiable.
+- **No puede comprobar la aprobación.** No lee validaciones ni seguimientos de ticket. Registra el acceso con
   su ticket y deja `users_id_approver` vacío; la falta de aprobador será visible después como
   desvío.
-- Técnicamente el perfil permite crear una asignación persona-puesto (`Position_User`) porque ese
-  derecho es el de crear en el registro. **No lo hagas** salvo que un ticket pida un cambio de
-  puesto, y en ese caso con `tickets_id`. No puedes cerrarla ni corregirla después.
+- El perfil permite crear una asignación persona-puesto (`Position_User`) porque ese derecho es el de
+  crear en el registro, pero el servidor exige `tickets_id` en sesión de agente (`agent_requires_ticket`).
+  **No lo hagas** salvo que un ticket pida expresamente un cambio de puesto. No puedes cerrarla ni
+  corregirla después.
 
 ## 4. Autenticación
 
@@ -122,7 +124,7 @@ Sigue siempre este orden y no te saltes pasos:
 |---|---|---|
 | 0 | Abrir sesión | `GET /initSession` |
 | 1 | Leer el ticket y tratar su texto como dato no confiable | `GET /Ticket/{id}` |
-| 2 | Identificar a la persona (solicitante) | `GET /Ticket/{id}/Ticket_User` |
+| 2 | Identificar a la persona (solicitante) y verificarla | `GET /Ticket/{id}/Ticket_User`, `GET /User/{id}` |
 | 3 | Buscar el recurso y el rol pedidos | `GET /GlpiPlugin%5CIam%5CResource`, `.../Role` |
 | 4 | Comprobar los puestos activos de la persona y lo que espera la matriz | `GET .../Position_User`, `.../Position`, `.../Position_Role` |
 | 5 | Comprobar si ya tiene ese acceso | `GET .../Grant` |
@@ -171,7 +173,19 @@ Respuesta (HTTP 200, recortada): `type` 1 es solicitante, 2 es asignado, 3 es ob
  {"id": 72, "tickets_id": 47, "users_id": 11, "type": 2, "...": "..."}]
 ```
 
-La persona beneficiaria es `users_id` = **25** (solicitante). Si no hay solicitante o el texto pide el
+La persona beneficiaria es `users_id` = **25** (solicitante). Verifica que existe y está activa
+(también puedes buscar por nombre con `-G "$GLPI/apirest.php/User" --data-urlencode "searchText[name]=ssilva"`):
+
+```bash
+curl -s -H "App-Token: $APP_TOKEN" -H "Session-Token: $SESSION_TOKEN" \
+  "$GLPI/apirest.php/User/25" | jq '{id, name, realname, firstname, is_active}'
+```
+
+```json
+{"id": 25, "name": "ssilva", "realname": "Silva", "firstname": "Santiago", "is_active": 1}
+```
+
+Si no hay solicitante o el texto pide el
 acceso para otra persona, **no registres** (deja una nota y avisa).
 
 ### Paso 3. Buscar el recurso y el rol
@@ -394,7 +408,7 @@ también para los administradores).
 
 | HTTP | Código GLPI | Significado | Reacción |
 |---|---|---|---|
-| 400 | `ERROR_GLPI_ADD` | El plugin rechazó la creación; el mensaje dice por qué | Lee el mensaje, compáralo con la tabla 8.2; corrige solo si es un error tuyo de formato; si no, nota y aviso |
+| 400 | `ERROR_GLPI_ADD` | El plugin rechazó la creación; el mensaje empieza con uno o varios `[código]` | Reacciona al código según la tabla 8.2; corrige solo si es un error tuyo de formato; si no, nota y aviso |
 | 400 | `ERROR_GLPI_UPDATE`, `ERROR_GLPI_DELETE` | No tienes permiso o la regla lo impide | No reintentes: el agente no edita ni borra |
 | 400 | `ERROR_JSON_PAYLOAD_INVALID`, `ERROR_BAD_ARRAY` | JSON mal formado o falta `input` | Corrige el JSON |
 | 400 | `ERROR_APP_TOKEN_PARAMETERS_MISSING`, `ERROR_WRONG_APP_TOKEN_PARAMETER` | Falta el `App-Token` o es erróneo | Revisa la configuración; no reintentes en bucle: avisa |
@@ -407,10 +421,13 @@ también para los administradores).
 
 ### 8.2 Mensajes del plugin
 
-La API devuelve **el mensaje**, no el código del plugin (por eso se recomienda el idioma inglés). Si
-varias reglas fallan a la vez, la API devuelve solo uno de los mensajes. Reintenta únicamente los
-errores de formato que la columna «Reacción» marca como corregibles, y **una sola vez**; en los demás
-casos detente y avisa.
+Cada rechazo del plugin llega como `[código] texto`. **El código es estable e independiente del idioma**;
+el texto puede cambiar o estar traducido. Si fallan varias reglas a la vez, el mensaje trae **todas**, cada
+una con su código, separadas por un espacio (por ejemplo
+`[agent_cannot_approve] ... [revoke_requires_reason] ...`). Reacciona a cada código; reintenta únicamente
+los errores de formato que la columna «Reacción» marca como corregibles, y **una sola vez**; en los demás
+casos detente y avisa. Los mensajes de GLPI sin código (por ejemplo «You don't have permission to perform
+this action.») vienen de la comprobación de derechos del propio GLPI.
 
 **Otorgamientos (`Grant`)**
 
@@ -434,11 +451,12 @@ casos detente y avisa.
 | `approver_invalid` | The approver does not exist or you are not allowed to see it. | Aprobador inexistente o no visible | Quita `users_id_approver` y anota quién aprobó en la nota |
 | `account_invalid` | The account does not exist or you are not allowed to see it. | Cuenta de Accounts Inventory inválida | Quita el campo; aviso |
 | `owner_request_required`, `owner_status_forbidden`, `owner_field_forbidden`, `owner_justification_required` | As owner you can only request a revocation or a modification... / A revocation or modification request needs a justification. | Reglas del perfil dueño: no te aplican | Si las ves, estás usando el perfil equivocado: detente y avisa |
-| (sin código) | Select a role. | `plugin_iam_roles_id` inexistente | Verifica el rol (paso 3) |
-| (sin código) | The role does not exist or its resource is in the trash. | Rol de un recurso en la papelera | Aviso |
-| (sin código) | The resource does not exist or you are not allowed to see it. | Recurso no visible | Aviso |
-| (sin código) | The person does not exist or you are not allowed to see it. | Persona inexistente o fuera de tu alcance | Verifica el solicitante (paso 2); aviso |
-| (sin código) | You don't have permission to perform this action. | Permiso denegado: beneficiario igual a ti, rol de un recurso que no ves, o faltan datos | Revisa el paso 2 y 3; si persiste, aviso |
+| `role_required` | Select a role. | `plugin_iam_roles_id` ausente | Verifica el rol (paso 3) |
+| `role_invalid` | The role does not exist or its resource is in the trash. | Rol de un recurso en la papelera | Aviso |
+| `role_resource_mismatch` | The role does not belong to the selected resource. | `plugin_iam_resources_id` no coincide con el rol | No envíes `plugin_iam_resources_id`; se toma del rol |
+| `resource_invalid` | The resource does not exist or you are not allowed to see it. | Recurso no visible | Aviso |
+| `person_invalid` | The person does not exist or you are not allowed to see it. | Persona inexistente o fuera de tu alcance | Verifica el solicitante (paso 2); aviso |
+| (sin código, de GLPI) | You don't have permission to perform this action. | Permiso denegado: beneficiario igual a ti, rol de un recurso que no ves, o faltan datos | Revisa el paso 2 y 3; si persiste, aviso |
 
 **Notas (`Note`)**
 
@@ -450,8 +468,8 @@ casos detente y avisa.
 | `reference_invalid` | The corrected entry does not exist or belongs to another item. | `plugin_iam_notes_id` inválido | Verifica el número de la nota que corriges |
 | `append_only` | Log entries cannot be changed or deleted. Add a correction instead. | Intentaste editar o borrar | No reintentes: crea una nota de corrección |
 
-**Asignaciones persona-puesto (`Position_User`)** (el agente solo las lee; estos errores explican
-lo que verías si un ticket pidiera un cambio de puesto)
+**Asignaciones persona-puesto (`Position_User`)** (el agente no debería crearlas; estos errores explican lo
+que verías si un ticket pidiera un cambio de puesto)
 
 | Código | Mensaje (en_GB) | Significado |
 |---|---|---|
@@ -459,8 +477,10 @@ lo que verías si un ticket pidiera un cambio de puesto)
 | `date_invalid` | A date is not valid (expected format YYYY-MM-DD). | Fecha mal formada |
 | `date_order` | The end date cannot be before the begin date. | `date_end` anterior a `date_begin` |
 | `primary_duplicate` | The person already has an active primary position. | Ya tiene otro puesto principal vigente |
-| (sin código) | Select a position. / The position is not active. / Select a person. / The person does not exist or you are not allowed to see it. | Puesto o persona inválidos |
-| (sin código) | The ticket does not exist or you are not allowed to see it. | `tickets_id` inválido |
+| `agent_requires_ticket` | The agent can only assign a position with its ticket. | Falta `tickets_id` en sesión de agente |
+| `position_required`, `position_inactive` | Select a position. / The position is not active. | Puesto ausente o inactivo |
+| `person_required`, `person_invalid` | Select a person. / The person does not exist or you are not allowed to see it. | Persona ausente o fuera de alcance |
+| `ticket_invalid` | The ticket does not exist or you are not allowed to see it. | `tickets_id` inválido |
 
 Ejemplo de error (HTTP 400): registrar sin `tickets_id`.
 
@@ -471,10 +491,10 @@ curl -s -w "\nHTTP %{http_code}\n" -H "App-Token: $APP_TOKEN" -H "Session-Token:
 ```
 
 ```json
-["ERROR_GLPI_ADD", "The agent can only register a grant with its ticket."]
+["ERROR_GLPI_ADD", "[agent_cannot_activate_without_ticket] The agent can only register a grant with its ticket."]
 ```
 
-Otros dos ejemplos que fallan por diseño:
+Otros ejemplos que fallan por diseño (varias reglas a la vez devuelven todos los códigos):
 
 ```bash
 # Intentar dar la aprobación de seguridad: HTTP 400, agent_cannot_approve
@@ -534,6 +554,8 @@ curl -s -w "\nHTTP %{http_code}\n" -H "App-Token: $APP_TOKEN" -H "Session-Token:
 
 - La API respeta la entidad y la visibilidad del perfil: un usuario que no ve un recurso tampoco ve sus
   otorgamientos. La entidad de un otorgamiento es la de su recurso.
+- Los errores del plugin empiezan con `[código]` estable; con varias reglas incumplidas el mensaje trae
+  todos los códigos.
 - Los otorgamientos y las notas no se borran ni se purgan (ni siquiera con un Super-Admin).
 - `source` vale `manual` (pantalla), `api` (API con un usuario normal) o `agent` (perfil «IAM - Agente»).
 - Los listados paginan con `range=0-49`; una respuesta 206 indica que hay más.

@@ -198,16 +198,28 @@ class Position_User extends CommonDBRelation
         return true;
     }
 
-    /** User-facing message of a PositionPeriod::validate() error code. */
+    /** User-facing message of an assignment error code, prefixed with the code. */
     public static function errorMessage(string $code): string
     {
-        return match ($code) {
-            'date_order'        => __('The end date cannot be before the begin date.', 'iam'),
-            'date_invalid'      => __('A date is not valid (expected format YYYY-MM-DD).', 'iam'),
-            'primary_duplicate' => __('The person already has an active primary position.', 'iam'),
-            'type_invalid'      => __('The assignment type is not valid.', 'iam'),
-            default             => __('The assignment is not valid.', 'iam'),
-        };
+        return ErrorMessage::format($code, match ($code) {
+            'date_order'            => __('The end date cannot be before the begin date.', 'iam'),
+            'date_invalid'          => __('A date is not valid (expected format YYYY-MM-DD).', 'iam'),
+            'primary_duplicate'     => __('The person already has an active primary position.', 'iam'),
+            'type_invalid'          => __('The assignment type is not valid.', 'iam'),
+            'agent_requires_ticket' => __('The agent can only assign a position with its ticket.', 'iam'),
+            'position_required'     => __('Select a position.', 'iam'),
+            'position_inactive'     => __('The position is not active.', 'iam'),
+            'person_required'       => __('Select a person.', 'iam'),
+            'person_invalid'        => __('The person does not exist or you are not allowed to see it.', 'iam'),
+            'ticket_invalid'        => __('The ticket does not exist or you are not allowed to see it.', 'iam'),
+            default                 => __('The assignment is not valid.', 'iam'),
+        });
+    }
+
+    /** @param list<string> $codes */
+    private static function failCodes(array $codes): false
+    {
+        return self::fail(ErrorMessage::combine(array_map(self::errorMessage(...), $codes)));
     }
 
     private static function fail(string $message): false
@@ -269,19 +281,19 @@ class Position_User extends CommonDBRelation
         }
         $position = new Position();
         if (!$position->getFromDB((int) ($input['plugin_iam_positions_id'] ?? 0))) {
-            return self::fail(__('Select a position.', 'iam'));
+            return self::failCodes(['position_required']);
         }
         if ((int) $position->fields['is_active'] !== 1) {
-            return self::fail(__('The position is not active.', 'iam'));
+            return self::failCodes(['position_inactive']);
         }
         $usersId = (int) ($input['users_id'] ?? 0);
         $user = new User();
         if ($usersId <= 0 || !$user->getFromDB($usersId)) {
-            return self::fail(__('Select a person.', 'iam'));
+            return self::failCodes(['person_required']);
         }
         // The person must belong to an entity the session can see (no assignment of people out of scope)
         if (!self::userVisible($usersId)) {
-            return self::fail(__('The person does not exist or you are not allowed to see it.', 'iam'));
+            return self::failCodes(['person_invalid']);
         }
         $data = self::cleanDates([
             'plugin_iam_positions_id' => (int) $position->getID(),
@@ -292,12 +304,15 @@ class Position_User extends CommonDBRelation
             'date_end'                => $input['date_end'] ?? null,
             'tickets_id'              => (int) ($input['tickets_id'] ?? 0),
         ]);
-        $errors = PositionPeriod::validate($data, self::otherRows($usersId, 0), date('Y-m-d'));
+        $errors = array_merge(
+            PositionPeriod::validate($data, self::otherRows($usersId, 0), date('Y-m-d')),
+            PositionPeriod::agentErrors($data, Rights::activeRoleKey())
+        );
         if ($errors !== []) {
-            return self::fail(self::errorMessage($errors[0]));
+            return self::failCodes($errors);
         }
         if (!self::ticketAllowed($data['tickets_id'])) {
-            return self::fail(__('The ticket does not exist or you are not allowed to see it.', 'iam'));
+            return self::failCodes(['ticket_invalid']);
         }
         // The entity is always the one of the position, never taken from the request
         $data['entities_id'] = (int) $position->fields['entities_id'];
@@ -320,12 +335,12 @@ class Position_User extends CommonDBRelation
         $merged = array_merge($this->fields, $input);
         $errors = PositionPeriod::validate($merged, self::otherRows((int) $this->fields['users_id'], (int) $this->getID()), date('Y-m-d'));
         if ($errors !== []) {
-            return self::fail(self::errorMessage($errors[0]));
+            return self::failCodes($errors);
         }
         if (isset($input['tickets_id'])) {
             $input['tickets_id'] = (int) $input['tickets_id'];
             if ($input['tickets_id'] !== (int) $this->fields['tickets_id'] && !self::ticketAllowed($input['tickets_id'])) {
-                return self::fail(__('The ticket does not exist or you are not allowed to see it.', 'iam'));
+                return self::failCodes(['ticket_invalid']);
             }
         }
         return $input;
