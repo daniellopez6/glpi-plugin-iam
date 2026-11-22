@@ -429,7 +429,7 @@ sin `addDefaultWhere`, derechos a nivel de ítem faltantes y claves de padre mut
 - **XSS**: Twig con autoescape, sin `|raw` salvo HTML sanitizado por GLPI; datos
   hacia JS por `data-*`/JSON codificado, nunca interpolados en scripts. La matriz
   y el panel nominal escapan todo texto (nombres, notas, comentarios).
-- **CSRF**: `csrf_compliant` y token en todo POST/AJAX que modifica.
+- **CSRF**: `csrf_compliant`; en GLPI 12 la protección la aplica el kernel (`CheckCsrfListener` + `CsrfChecker`: rechaza POST con `Sec-Fetch-Site` cross-site/same-site u `Origin` distinto) para todo front de plugin; `csrf_token()` está deprecado y no se usa. Los endpoints AJAX que modifican deben ser POST y pasar por el kernel.
 - **Separación de funciones en el propio plugin**: nadie valida sus accesos; el
   aprobador de seguridad no puede ser quien solicita ni el beneficiario; el agente
   (`source=agent`) no puede aprobar ni cerrar campañas.
