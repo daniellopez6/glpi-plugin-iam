@@ -21,10 +21,11 @@
    {%- else -%}
       <td class="iam-agg{{ b.deviations ? ' iam-has-dev' : '' }}{{ b.forbidden ? ' iam-has-forbidden' : '' }}">
          {%- if b.expectation -%}<i class="ti {{ glyphs[b.expectation] }} iam-e-{{ b.expectation }}" aria-hidden="true"></i>{% if b.mixed %}<sup class="iam-mixed">+</sup>{% endif %}{%- else -%}<span class="iam-e-none" aria-hidden="true">·</span>{%- endif -%}
-         {%- if b.expected > 0 -%}<span class="iam-count">{{ b.complete }}/{{ b.expected }}</span>
+         {#- expected / complete / missing are only sent to the register readers (absent for asset owners) -#}
+         {%- if members_visible and b.expected|default(0) > 0 -%}<span class="iam-count">{{ b.complete }}/{{ b.expected }}</span>
          {%- elseif b.holders > 0 -%}<span class="iam-count">{{ b.holders }}</span>{%- endif -%}
          {%- if b.deviations -%}<span class="iam-dev"><i class="ti {{ b.forbidden ? 'ti-ban' : 'ti-alert-triangle' }}" aria-hidden="true"></i>{{ b.deviations }}</span>{%- endif -%}
-         {%- if b.missing and members_visible -%}<span class="iam-miss"><i class="ti ti-point-filled" aria-hidden="true"></i>{{ b.missing }}</span>{%- endif -%}
+         {%- if members_visible and b.missing|default(0) -%}<span class="iam-miss"><i class="ti ti-point-filled" aria-hidden="true"></i>{{ b.missing }}</span>{%- endif -%}
       </td>
    {%- endif -%}
 {% endmacro %}
@@ -114,7 +115,11 @@
       <span><i class="ti ti-circle-half-2 iam-e-on_request" aria-hidden="true"></i> {{ expectations.on_request }}</span>
       <span><i class="ti ti-ban iam-e-forbidden" aria-hidden="true"></i> {{ expectations.forbidden }}</span>
       <span><span class="iam-e-none" aria-hidden="true">·</span> {{ __('No expectation', 'iam') }}</span>
-      <span><span class="iam-count">3/4</span> {{ __('people with every expected access / people expected', 'iam') }}</span>
+      {% if members_visible %}
+         <span><span class="iam-count">3/4</span> {{ __('people with every expected access / people expected', 'iam') }}</span>
+      {% else %}
+         <span><span class="iam-count">3</span> {{ __('People holding it as expected', 'iam') }}</span>
+      {% endif %}
       <span><span class="iam-dev"><i class="ti ti-alert-triangle" aria-hidden="true"></i>2</span> {{ __('people holding an access not expected', 'iam') }}</span>
       <span><span class="iam-dev"><i class="ti ti-ban" aria-hidden="true"></i>1</span> {{ __('…including a forbidden one', 'iam') }}</span>
       {% if members_visible %}
@@ -183,9 +188,12 @@
          {% endfor %}
          {% if bucket %}
             <tbody class="iam-group iam-bucket">
-               <tr data-pos="0" data-name="{{ __('No active position', 'iam')|lower }}">
-                  <th scope="row" class="iam-pos" title="{{ __('People who hold accesses but have no active position: every such access is unexpected', 'iam') }}">
-                     <i class="ti ti-user-question me-1" aria-hidden="true"></i><span class="iam-pos-name">{{ __('No active position', 'iam') }}</span>
+               {# Asset owners only receive the assignments that qualify a grant: their bucket also holds the people none
+                  of whose positions expects the access, hence its own label #}
+               {% set bucket_label = members_visible ? __('No active position', 'iam') : __('No position expects it', 'iam') %}
+               <tr data-pos="0" data-name="{{ bucket_label|lower }}">
+                  <th scope="row" class="iam-pos" title="{{ members_visible ? __('People who hold accesses but have no active position: every such access is unexpected', 'iam') : __('People holding an access that none of their positions expects: every such access is unexpected', 'iam') }}">
+                     <i class="ti ti-user-question me-1" aria-hidden="true"></i><span class="iam-pos-name">{{ bucket_label }}</span>
                      <span class="iam-dev"><i class="ti ti-alert-triangle" aria-hidden="true"></i>{{ bucket.deviations }}</span>
                   </th>
                   {% for b in bucket.blocks %}{{ m.block(b, members_visible, glyphs) }}{% endfor %}

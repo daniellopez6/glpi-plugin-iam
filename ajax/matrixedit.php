@@ -45,8 +45,10 @@ if ($positionId <= 0 || $roleId <= 0 || ($expectation !== '' && !in_array($expec
 }
 
 // upsert() checks CONFIG UPDATE and write access on the row (position visible, role's resource writable) again
+// Only the messages queued by this upsert() are taken (and answered); the others stay for the next page
+$queue = Matrix::messageQueue();
 $saved = Position_Role::upsert($positionId, $roleId, $expectation === '' ? null : $expectation);
-$message = Matrix::takeMessages();
+$message = Matrix::takeMessagesSince($queue);
 $cell = Matrix::cell($positionId, $roleId);
 if (!$saved) {
     // 403 when the session cannot even see the cell; otherwise the refusal comes from the business rules

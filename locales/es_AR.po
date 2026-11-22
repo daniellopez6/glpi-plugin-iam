@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  iam\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-22 17:42+0000\n"
+"POT-Creation-Date: 2026-11-22 18:18+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: es_AR\n"
@@ -27,15 +27,15 @@ msgstr "No tiene permiso para editar la matriz."
 msgid "The expectation is not valid."
 msgstr "La expectativa no es válida."
 
-#: ajax/matrixedit.php:57 front/matrix.php:104
+#: ajax/matrixedit.php:59 front/matrix.php:104
 msgid "The matrix cell could not be saved."
 msgstr "No se pudo guardar la celda de la matriz."
 
-#: ajax/matrixedit.php:61
+#: ajax/matrixedit.php:63
 msgid "Matrix cell saved."
 msgstr "Celda de la matriz guardada."
 
-#: front/matrix.php:100 src/Matrix.php:375
+#: front/matrix.php:100 src/Matrix.php:451
 msgid "Expected, not granted"
 msgstr "Esperado, no otorgado"
 
@@ -43,7 +43,7 @@ msgstr "Esperado, no otorgado"
 msgid "Privileged role"
 msgstr "Rol privilegiado"
 
-#: front/matrix.php:102 templates/matrix.html.twig:124
+#: front/matrix.php:102 templates/matrix.html.twig:129
 msgid "Break-glass role"
 msgstr "Rol de emergencia (break-glass)"
 
@@ -63,7 +63,7 @@ msgstr "Cargando…"
 msgid "The people of this cell could not be loaded."
 msgstr "No se pudieron cargar las personas de esta celda."
 
-#: front/matrix.php:114 src/Menu.php:56 templates/matrix.html.twig:40
+#: front/matrix.php:114 src/Menu.php:56 templates/matrix.html.twig:41
 msgid "Access matrix"
 msgstr "Matriz de accesos"
 
@@ -79,11 +79,11 @@ msgstr "Bajo solicitud"
 msgid "Forbidden"
 msgstr "Prohibido"
 
-#: front/matrix.php:95 templates/matrix.html.twig:116 templates/matrix_cell.html.twig:39
+#: front/matrix.php:95 templates/matrix.html.twig:117 templates/matrix_cell.html.twig:39
 msgid "No expectation"
 msgstr "Sin expectativa"
 
-#: front/matrix.php:96
+#: front/matrix.php:96 templates/matrix.html.twig:121
 msgid "People holding it as expected"
 msgstr "Personas que lo tienen según lo esperado"
 
@@ -349,15 +349,15 @@ msgstr "API"
 msgid "Agent"
 msgstr "Agente"
 
-#: src/Matrix.php:374
+#: src/Matrix.php:450
 msgid "Holds it, as expected"
 msgstr "Lo tiene, según lo esperado"
 
-#: src/Matrix.php:376
+#: src/Matrix.php:452
 msgid "Holds it, not expected"
 msgstr "Lo tiene, no previsto"
 
-#: src/Matrix.php:377
+#: src/Matrix.php:453
 msgid "Holds it, forbidden"
 msgstr "Lo tiene, prohibido"
 
@@ -424,7 +424,7 @@ msgstr[1] "Entradas de bitácora"
 msgid "The position has assignments (the history is kept). Deactivate it instead of deleting it."
 msgstr "El puesto tiene asignaciones (el historial se conserva). Desactívelo en lugar de eliminarlo."
 
-#: src/Position.php:34 templates/matrix.html.twig:145 templates/matrix_cell.html.twig:24
+#: src/Position.php:34 templates/matrix.html.twig:150 templates/matrix_cell.html.twig:24
 #: templates/position_user_form.html.twig:19 templates/positions_tab.html.twig:21 templates/positions_tab.html.twig:80
 msgid "Position"
 msgid_plural "Positions"
@@ -652,8 +652,8 @@ msgid "The linked item does not exist or you are not allowed to see it."
 msgstr "El elemento vinculado no existe o no tiene permiso para verlo."
 
 #: src/Resource.php:45 templates/grant_form.html.twig:25 templates/grant_form.html.twig:46
-#: templates/grant_form.html.twig:55 templates/grants_tab.html.twig:36 templates/matrix.html.twig:77
-#: templates/matrix.html.twig:145 templates/matrix_cell.html.twig:28 templates/resource_item_tab.html.twig:20
+#: templates/grant_form.html.twig:55 templates/grants_tab.html.twig:36 templates/matrix.html.twig:78
+#: templates/matrix.html.twig:150 templates/matrix_cell.html.twig:28 templates/resource_item_tab.html.twig:20
 msgid "Resource"
 msgid_plural "Resources"
 msgstr[0] "Recurso"
@@ -758,7 +758,7 @@ msgstr "Como dueño puede solicitar la revocación o la modificación de este ac
 msgid "Next"
 msgstr "Siguiente"
 
-#: templates/grant_form.html.twig:58 templates/matrix.html.twig:42
+#: templates/grant_form.html.twig:58 templates/matrix.html.twig:43
 msgid "Entity"
 msgstr "Entidad"
 
@@ -778,39 +778,39 @@ msgstr "Registrar un otorgamiento"
 msgid "No grants."
 msgstr "Sin otorgamientos."
 
-#: templates/matrix.html.twig:100
+#: templates/matrix.html.twig:101
 msgid "Expand roles"
 msgstr "Expandir roles"
 
-#: templates/matrix.html.twig:101
+#: templates/matrix.html.twig:102
 msgid "Collapse"
 msgstr "Contraer"
 
-#: templates/matrix.html.twig:104
+#: templates/matrix.html.twig:105
 msgid "Edit mode"
 msgstr "Modo edición"
 
-#: templates/matrix.html.twig:111 templates/matrix.html.twig:112
+#: templates/matrix.html.twig:112 templates/matrix.html.twig:113
 msgid "Legend"
 msgstr "Referencias"
 
-#: templates/matrix.html.twig:117
+#: templates/matrix.html.twig:119
 msgid "people with every expected access / people expected"
 msgstr "personas con todos los accesos esperados / personas esperadas"
 
-#: templates/matrix.html.twig:118
+#: templates/matrix.html.twig:123
 msgid "people holding an access not expected"
 msgstr "personas con un acceso no previsto"
 
-#: templates/matrix.html.twig:119
+#: templates/matrix.html.twig:124
 msgid "…including a forbidden one"
 msgstr "…incluido uno prohibido"
 
-#: templates/matrix.html.twig:125
+#: templates/matrix.html.twig:130
 msgid "Click a resource to see its roles, a role cell to see the people."
 msgstr "Clic en un recurso para ver sus roles; en una celda de rol para ver las personas."
 
-#: templates/matrix.html.twig:131
+#: templates/matrix.html.twig:136
 msgid ""
 "You see the people who hold an access to your resources. People who should have an access but do not are only shown "
 "to the access register readers."
@@ -818,103 +818,111 @@ msgstr ""
 "Ve las personas que tienen acceso a sus recursos. Las personas que deberían tener un acceso y no lo tienen solo se "
 "muestran a quienes leen el registro de accesos."
 
-#: templates/matrix.html.twig:138
+#: templates/matrix.html.twig:143
 msgid "No deviations with these filters."
 msgstr "No hay desvíos con estos filtros."
 
-#: templates/matrix.html.twig:138
+#: templates/matrix.html.twig:143
 msgid "Nothing to show: no visible positions or resources with these filters."
 msgstr "Nada para mostrar: no hay puestos ni recursos visibles con estos filtros."
 
-#: templates/matrix.html.twig:154 templates/matrix.html.twig:176
+#: templates/matrix.html.twig:159 templates/matrix.html.twig:181
 msgid "People with deviations"
 msgstr "Personas con desvíos"
 
-#: templates/matrix.html.twig:155 templates/matrix.html.twig:177
+#: templates/matrix.html.twig:160 templates/matrix.html.twig:182
 msgid "People missing an expected access"
 msgstr "Personas a las que les falta un acceso esperado"
 
-#: templates/matrix.html.twig:167
+#: templates/matrix.html.twig:172
 msgid "No area"
 msgstr "Sin área"
 
-#: templates/matrix.html.twig:186 templates/matrix.html.twig:188 templates/matrix_cell.html.twig:26
+#: templates/matrix.html.twig:193 templates/matrix_cell.html.twig:26
 msgid "No active position"
 msgstr "Sin puesto vigente"
 
-#: templates/matrix.html.twig:187
+#: templates/matrix.html.twig:193 templates/matrix_cell.html.twig:26
+msgid "No position expects it"
+msgstr "Ningún puesto lo prevé"
+
+#: templates/matrix.html.twig:195
 msgid "People who hold accesses but have no active position: every such access is unexpected"
 msgstr "Personas con accesos pero sin puesto vigente: todos esos accesos son no previstos"
 
-#: templates/matrix.html.twig:202
+#: templates/matrix.html.twig:195
+msgid "People holding an access that none of their positions expects: every such access is unexpected"
+msgstr "Personas con un acceso que ninguno de sus puestos prevé: todos esos accesos son no previstos"
+
+#: templates/matrix.html.twig:210
 msgid "People in this cell"
 msgstr "Personas de esta celda"
 
-#: templates/matrix.html.twig:203
+#: templates/matrix.html.twig:211
 msgid "Close"
 msgstr "Cerrar"
 
-#: templates/matrix.html.twig:42
+#: templates/matrix.html.twig:43
 msgid "with sub-entities"
 msgstr "con subentidades"
 
-#: templates/matrix.html.twig:45
+#: templates/matrix.html.twig:46
 msgid "People holding at least one access that is not expected or is forbidden"
 msgstr "Personas con al menos un acceso no previsto o prohibido"
 
-#: templates/matrix.html.twig:46
+#: templates/matrix.html.twig:47
 msgid "people with deviations"
 msgstr "personas con desvíos"
 
-#: templates/matrix.html.twig:49
+#: templates/matrix.html.twig:50
 msgid "deviating grants"
 msgstr "otorgamientos con desvío"
 
-#: templates/matrix.html.twig:52
+#: templates/matrix.html.twig:53
 msgid "forbidden held"
 msgstr "prohibidos en uso"
 
-#: templates/matrix.html.twig:56 templates/matrix.html.twig:121
+#: templates/matrix.html.twig:57 templates/matrix.html.twig:126
 msgid "people missing an expected access"
 msgstr "personas sin un acceso esperado"
 
-#: templates/matrix.html.twig:60
+#: templates/matrix.html.twig:61
 msgid "positions"
 msgstr "puestos"
 
-#: templates/matrix.html.twig:60
+#: templates/matrix.html.twig:61
 msgid "resources"
 msgstr "recursos"
 
-#: templates/matrix.html.twig:60 templates/matrix.html.twig:148
+#: templates/matrix.html.twig:61 templates/matrix.html.twig:153
 msgid "roles"
 msgstr "roles"
 
-#: templates/matrix.html.twig:68
+#: templates/matrix.html.twig:69
 msgid "Area"
 msgstr "Área"
 
-#: templates/matrix.html.twig:70
+#: templates/matrix.html.twig:71
 msgid "All areas"
 msgstr "Todas las áreas"
 
-#: templates/matrix.html.twig:79
+#: templates/matrix.html.twig:80
 msgid "All resources"
 msgstr "Todos los recursos"
 
-#: templates/matrix.html.twig:87
+#: templates/matrix.html.twig:88
 msgid "Only deviations"
 msgstr "Solo desvíos"
 
-#: templates/matrix.html.twig:91
+#: templates/matrix.html.twig:92
 msgid "Privileged only"
 msgstr "Solo privilegiados"
 
-#: templates/matrix.html.twig:93
+#: templates/matrix.html.twig:94
 msgid "Apply"
 msgstr "Aplicar"
 
-#: templates/matrix.html.twig:98
+#: templates/matrix.html.twig:99
 msgid "Filter positions or resources"
 msgstr "Filtrar puestos o recursos"
 

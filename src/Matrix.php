@@ -17,6 +17,7 @@
 
 namespace GlpiPlugin\Iam;
 
+use Glpi\DBAL\QueryIdentifier;
 use Glpi\DBAL\QuerySubQuery;
 use Session;
 use Ticket;
@@ -30,9 +31,10 @@ use User;
  * restriction for positions. The page reads ONE query per table (Review Focus 5); the panel is loaded per cell.
  *
  * People of a position are only listed with the read right on the register (Position_User::canView()). A session
- * that sees the register only through ownership (asset owner, READ_OWNED) sees the assignments of the people who
- * hold a grant it can see: enough to tell whether each access to its resources is expected, not who lacks one
- * (the page says so and hides the "missing" figures).
+ * that sees the register only through ownership (asset owner, READ_OWNED) sees only the assignments that justify or
+ * forbid a grant it can see (see assignmentCriteria()): enough to tell whether each access to its resources is
+ * expected, not who lacks one. For such sessions the server never sends the 'missing' people nor the figures derived
+ * from them (expected, complete, missing), and only the positions with something to show are rows.
  */
 final class Matrix
 {
@@ -66,8 +68,21 @@ final class Matrix
     }
 
     /**
-     * Assignments the session may use: Position_User::visibilityCriteria() with the register read right; otherwise the
-     * assignments, in visible positions, of the people holding a grant visible to the session.
+     * Assignments the session may use.
+     *
+     * - Register readers (Position_User::canView()): Position_User::visibilityCriteria().
+     * - Asset owners (READ_OWNED only), the minimum needed to qualify the grants they can see. An assignment row
+     *   (users_id U, positions_id P) is used only when ALL of:
+     *     1. P is visible (recursion-aware entity restriction), and
+     *     2. there is a grant G with G.users_id = U, G visible to the session (Grant::visibilityCriteria()), G held
+     *        (status active / revoke_pending / modify_pending) and G's resource not deleted, and
+     *     3. P has a Position_Role cell, of any expectation (allowed / on_request / forbidden), on G's role, visible
+     *        to the session (Position_Role::visibilityCriteria()).
+     *   (2 and 3 are one correlated subquery: U IN (holders of such a grant whose role P has a cell on).) These are
+     *   exactly the assignments MatrixBuilder needs to tell ok / forbidden_held from unexpected for the visible
+     *   grants; an owner never receives the other positions of a person. A holder none of whose positions has a cell
+     *   on any of their visible roles has no usable assignment: the owner page shows them in the bucket row, labelled
+     *   "No position expects it" for owners.
      *
      * @return array<mixed>
      */
@@ -79,12 +94,22 @@ final class Matrix
         }
         $pt = Position::getTable();
         $gt = Grant::getTable();
+        $ct = Position_Role::getTable();
+        $rt = Resource::getTable();
         return [
             "$t.plugin_iam_positions_id" => new QuerySubQuery(['SELECT' => "$pt.id", 'FROM' => $pt, 'WHERE' => self::positionCriteria()]),
             "$t.users_id" => new QuerySubQuery([
-                'SELECT' => "$gt.users_id",
-                'FROM'   => $gt,
-                'WHERE'  => [Grant::visibilityCriteria(), "$gt.status" => MatrixBuilder::HELD_STATUSES],
+                'SELECT'     => "$gt.users_id",
+                'FROM'       => $gt,
+                'INNER JOIN' => [$ct => ['ON' => [$ct => 'plugin_iam_roles_id', $gt => 'plugin_iam_roles_id']]],
+                'WHERE'      => [
+                    Grant::visibilityCriteria(),
+                    Position_Role::visibilityCriteria(),
+                    "$gt.status"                   => MatrixBuilder::HELD_STATUSES,
+                    "$gt.plugin_iam_resources_id"  => new QuerySubQuery(['SELECT' => "$rt.id", 'FROM' => $rt, 'WHERE' => ["$rt.is_deleted" => 0]]),
+                    "$gt.users_id"                 => new QueryIdentifier("$t.users_id"),
+                    "$ct.plugin_iam_positions_id"  => new QueryIdentifier("$t.plugin_iam_positions_id"),
+                ],
             ]),
         ];
     }
@@ -201,6 +226,15 @@ final class Matrix
         $model = MatrixBuilder::build($tree['rows'], $roles, $cells, $assignments, $grants, $today);
         $without = MatrixBuilder::withoutPosition($roles, $assignments, $grants, $today);
         $summary = MatrixSummary::summarize($model, $without);
+        $areas = $tree['areas'];
+        $members = self::membersVisible();
+        if (!$members) {
+            // Asset owners: no 'missing' figures, and only the positions where they have something to see
+            $summary = MatrixSummary::forOwner($summary);
+            $kept = MatrixSummary::onlyRowsWithBlocks($model, $summary, $areas);
+            $model = $kept['model'];
+            $areas = $kept['areas'];
+        }
         if ($onlyDeviations) {
             $model = MatrixSummary::onlyDeviations($model, $summary);
         }
@@ -214,8 +248,8 @@ final class Matrix
         return [
             'model'      => $model,
             'summary'    => $summary,
-            'client'     => MatrixSummary::clientCells($model, $without),
-            'areas'      => $tree['areas'],
+            'client'     => MatrixSummary::clientCells($model, $without, $members),
+            'areas'      => $areas,
             'resources'  => $resourceName,
             'breakglass' => $breakglass,
         ];
@@ -265,7 +299,12 @@ final class Matrix
         if ($positionId === MatrixBuilder::NO_POSITION) {
             $people = array_values(array_unique(array_map(static fn (array $g): int => (int) $g['users_id'], $grants)));
         } else {
-            $people = new QuerySubQuery(['SELECT' => "$ut.users_id", 'FROM' => $ut, 'WHERE' => ["$ut.plugin_iam_positions_id" => $positionId]]);
+            // Same predicates as the page: only the assignments of the row the session may use, not ended
+            $people = new QuerySubQuery([
+                'SELECT' => "$ut.users_id",
+                'FROM'   => $ut,
+                'WHERE'  => [self::assignmentCriteria(), self::notEnded($today), "$ut.plugin_iam_positions_id" => $positionId],
+            ]);
         }
         $assignments = $people === [] ? [] : self::fetch([
             'SELECT' => ["$ut.plugin_iam_positions_id", "$ut.users_id", "$ut.date_begin", "$ut.date_end"],
@@ -288,6 +327,7 @@ final class Matrix
             $built = MatrixBuilder::build([['id' => $positionId, 'name' => $positionName]], $roles, $cells, $assignments, $grants, $today);
         }
         $counts = $built['cells'][$key] ?? ['expectation' => null, 'ok' => 0, 'expected' => 0, 'unexpected' => 0, 'forbidden_held' => 0];
+        $members = self::membersVisible();
 
         return [
             'position'    => $positionName,
@@ -295,13 +335,13 @@ final class Matrix
             'level'       => (string) $role->fields['level'],
             'resource'    => (string) $resource->fields['name'],
             'expectation' => $counts['expectation'],
-            'counts'      => MatrixSummary::clientCells(['cells' => [$key => $counts]], [])[$key],
-            'holders'     => self::describeHolders($built['holders'][$key] ?? [], $grants),
+            'counts'      => MatrixSummary::clientCells(['cells' => [$key => $counts]], [], $members)[$key],
+            'holders'     => self::describeHolders(MatrixSummary::visibleHolders($built['holders'][$key] ?? [], $members), $grants),
         ];
     }
 
     /**
-     * Display data of the holders of a cell: name (with a link when the session may open users), state, grant and
+     * Display data of the holders of a cell: name (with a link when the session may open that user), state, grant and
      * ticket (only when the session may see the ticket).
      *
      * @param list<array{users_id:int, state:string, grants_id:?int}> $holders
@@ -322,7 +362,11 @@ final class Matrix
         foreach (self::fetch(['SELECT' => ['id', 'name', 'realname', 'firstname'], 'FROM' => User::getTable(), 'WHERE' => ['id' => $ids]]) as $u) {
             $names[(int) $u['id']] = formatUserName((int) $u['id'], (string) $u['name'], (string) ($u['realname'] ?? ''), (string) ($u['firstname'] ?? ''));
         }
-        $userLinks = User::canView();
+        $userVisible = [];
+        foreach ($ids as $id) {
+            $u = new User();
+            $userVisible[$id] = $u->getFromDB($id) && $u->canViewItem();
+        }
         $ticketVisible = [];
         $out = [];
         foreach ($holders as $h) {
@@ -335,7 +379,7 @@ final class Matrix
             }
             $out[] = [
                 'name'         => $names[$h['users_id']] ?? ('#' . $h['users_id']),
-                'user_url'     => $userLinks ? User::getFormURLWithID($h['users_id']) : '',
+                'user_url'     => ($userVisible[$h['users_id']] ?? false) ? User::getFormURLWithID($h['users_id']) : '',
                 'state'        => $h['state'],
                 'grant'        => $g !== null ? (int) $g['id'] : 0,
                 'grant_url'    => $g !== null ? Grant::getFormURLWithID((int) $g['id']) : '',
@@ -348,19 +392,51 @@ final class Matrix
     }
 
     /**
-     * Messages queued by the plugin classes during a request (e.g. a refusal of upsert()), as plain text; the queue
-     * is emptied so they do not show up again on the next page.
+     * Snapshot of the session message queue, to be given to takeMessagesSince() after a call.
+     *
+     * @return array<mixed>
      */
-    public static function takeMessages(): string
+    public static function messageQueue(): array
     {
-        $all = [];
-        foreach ((array) ($_SESSION['MESSAGE_AFTER_REDIRECT'] ?? []) as $list) {
+        return (array) ($_SESSION['MESSAGE_AFTER_REDIRECT'] ?? []);
+    }
+
+    /**
+     * The messages queued since the snapshot (e.g. a refusal of upsert()), as plain text. Only those are taken: the
+     * queue is put back as it was in the snapshot, so unrelated messages still show up on the next page.
+     *
+     * @param array<mixed> $before
+     */
+    public static function takeMessagesSince(array $before): string
+    {
+        $own = self::messagesSince($before, self::messageQueue());
+        $_SESSION['MESSAGE_AFTER_REDIRECT'] = $before;
+        return implode(' ', $own);
+    }
+
+    /**
+     * Messages of $after that are not in $before (same type), decoded to plain text (pure).
+     *
+     * @param array<mixed> $before
+     * @param array<mixed> $after
+     * @return list<string>
+     */
+    public static function messagesSince(array $before, array $after): array
+    {
+        $out = [];
+        foreach ($after as $type => $list) {
+            $old = array_values((array) ($before[$type] ?? []));
             foreach ((array) $list as $m) {
-                $all[] = trim(strip_tags(html_entity_decode((string) $m, ENT_QUOTES | ENT_HTML5, 'UTF-8')));
+                if (in_array($m, $old, true)) {
+                    continue;
+                }
+                $text = trim(strip_tags(html_entity_decode((string) $m, ENT_QUOTES | ENT_HTML5, 'UTF-8')));
+                if ($text !== '') {
+                    $out[] = $text;
+                }
             }
         }
-        $_SESSION['MESSAGE_AFTER_REDIRECT'] = [];
-        return implode(' ', array_filter($all));
+        return $out;
     }
 
     /**

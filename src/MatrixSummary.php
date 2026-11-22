@@ -241,21 +241,91 @@ final class MatrixSummary
     }
 
     /**
+     * The model restricted to the rows that have at least one block (an expectation or a holder on a shown resource),
+     * and the areas to those that contain a kept row (an area is kept when it is the area of a kept row or one of its
+     * ancestors, by full name). Used for the asset owners, who must not browse the whole position structure.
+     *
+     * @param array<string,mixed>                 $model
+     * @param array<string,mixed>                 $summary
+     * @param list<array{id:int, name:string}>    $areas
+     * @return array{model: array<string,mixed>, areas: list<array{id:int, name:string}>}
+     */
+    public static function onlyRowsWithBlocks(array $model, array $summary, array $areas): array
+    {
+        $withBlock = [];
+        foreach (array_keys((array) ($summary['blocks'] ?? [])) as $bk) {
+            $withBlock[(int) explode(':', (string) $bk)[0]] = true;
+        }
+        $model['rows'] = array_values(array_filter(
+            (array) ($model['rows'] ?? []),
+            static fn (array $r): bool => isset($withBlock[(int) $r['id']])
+        ));
+        $used = [];
+        foreach ($model['rows'] as $r) {
+            $used[(string) $r['area']] = true;
+        }
+        $areas = array_values(array_filter($areas, static function (array $a) use ($used): bool {
+            foreach (array_keys($used) as $area) {
+                $area = (string) $area;
+                if ($area === $a['name'] || str_starts_with($area, $a['name'] . ' > ')) {
+                    return true;
+                }
+            }
+            return false;
+        }));
+        return ['model' => $model, 'areas' => $areas];
+    }
+
+    /**
+     * The summary as an asset owner may receive it: without who lacks an access, nor any figure derived from it
+     * (blocks lose expected, complete and missing; rows and resources lose missing; totals lose missing_people).
+     *
+     * @param array{blocks: array<string, array<string,mixed>>, rows: array<int, array<string,int>>, resources: array<int, array<string,int>>, totals: array<string,int>} $summary
+     * @return array{blocks: array<string, array<string,mixed>>, rows: array<int, array<string,int>>, resources: array<int, array<string,int>>, totals: array<string,int>}
+     */
+    public static function forOwner(array $summary): array
+    {
+        $drop = static fn (array $a, array $keys): array => array_diff_key($a, array_flip($keys));
+        return [
+            'blocks'    => array_map(static fn (array $b): array => $drop($b, ['expected', 'complete', 'missing']), $summary['blocks']),
+            'rows'      => array_map(static fn (array $r): array => $drop($r, ['missing']), $summary['rows']),
+            'resources' => array_map(static fn (array $r): array => $drop($r, ['missing']), $summary['resources']),
+            'totals'    => $drop($summary['totals'], ['missing_people']),
+        ];
+    }
+
+    /**
+     * The holders of a cell the session may see: everybody for the register readers; without the 'missing' entries
+     * (people expected to hold the role who do not) for the asset owners.
+     *
+     * @param list<array{users_id:int, state:string, grants_id:?int}> $holders
+     * @return list<array{users_id:int, state:string, grants_id:?int}>
+     */
+    public static function visibleHolders(array $holders, bool $membersVisible): array
+    {
+        if ($membersVisible) {
+            return $holders;
+        }
+        return array_values(array_filter($holders, static fn (array $h): bool => $h['state'] !== 'missing'));
+    }
+
+    /**
      * Role-level cells for the client: "posId:roleId" => [expectation code ('a' allowed, 'r' on request,
      * 'f' forbidden, '' none), ok, expected, unexpected, forbidden_held]. Missing = expected - ok on allowed cells.
+     * Without $membersVisible (asset owners) the expected figure is null: only holder counts are sent.
      *
      * @param array<string,mixed> $model
      * @param array<string,mixed> $without
-     * @return array<string, array{0:string, 1:int, 2:int, 3:int, 4:int}>
+     * @return array<string, array{0:string, 1:int, 2:?int, 3:int, 4:int}>
      */
-    public static function clientCells(array $model, array $without): array
+    public static function clientCells(array $model, array $without, bool $membersVisible = true): array
     {
         $out = [];
         foreach ((array) ($model['cells'] ?? []) + (array) ($without['cells'] ?? []) as $key => $c) {
             $out[(string) $key] = [
                 self::CODES[(string) ($c['expectation'] ?? '')] ?? '',
                 (int) $c['ok'],
-                (int) $c['expected'],
+                $membersVisible ? (int) $c['expected'] : null,
                 (int) $c['unexpected'],
                 (int) $c['forbidden_held'],
             ];

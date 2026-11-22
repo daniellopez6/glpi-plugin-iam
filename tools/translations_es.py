@@ -246,4 +246,6 @@ ES: dict = {
  "Expectation": "Expectativa",
  "Only people holding an access you can see are listed.": "Solo se listan las personas con un acceso que usted puede ver.",
  "Nobody in this cell.": "Nadie en esta celda.",
+ "No position expects it": "Ningún puesto lo prevé",
+ "People holding an access that none of their positions expects: every such access is unexpected": "Personas con un acceso que ninguno de sus puestos prevé: todos esos accesos son no previstos",
 }

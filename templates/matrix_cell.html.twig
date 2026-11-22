@@ -23,7 +23,7 @@
 <div class="iam-cell-head mb-3">
    <div class="text-secondary small">{{ __('Position', 'iam') }}</div>
    <div class="fw-bold mb-2">
-      {% if position %}{{ position }}{% else %}<i class="ti ti-user-question me-1" aria-hidden="true"></i>{{ __('No active position', 'iam') }}{% endif %}
+      {% if position %}{{ position }}{% else %}<i class="ti ti-user-question me-1" aria-hidden="true"></i>{{ members_visible ? __('No active position', 'iam') : __('No position expects it', 'iam') }}{% endif %}
    </div>
    <div class="text-secondary small">{{ __('Resource', 'iam') }} › {{ __('Role', 'iam') }}</div>
    <div class="fw-bold mb-2">

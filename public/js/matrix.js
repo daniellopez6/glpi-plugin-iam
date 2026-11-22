@@ -43,13 +43,35 @@
         return i;
     }
 
+    // glpi_toast_*() insert the message as HTML: every message (server ones included) is escaped first
+    function escapeHtml(text) {
+        return String(text)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
     function toast(message, isError) {
-        const fn = isError ? window.glpi_toast_error : window.glpi_toast_info;
-        if (typeof fn === 'function') {
-            fn(message);
-        } else if (isError) {
-            window.alert(message);
+        // GLPI declares them with const at the top level of a classic script: global, but not window properties
+        /* global glpi_toast_error, glpi_toast_info */
+        let fn = null;
+        if (isError && typeof glpi_toast_error === 'function') {
+            fn = glpi_toast_error;
+        } else if (!isError && typeof glpi_toast_info === 'function') {
+            fn = glpi_toast_info;
         }
+        if (fn !== null) {
+            fn(escapeHtml(message));
+        } else if (isError) {
+            window.alert(String(message));
+        }
+    }
+
+    // Expected figure of a role cell: null for the asset owners (the server does not send it)
+    function expectedOf(c) {
+        return typeof c[2] === 'number' ? c[2] : 0;
     }
 
     function init(root) {
@@ -118,8 +140,8 @@
             } else {
                 td.appendChild(el('span', 'iam-e-none', '·'));
             }
-            if (c[2] > 0) {
-                td.appendChild(el('span', 'iam-count', c[1] + '/' + c[2]));
+            if (expectedOf(c) > 0) {
+                td.appendChild(el('span', 'iam-count', c[1] + '/' + expectedOf(c)));
             } else if (c[1] > 0) {
                 td.appendChild(el('span', 'iam-count', c[1]));
             }
@@ -134,7 +156,7 @@
                 badge.appendChild(document.createTextNode(String(dev)));
                 td.appendChild(badge);
             }
-            const missing = code === 'a' ? c[2] - c[1] : 0;
+            const missing = code === 'a' ? expectedOf(c) - c[1] : 0;
             if (missing > 0 && members) {
                 const miss = el('span', 'iam-miss');
                 miss.appendChild(icon('ti-point-filled'));
@@ -149,8 +171,8 @@
                 return t[''] || '';
             }
             const parts = [t[c[0]] || ''];
-            if (c[2] > 0) {
-                parts.push((t.holding || '') + ': ' + c[1] + ' / ' + (t.expected || '') + ': ' + c[2]);
+            if (expectedOf(c) > 0) {
+                parts.push((t.holding || '') + ': ' + c[1] + ' / ' + (t.expected || '') + ': ' + expectedOf(c));
             } else if (c[1] > 0) {
                 parts.push((t.holding || '') + ': ' + c[1]);
             }
@@ -160,8 +182,8 @@
             if (c[4] > 0) {
                 parts.push((t.forbidden || '') + ': ' + c[4]);
             }
-            if (c[0] === 'a' && c[2] - c[1] > 0 && members) {
-                parts.push((t.missing || '') + ': ' + (c[2] - c[1]));
+            if (c[0] === 'a' && expectedOf(c) - c[1] > 0 && members) {
+                parts.push((t.missing || '') + ': ' + (expectedOf(c) - c[1]));
             }
             return parts.join(' · ');
         }
