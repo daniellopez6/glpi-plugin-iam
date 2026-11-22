@@ -1,6 +1,6 @@
 # Plugin IAM para GLPI 12 — Documento de diseño
 
-Fecha: 2026-11-22 · Estado: borrador para aprobación · Clave del plugin: `iam` (propuesta)
+Fecha: 2026-11-22 · Estado: en aprobación · Clave del plugin: `iam` (propuesta)
 
 ## 1. Intención
 
@@ -144,6 +144,14 @@ que referencia a la anterior.
 
 **Foto** (`Snapshot`): estado serializado de matriz + accesos + desvíos a una fecha
 (cron y manual), mismo patrón que `Snapshot` del ERM.
+
+**Modelo de registro (decidido)**: el plugin registra accesos *ya otorgados*.
+El pedido y su aprobación siguen en el ticket de GLPI (validaciones nativas);
+el analista o el agente cargan el grant con ticket y aprobador(es). Una
+aprobación faltante se detecta después, como desvío. El esquema de `Grant`
+incluye desde 1.0 el estado `pending` y `users_id_approver_security` (sin uso
+en 1.0) para poder sumar más adelante un circuito de solicitud y aprobación
+dentro del plugin sin migraciones disruptivas.
 
 ## 8. Motor de desvíos
 
@@ -294,6 +302,8 @@ en todas las tablas, incluidas las hijas).
 - Todos los puestos de la empresa se llevan en GLPI; una persona puede tener más de uno.
 - Notas en los controles que no se borran.
 - Enfoque A (plugin propio).
+- Opción 1: solo registro de accesos ya otorgados; aprobación en el ticket GLPI.
+- Repo público nuevo `daniellopez6/glpi-plugin-iam` para publicar a la comunidad.
 
 ## 16. Llamadas de Claude (revisables)
 
