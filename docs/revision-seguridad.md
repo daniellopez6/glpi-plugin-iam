@@ -1,6 +1,90 @@
 # Revisión de seguridad (OWASP ASVS 4.0 L2)
 
-Documento en construcción: se completa en la Tarea 13. Por ahora solo contiene el registro de pruebas.
+Modelo de amenazas y verificación de autorización del plugin IAM 1.0 (spec §12, §12 bis, §13 ter). Fecha de esta
+revisión: 2026-11-22 (Tarea 13), sobre la rama `feat/1.0` desplegada en el laboratorio GLPI 12.0.2 (192.168.88.4).
+La revisión de seguridad de todo el diff de la rama la hace la revisión final de la rama (reemplaza el paso
+`/security-review` del plan).
+
+## 1. Activos
+
+| Activo | Por qué importa |
+| --- | --- |
+| Registro de otorgamientos (`glpi_plugin_iam_grants`) | Quién tiene acceso a qué: un mapa de objetivos para un atacante y la evidencia de auditoría (ISO 27001 A.5.15, A.5.18, A.8.2). Debe ser íntegro y no borrable. |
+| Bitácora permanente (`glpi_plugin_iam_notes`) | Razonamiento de analistas y del agente; evidencia append-only. |
+| Matriz RBAC (`positions_roles`) y asignaciones persona↔puesto (`positions_users`) | Definen el acceso esperado: cambiarlas convierte un desvío en "esperado" y oculta una escalada. |
+| Catálogo de recursos y roles (`resources`, `roles`) | Dueños (usuario/grupo) que deciden la visibilidad de "lo mío"; nivel privilegiado / break-glass. |
+| Separación de funciones | Registrador ≠ beneficiario ≠ aprobador ≠ aprobador de seguridad. |
+| Derechos de perfil (`plugin_iam*`) y pertenencia a grupos de GLPI | Son el único fundamento de las decisiones de autorización. |
+| Credenciales de API (app token, user tokens) | Un token robado actúa con el perfil del usuario. El plugin no guarda secretos propios. |
+| Datos personales | Nombres de personas, puestos, tickets: no se escriben en logs. |
+
+## 2. Actores
+
+| Actor | Capacidad de partida | Objetivo típico |
+| --- | --- | --- |
+| Analista malicioso (perfil IAM - Analista) | Lee y escribe el registro de las entidades de su perfil | Registrarse su propio acceso, borrar huellas, aprobar en nombre de otro, ver otra empresa. |
+| Dueño curioso (IAM - Dueño de activo) | READ_OWNED / UPDATE_OWNED sobre sus recursos | Ver accesos de recursos ajenos, ver quién "debería" tener acceso en puestos que no administra, cambiar el beneficiario. |
+| Técnico sin derecho (Technician/Self-Service) | Sesión GLPI válida sin derechos IAM | Abrir páginas, ajax o API del plugin por URL directa. |
+| Token de API robado | Igual que su dueño, sin la UI | Enumerar el registro, crear/alterar otorgamientos, purgar evidencia. |
+| Agente con prompt manipulado (IAM - Agente) | Crea otorgamientos/asignaciones/notas vía API, lee tickets (READALL) | Texto de ticket que lo induce a aprobar, revocar, activar sin ticket o borrar su rastro. |
+
+## 3. STRIDE por punto de entrada
+
+| Punto de entrada | S (suplantación) | T (manipulación) | R (repudio) | I (divulgación) | D (denegación) | E (elevación) |
+| --- | --- | --- | --- | --- | --- | --- |
+| Páginas `front/*.php` y `*.form.php` | Sesión GLPI obligatoria (firewall del kernel). | Derecho + `can*Item()` del ítem en cada POST; campos inmutables descartados (`InputGuard`). | Historial GLPI (`dohistory`) y `users_id_recorder` del servidor. | Lista/búsqueda filtradas por `addDefaultWhere` → `Scope::criteriaFor()`; formularios por `canViewItem()`. | Sin operaciones masivas costosas fuera de la matriz (perf. pinneada en Tarea 10/11). | Técnico: 403 en todas (W2); menú oculto sin derecho IAM (W1). |
+| AJAX `ajax/matrixcell.php` (GET) / `ajax/matrixedit.php` (POST) | Sesión del kernel. | Edición solo POST, CSRF del kernel, `Position_Role::upsert()` revalida CONFIG UPDATE y escritura sobre la fila. | Historial de la celda. | Celda revalida puesto + recurso visibles; dueños sin `missing`/`expected` (W3, W4). | Panel por celda bajo demanda. | 403 para el técnico (W2). |
+| Pestañas en elementos GLPI (Software, Ticket, User, Grant…) | — | Sin escritura directa en pestañas salvo alta de nota (mismas reglas que la API). | — | `tabAllowed()` + filas por `visibilityCriteria()` del ítem. | Conteos de pestaña (deuda menor: carga todas las notas). | Sin derecho IAM no se muestran. |
+| API REST legacy (`apirest.php`) | App token + user token; sesión por token. | Mismas clases (`prepareInputFor*`, `can*Item()`); `itemtype` en lista blanca (X1); notas y otorgamientos sin DELETE/PURGE (N1). | `source` del servidor (`agent`/`api`/`manual`), recorder = sesión. | `addDefaultWhere` en todas las tablas, incluidas las hijas (E1, O1, F2); `searchText` parametrizado (X2). | Rango por defecto de GLPI. | Agente sin aprobar ni revocar (G3); otra entidad no escribe (E2). **Residual:** grupos de una sesión de API viva no se refrescan (ver §6, R-1). |
+| Acciones masivas | — | Note: prohibidas update/delete/purge/clone/transfer/amend; Grant: campos con `massiveaction=false`, `canDelete/canPurge=false`. | — | Mismas restricciones de búsqueda. | — | Purga de recurso/rol/puesto con dependencias rechazada. |
+| CLI / cron | Solo `www-data` en el servidor. | En 1.0 no hay tareas cron del plugin (vencimientos y campañas: 1.1). `Role::getSystemSQLCriteria` depende de la sesión: el cron de 1.1 debe consultar directo. | — | El plugin no escribe datos personales en logs. | — | Instalación sin autoinstalación (`OPTION_AUTOINSTALL_DISABLED`). |
+
+## 4. Controles implementados
+
+| Control | Dónde |
+| --- | --- |
+| Restricción de listas y búsqueda para cada itemtype del plugin (punto único) | `hook.php` `plugin_iam_addDefaultWhere()` → `src/Scope.php` `criteriaFor()`; predicados `visibilityCriteria()` en `src/Grant.php`, `src/Role.php`, `src/Position_Role.php`, `src/Note.php`, `src/Position_User.php`, `src/Resource.php`; paridad pinneada en `tests/Unit/ScopeTest.php` |
+| Visibilidad por la entidad del recurso (recursiva), no por la columna del hijo | `isEntityAssign()=false` + `visibilityCriteria()` en `src/Grant.php`, `src/Role.php`, `src/Position_Role.php`, `src/Note.php` |
+| "Lo mío" para dueños (usuario o grupo dueño, leído por petición) | `src/Ownership.php`, `src/Resource.php`, `src/Grant.php::seesResource()` |
+| Derechos a nivel de ítem | `canViewItem/canCreateItem/canUpdateItem` en todas las clases; `canDelete*/canPurge*` en falso para Grant y Note |
+| Lista blanca de campos e inmutables | `src/InputGuard.php`, `src/FieldSets.php`; `Grant::sanitize()`, `Position_User::prepareInputForUpdate()` |
+| Entidad del hijo tomada del padre | `Grant::prepareInputForAdd()` (entidad del recurso), `Role`, `Position_Role`, `Note::prepareInputForAdd()`, `Position_User` |
+| `itemtype` polimórfico en lista blanca, sin `new $x` | `src/ResourceItemtypes.php`, `Note::loadTarget()`; regla `iam-dynamic-instantiation` en `.semgrep.yml` |
+| Sin SQL armado a mano | Solo iterator/QuerySubQuery; regla `iam-sql-nonliteral` en `.semgrep.yml` |
+| XSS | Twig con autoescape, sin `\|raw` (regla `iam-twig-raw`); JSON de la matriz con `JSON_HEX_*` en `data-client` (`front/matrix.php`) |
+| CSRF | `$PLUGIN_HOOKS['csrf_compliant']` (`setup.php`); kernel GLPI 12 `CheckCsrfListener`; `ajax/matrixedit.php` solo POST, `ajax/matrixcell.php` solo GET |
+| Append-only | `src/Note.php` (update/delete devuelven false, massive actions prohibidas), `src/Grant.php::delete()`; `Resource/Role/Position` sin purga con dependencias |
+| Separación de funciones y agente | `src/GrantRules.php` (`separation`, `approvalErrors`, `validate` para agente, `ownerErrors`); `users_id_approver_security` = sesión |
+| Menú y páginas sin derecho | `src/Rights.php::hasAny()`, `src/Menu.php`, chequeo de derecho al inicio de cada `front/` y `ajax/` |
+| Vista limitada del dueño en la matriz | `src/Matrix.php` (`membersVisible()`), `src/MatrixSummary.php::forOwner()/visibleHolders()`, `templates/matrix*.html.twig` |
+| Búsqueda de casos con los mismos filtros | `src/CaseSearch.php` usa `Resource/Role/Grant::visibilityCriteria()` |
+
+## 5. Lecciones del ERM → regla → test (spec §13 ter)
+
+| Lección ERM | Regla en IAM | Test |
+| --- | --- | --- |
+| 1.5.1 consultas agregadas sin filtro por entidad | Toda lectura agregada (matriz, búsqueda de casos, conteos) pasa por `visibilityCriteria()` | `ScopeTest`, `MatrixOwnerProjectionTest`, `QuickSearchTest`; api_authz E1, F2, W3 |
+| 1.4.1 entidad del hijo tomada del input | Entidad del hijo siempre del padre/recurso | `InputGuardTest`; Revisión 4 (Note `entities_id=2` ignorado); api_authz E2 |
+| 1.9.2 búsqueda guardada no revalidada | No hay búsquedas guardadas propias; la búsqueda GLPI y la API reaplican `addDefaultWhere` en cada ejecución | api_authz O1, E1, X2 |
+| Tablas hijas expuestas por la API sin `addDefaultWhere` | `Scope::criteriaFor()` cubre todas las tablas con clase | `ScopeTest`; api_authz E1 (7 itemtypes), T1 |
+| Derechos a nivel de ítem faltantes | `can*Item()` en cada clase; GET de un ítem ajeno = 403 | api_authz O2, F2, E3, T2 |
+| Claves de padre mutables (2.0.2) | Persona, rol, recurso, padre y entidad inmutables tras el alta | `InputGuardTest`, `GrantRulesTest`; api_authz O4 |
+
+## 6. Riesgos residuales y decisiones aceptadas
+
+| Id | Riesgo / decisión | Estado |
+| --- | --- | --- |
+| R-1 | **Sesión de API viva conserva los grupos del login.** El plugin decide "lo mío" con `$_SESSION['glpigroups']`. En la web GLPI 12 lo refresca en cada petición (`SessionVariables` compara `glpigroups_cache_date` con `last_group_change`), pero la API legacy restaura la sesión del token dentro del controlador (`API::retrieveSession()`), después de ese listener: un dueño quitado del grupo sigue viendo el recurso y sus otorgamientos con la misma sesión de API hasta que la cierre o expire (api_authz F4: web 403, sesión nueva 403, sesión vieja 200). | Abierto: falla de Review Focus 4 en la vía API; derivado al controlador para corrección (leer la pertenencia a grupos por petición en `Ownership`/clases, o refrescar al inicio de las llamadas API). |
+| R-2 | **Purga de un puesto con puestos hijos.** GLPI (`CommonTreeDropdown::pre_deleteItem`) re-cuelga los hijos del abuelo; el plugin no la rechaza (`Position::canPurgeItem()` solo mira asignaciones). Con Super-Admin: HTTP 200, el hijo queda en la raíz (`plugin_iam_positions_id=0`). El perfil Analista no tiene PURGE sobre CONFIG. | Bug conocido (ledger), XFAIL B1, para la ola final de correcciones. |
+| R-3 | **Purga de una entidad** (no ejecutado, análisis de GLPI 12): `Entity::pre_deleteItem()` solo impide la raíz y entidades con sub-entidades; `cleanDBonPurge()` borra `Profile_User` de la entidad y relaciones de KB/recordatorios/RSS; `CommonDBTM::cleanRelationData()` mueve a la entidad 0 (`_replace_by` o 0) las filas de las tablas declaradas en `inc/relation.constant.php` (tickets, usuarios, grupos, inventario…). El plugin no declara `plugin_iam_getDatabaseRelations`, así que sus filas **conservan el `entities_id` de la entidad borrada**: recursos, roles, celdas, otorgamientos, notas, puestos y asignaciones quedan invisibles para todas las sesiones (ninguna tiene esa entidad activa) pero no se pierden; los tickets referenciados pasan a la raíz. Si se declararan relaciones, GLPI llamaría `update(['entities_id'=>0])`, que el plugin descarta (inmutable) o rechaza. | Aceptado para 1.0: documentar en el manual "no purgar una entidad con datos IAM; reasignar antes"; la evidencia sigue en la base y es recuperable por SQL. Evaluar en 1.1 un bloqueo (`pre_deleteItem` hook sobre Entity). |
+| D-1 | Perfiles Analista y Agente con `ticket` READALL: procesan pedidos de acceso desde tickets y el otorgamiento debe referenciar un ticket visible. El texto del ticket es entrada no confiable para el agente. | Aceptado (ledger Tarea 8). |
+| D-2 | `isEntityAssign()=false` en Grant, Role, Position_Role y Note: el filtro de entidad de GLPI se desactiva y `visibilityCriteria()` (+ `canViewItem()`) es el único predicado. Un error ahí expone todo; por eso la paridad está pinneada (`ScopeTest`) y verificada por API (E1, F2, O1). | Aceptado (ledger Tareas 8 y 10). |
+| D-3 | La insignia "agente" en la bitácora se infiere de los perfiles actuales del autor: es una pista visual, no evidencia. La evidencia es `Grant.source` (servidor). | Aceptado (ledger Tarea 9). |
+| D-4 | CSRF: GLPI 12 lo aplica en el kernel (`CheckCsrfListener`/`CsrfChecker`: Sec-Fetch-Site/Origin) para todo front de plugin; no se usa `csrf_token()`. Las plantillas de pestañas de puestos/roles todavía llaman `csrf_token()` (aviso de deprecación, menor). | Aceptado. |
+| D-5 | Vista limitada del dueño en la matriz: sin `expected`/`complete`/`missing` ni titulares "faltantes", y solo las asignaciones (persona, puesto) que justifican u objetan un otorgamiento visible. | Aceptado (ledger Tarea 11, Ruling I-2); verificado W3/W4. |
+| D-6 | Todas las decisiones de seguridad descansan en bits de derecho; `activeRoleKey()` solo para UX/procedencia. Las reglas del agente en `GrantRules` son defensa en profundidad. | Aceptado (ledger Tarea 3). |
+| D-7 | Purga del catálogo: recursos, roles y puestos con otorgamientos, asignaciones, celdas o notas no se purgan (papelera/desactivación). | Aceptado (ledger Tareas 3, 5, 6, 9). |
+| M-* | Menores diferidos con impacto de seguridad: acciones de CI con tags mutables (fijar a SHA), semgrep `new\s+\$` textual, carrera en "primario duplicado", alta de puesto sin `entities_id` validada contra la entidad 0 por API, `Role::getSystemSQLCriteria` dependiente de la sesión (cron 1.1). | Para la revisión final. |
 
 ## Test log
 
@@ -148,3 +232,125 @@ activa); después ofrece el rol 7. Sobre el recurso 1 sigue ofreciendo los roles
 
 `/var/log/glpi/php-errors.log` sin entradas nuevas (1386 líneas antes y después). Usuarios temporales 43-46 y sus
 filas de perfiles y grupos borrados (verificado 0).
+
+### Revisión 6 - verificación de autorización por perfil, API y web (Tarea 13)
+
+Entorno: GLPI 12.0.2 en 192.168.88.4, árbol de `feat/1.0` en 80443c2 desplegado (sumas md5 de `src/`, `front/`,
+`ajax/`, `templates/`, `hook.php` y `setup.php` idénticas al repositorio), datos de demo de la Tarea 15 y
+`demo_iam.php --profiles` re-ejecutado con el nuevo usuario `iam.clinica` (perfil IAM - Analista solo en la entidad 2,
+Clínica Del Valle, sin recursión; contraseñas y tokens rotados, fuera del repositorio).
+
+Herramienta: `tests/Integration/api_authz.py` (Python 3, solo stdlib; ver `tests/Integration/README.md`). Usuarios:
+`iam.analista`, `iam.dueno` (grupo 8, dueño de SAP-FI), `iam.auditor`, `iam.agente`, `iam.tecnico` (perfil por defecto
+Self-Service y perfil Technician), `iam.clinica` y un Super-Admin. Casos web con sesión de cookies (formulario de login
+de GLPI 12, cambio de perfil por `POST /Session/ChangeProfile`).
+
+Hallazgos:
+
+1. **R-1 (abierto, FAIL F4):** tras quitar a `iam.dueno` del grupo dueño, la misma sesión de API sigue viendo el recurso
+   7 y sus 10 otorgamientos; la sesión web y una sesión de API nueva ya reciben 403. Reproducción: sesión de API del
+   dueño (`initSession` + `changeActiveProfile` 16) → `GET Resource/7` 200; Super-Admin `DELETE /Group_User/<id>?force_purge=1`
+   (usuario 48, grupo 8); esperar 1 s; misma sesión del dueño `GET Resource/7` → 200 (esperado 403). La membresía se
+   restauró en el bloque `finally` (nuevo `Group_User`, mismas banderas) y se verificó.
+2. **R-2 (XFAIL B1):** Super-Admin purga un puesto con un hijo: HTTP 200, el hijo pasa a la raíz. El Analista no puede
+   purgar puestos (sin PURGE en CONFIG, B0).
+3. El resto (77 casos) pasa: técnico sin acceso por API ni web y sin menú (cierra el pendiente de la Tarea 5), dueño
+   limitado a sus recursos y sin datos de "faltantes" en la matriz, servicio compartido (otorgamiento 54) visible solo
+   desde la entidad del recurso, analista de la entidad 2 sin filas de Finandina en los 7 itemtypes, auditor solo
+   lectura, agente sin activar sin ticket ni revocar, notas inalterables también para Super-Admin, `itemtype=User`
+   rechazado e inyección en `searchText` inocua.
+
+Efectos sobre los datos (append-only): cada ejecución agrega un otorgamiento `source=agent` (justificación
+`[iam-authz] T13 run ...`) y una nota; en esta revisión se ejecutó 3 veces (otorgamientos 10058-10060, notas 26-28) más
+una prueba de depuración de puestos temporales (purgados). Los puestos temporales de cada ejecución se purgan.
+
+Salida de la ejecución final (sin secretos):
+
+```
+case                                         user                               expected                           got                                          result
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+T1 list Resource                             iam.tecnico/Technician             401/403 or []                      403                                          PASS
+T1 list Role                                 iam.tecnico/Technician             401/403 or []                      403                                          PASS
+T1 list Position                             iam.tecnico/Technician             401/403 or []                      403                                          PASS
+T1 list Position_Role                        iam.tecnico/Technician             401/403 or []                      403                                          PASS
+T1 list Position_User                        iam.tecnico/Technician             401/403 or []                      403                                          PASS
+T1 list Grant                                iam.tecnico/Technician             401/403 or []                      403                                          PASS
+T1 list Note                                 iam.tecnico/Technician             401/403 or []                      403                                          PASS
+T2 GET Grant/10                              iam.tecnico/Technician             401/403/404                        403                                          PASS
+T1 list Resource                             iam.tecnico/default                401/403 or []                      403                                          PASS
+T1 list Role                                 iam.tecnico/default                401/403 or []                      403                                          PASS
+T1 list Position                             iam.tecnico/default                401/403 or []                      403                                          PASS
+T1 list Position_Role                        iam.tecnico/default                401/403 or []                      403                                          PASS
+T1 list Position_User                        iam.tecnico/default                401/403 or []                      403                                          PASS
+T1 list Grant                                iam.tecnico/default                401/403 or []                      403                                          PASS
+T1 list Note                                 iam.tecnico/default                401/403 or []                      403                                          PASS
+T2 GET Grant/10                              iam.tecnico/default                401/403/404                        403                                          PASS
+O1 list Grant = grants of owned resources [7 iam.dueno                          ids == 10,31,32,33,34,35,36,37...( ids=10,31,32,33,34,35,36,37...(10) foreign=[ PASS
+O2 GET Grant/22 (other owner)                iam.dueno                          403/404                            403                                          PASS
+O3 GET Grant/10 (own resource)               iam.dueno                          200                                200                                          PASS
+O4 PUT Grant/10 users_id                     iam.dueno                          users_id unchanged                 HTTP 200 users_id 17->17                     PASS
+O5 GET Resource/7                            iam.dueno                          200                                200                                          PASS
+O5 GET Resource/6                            iam.dueno                          403                                403                                          PASS
+F2 GET Grant/54 + in list                    iam.clinica (entity 2)             200, listed                        200 listed=True                              PASS
+F2 GET Grant/54 + in list                    iam.analista (entity 1)            403/404, not listed                403 listed=False                             PASS
+F2 GET Grant/54 + in list                    iam.dueno (entity 1, not owner of  403/404, not listed                403 listed=False                             PASS
+E1 list Resource: no entity-1 rows           iam.clinica                        no entities_id=1                   HTTP 200 rows=3 entity1=                     PASS
+E1 list Role: no entity-1 rows               iam.clinica                        no entities_id=1                   HTTP 200 rows=6 entity1=                     PASS
+E1 list Position: no entity-1 rows           iam.clinica                        no entities_id=1                   HTTP 200 rows=5 entity1=                     PASS
+E1 list Position_Role: no entity-1 rows      iam.clinica                        no entities_id=1                   HTTP 200 rows=11 entity1=                    PASS
+E1 list Position_User: no entity-1 rows      iam.clinica                        no entities_id=1                   HTTP 200 rows=4 entity1=                     PASS
+E1 list Grant: no entity-1 rows              iam.clinica                        no entities_id=1                   HTTP 200 rows=6 entity1=                     PASS
+E1 list Note: no entity-1 rows               iam.clinica                        no entities_id=1                   HTTP 200 rows=2 entity1=                     PASS
+E1 list Grant: own entity visible            iam.clinica                        entity-2 grants listed             rows=6                                       PASS
+E2 POST Grant on Finandina resource          iam.clinica                        refused                            HTTP 400 id=None                             PASS
+E3 GET Resource/6 (Finandina)                iam.clinica                        403/404                            403                                          PASS
+A1 POST Grant                                iam.auditor                        refused                            HTTP 400 id=None                             PASS
+A2 GET Grant list + Grant/22                 iam.auditor                        200, rows>0                        HTTP 200 rows=52 GET=200                     PASS
+G1 POST Grant without ticket                 iam.agente                         refused                            HTTP 400 id=None                             PASS
+G2 POST Grant with ticket                    iam.agente                         201, source=agent                  HTTP 201 id=10060 source=agent               PASS
+G3 PUT Grant status=revoked                  iam.agente                         refused, status active             HTTP 400 status=active                       PASS
+G4 POST Note on its grant                    iam.agente                         201                                HTTP 201 id=28                               PASS
+N1 PUT Note/28                               iam.agente                         refused, row unchanged             HTTP 400 unchanged=True                      PASS
+N1 DELETE Note/28                            iam.agente                         refused, row unchanged             HTTP 400 unchanged=True                      PASS
+N1 DELETE force_purge Note/28                iam.agente                         refused, row unchanged             HTTP 400 unchanged=True                      PASS
+N1 PUT Note/28                               iam.analista                       refused, row unchanged             HTTP 400 unchanged=True                      PASS
+N1 DELETE Note/28                            iam.analista                       refused, row unchanged             HTTP 400 unchanged=True                      PASS
+N1 DELETE force_purge Note/28                iam.analista                       refused, row unchanged             HTTP 400 unchanged=True                      PASS
+N1 PUT Note/28                               glpi (Super-Admin)                 refused, row unchanged             HTTP 400 unchanged=True                      PASS
+N1 DELETE Note/28                            glpi (Super-Admin)                 refused, row unchanged             HTTP 400 unchanged=True                      PASS
+N1 DELETE force_purge Note/28                glpi (Super-Admin)                 refused, row unchanged             HTTP 400 unchanged=True                      PASS
+X1 POST Resource itemtype=User               iam.analista                       refused                            HTTP 400 id=None                             PASS
+X1 POST Resource itemtype=User               admin                              refused                            HTTP 400 id=None                             PASS
+X2 GET Grant searchText injection            iam.analista                       200/206, 0 extra rows              HTTP 200 rows=0 (baseline 53)                PASS
+X2 GET Grant searchText injection            iam.dueno                          200/206, 0 extra rows              HTTP 200 rows=0 (baseline 10)                PASS
+F4 before removal GET Resource/7             iam.dueno                          200                                200                                          PASS
+F4 before removal web resource form          iam.dueno (web)                    200                                200                                          PASS
+F4 admin removes iam.dueno from group 8      admin                              200                                200                                          PASS
+F4 next request after removal                iam.dueno                          Resource 403/404, no SAP-FI grants GET=200 sapfi_grants=10                      FAIL
+F4 GET Grant/10 after removal                iam.dueno                          403/404                            200                                          FAIL
+F4 next web request after removal            iam.dueno (web)                    403                                403                                          PASS
+F4 new API session after removal             iam.dueno (new API session)        403/404                            403                                          PASS
+F4 admin restores the membership (finally)   admin                              201                                201                                          PASS
+F4 after restore GET Resource/7              iam.dueno (new API session + web)  200, 200                           200, 200                                     PASS
+B0 purge Position (analyst: no CONFIG PURGE) iam.analista                       refused, parent kept               HTTP 400 parent_exists=True                  PASS
+B1 cleanup temporary positions               admin                              purged                             left=[]                                      PASS
+W0 central page has IAM menu (control)       iam.analista                       menu present                       HTTP 200 menu=True                           PASS
+W0 matrix SAP-FI has expected counts (contro iam.analista                       members=true, missing cells>0      HTTP 200 members=True missing_cells=23:11,15 PASS
+W0 matrixcell lists missing holders (control iam.analista                       iam-chip-miss present              cells=23:11,15:11                            PASS
+W1 no IAM menu (default profile)             iam.tecnico                        menu absent                        HTTP 200 menu=False                          PASS
+W1 no IAM menu (Technician profile)          iam.tecnico                        menu absent                        profile=200 HTTP 200 menu=False              PASS
+W2 front/matrix.php                          iam.tecnico/Technician             403                                403                                          PASS
+W2 front/search.php                          iam.tecnico/Technician             403                                403                                          PASS
+W2 ajax/matrixcell.php                       iam.tecnico/Technician             403                                403                                          PASS
+W2 front/grant.php                           iam.tecnico/Technician             403                                403                                          PASS
+W2 front/resource.php                        iam.tecnico/Technician             403                                403                                          PASS
+W2 front/position.php                        iam.tecnico/Technician             403                                403                                          PASS
+W2 front/grant.form.php                      iam.tecnico/Technician             403                                403                                          PASS
+W3 owner matrix: no expected/missing data    iam.dueno                          members=false, no expected, no iam HTTP 200 members=False expected_cells=0 iam- PASS
+W4 owner matrixcell on cells with missing pe iam.dueno                          no iam-chip-miss                   cells=2 leaks=[]                             PASS
+
+Known plugin bugs (XFAIL: expected to fail until fixed; XPASS means the bug is fixed)
+B1 purge Position with a child position      glpi (Super-Admin)                 refused, parent kept               HTTP 200 parent_exists=False child.parent=0  XFAIL
+
+PASS 77  FAIL 2  XFAIL 1  XPASS 0
+```
