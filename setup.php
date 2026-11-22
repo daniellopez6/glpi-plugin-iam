@@ -17,8 +17,9 @@
 
 /**
  * IAM - Identity & Access Governance plugin for GLPI.
- * Role-based access governance (RBAC matrix, access register, deviations, recertification).
- * Licencia GPL-3.0-or-later.
+ * 1.0: positions and assignments, resources linked to inventory items, position x role RBAC matrix with a live gap
+ * view, access register with separation of duties, append-only notes, quick case search and an agent-ready API.
+ * Roadmap: deviation engine, GRC waivers, recertification campaigns, reports.
  */
 
 use Glpi\Plugin\Hooks;
