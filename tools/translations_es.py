@@ -33,6 +33,7 @@ ES: dict = {
  "Job title": "Cargo (título)",
  "The position has assignments (the history is kept). Deactivate it instead of deleting it.": "El puesto tiene asignaciones (el historial se conserva). Desactívelo en lugar de eliminarlo.",
  "The position has sub-positions. Move or delete them first, or deactivate it instead of deleting it.": "El puesto tiene subpuestos. Muévalos o elimínelos primero, o desactívelo en lugar de eliminarlo.",
+ "The position has expectations in the access matrix. Remove its matrix expectations first, or deactivate it instead of deleting it.": "El puesto tiene expectativas en la matriz de accesos. Quite primero sus expectativas de la matriz, o desactívelo en lugar de eliminarlo.",
  "The end date cannot be before the begin date.": "La fecha de fin no puede ser anterior a la fecha de inicio.",
  "A date is not valid (expected format YYYY-MM-DD).": "Una fecha no es válida (formato esperado AAAA-MM-DD).",
  "The person already has an active primary position.": "La persona ya tiene un puesto principal activo.",

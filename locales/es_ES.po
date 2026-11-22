@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  iam\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-22 19:12+0000\n"
+"POT-Creation-Date: 2026-11-22 23:28+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: es_ES\n"
@@ -99,19 +99,19 @@ msgstr "Personas que deberían tenerlo"
 msgid "Held without expectation"
 msgstr "Lo tienen sin estar previsto"
 
-#: front/search.php:35 src/Menu.php:63 templates/search.html.twig:19 templates/search.html.twig:23
+#: front/search.php:35 src/Menu.php:61 templates/search.html.twig:19 templates/search.html.twig:23
 msgid "Case search"
 msgstr "Búsqueda de casos"
 
-#: setup.php:101
+#: setup.php:102
 msgid "IAM - Identity & Access Governance"
 msgstr "IAM - Gobierno de Identidades y Accesos"
 
-#: src/Grant.php:293 src/Position_User.php:206
+#: src/Grant.php:293 src/Position_User.php:222
 msgid "A date is not valid (expected format YYYY-MM-DD)."
 msgstr "Una fecha no es válida (formato esperado AAAA-MM-DD)."
 
-#: src/Grant.php:294 src/Position_User.php:205
+#: src/Grant.php:294 src/Position_User.php:221
 msgid "The end date cannot be before the begin date."
 msgstr "La fecha de fin no puede ser anterior a la fecha de inicio."
 
@@ -163,7 +163,7 @@ msgstr "Como dueño solo puede solicitar una revocación o una modificación, co
 msgid "As owner you can only request a revocation or a modification."
 msgstr "Como dueño solo puede solicitar una revocación o una modificación."
 
-#: src/Grant.php:307 src/Position_User.php:213
+#: src/Grant.php:307 src/Position_User.php:229
 msgid "The ticket does not exist or you are not allowed to see it."
 msgstr "El ticket no existe o no tiene permiso para verlo."
 
@@ -203,7 +203,7 @@ msgstr "El rol no pertenece al recurso seleccionado."
 msgid "The resource does not exist or you are not allowed to see it."
 msgstr "El recurso no existe o no tiene permiso para verlo."
 
-#: src/Grant.php:318 src/Position_User.php:212
+#: src/Grant.php:318 src/Position_User.php:228
 msgid "The person does not exist or you are not allowed to see it."
 msgstr "La persona no existe o no tiene permiso para verla."
 
@@ -216,8 +216,8 @@ msgstr "El otorgamiento no es válido."
 msgid "Person"
 msgstr "Persona"
 
-#: src/Grant.php:522 templates/grants_tab.html.twig:38 templates/roles_tab.html.twig:23 templates/roles_tab.html.twig:38
-#: templates/roles_tab.html.twig:83
+#: src/Grant.php:522 templates/grants_tab.html.twig:38 templates/roles_tab.html.twig:23 templates/roles_tab.html.twig:37
+#: templates/roles_tab.html.twig:80
 msgid "Level"
 msgstr "Nivel"
 
@@ -327,14 +327,14 @@ msgid "Expired"
 msgstr "Vencido"
 
 #: src/Grant.php:85 templates/position_user_form.html.twig:28 templates/positions_tab.html.twig:45
-#: templates/positions_tab.html.twig:95 templates/roles_tab.html.twig:45 templates/roles_tab.html.twig:54
-#: templates/roles_tab.html.twig:90
+#: templates/positions_tab.html.twig:95 templates/roles_tab.html.twig:44 templates/roles_tab.html.twig:53
+#: templates/roles_tab.html.twig:87
 msgid "Yes"
 msgstr "Sí"
 
 #: src/Grant.php:86 templates/position_user_form.html.twig:28 templates/positions_tab.html.twig:45
-#: templates/positions_tab.html.twig:95 templates/roles_tab.html.twig:44 templates/roles_tab.html.twig:54
-#: templates/roles_tab.html.twig:90
+#: templates/positions_tab.html.twig:95 templates/roles_tab.html.twig:43 templates/roles_tab.html.twig:53
+#: templates/roles_tab.html.twig:87
 msgid "No"
 msgstr "No"
 
@@ -429,13 +429,21 @@ msgid_plural "Log entries"
 msgstr[0] "Entrada de bitácora"
 msgstr[1] "Entradas de bitácora"
 
-#: src/Position.php:148
+#: src/Position.php:156
 msgid "The position has assignments (the history is kept). Deactivate it instead of deleting it."
 msgstr "El puesto tiene asignaciones (el historial se conserva). Desactívelo en lugar de eliminarlo."
 
-#: src/Position.php:156
+#: src/Position.php:164
 msgid "The position has sub-positions. Move or delete them first, or deactivate it instead of deleting it."
 msgstr "El puesto tiene subpuestos. Muévalos o elimínelos primero, o desactívelo en lugar de eliminarlo."
+
+#: src/Position.php:172
+msgid ""
+"The position has expectations in the access matrix. Remove its matrix expectations first, or deactivate it instead of"
+" deleting it."
+msgstr ""
+"El puesto tiene expectativas en la matriz de accesos. Quite primero sus expectativas de la matriz, o desactívelo en "
+"lugar de eliminarlo."
 
 #: src/Position.php:34 templates/matrix.html.twig:150 templates/matrix_cell.html.twig:24
 #: templates/position_user_form.html.twig:21 templates/positions_tab.html.twig:23 templates/positions_tab.html.twig:82
@@ -456,7 +464,7 @@ msgstr "Cargo (título)"
 msgid "The parent position does not exist or is not available in this entity."
 msgstr "El puesto padre no existe o no está disponible en esta entidad."
 
-#: src/Position_Role.php:249 src/Position_User.php:210
+#: src/Position_Role.php:249 src/Position_User.php:226
 msgid "Select a position."
 msgstr "Seleccione un puesto."
 
@@ -470,31 +478,31 @@ msgid_plural "Matrix cells"
 msgstr[0] "Celda de matriz"
 msgstr[1] "Celdas de matriz"
 
-#: src/Position_User.php:207
+#: src/Position_User.php:223
 msgid "The person already has an active primary position."
 msgstr "La persona ya tiene un puesto principal activo."
 
-#: src/Position_User.php:208
+#: src/Position_User.php:224
 msgid "The assignment type is not valid."
 msgstr "El tipo de asignación no es válido."
 
-#: src/Position_User.php:209
+#: src/Position_User.php:225
 msgid "The agent can only assign a position with its ticket."
 msgstr "El agente solo puede asignar un puesto con su ticket."
 
-#: src/Position_User.php:211
+#: src/Position_User.php:227
 msgid "The position is not active."
 msgstr "El puesto no está activo."
 
-#: src/Position_User.php:214
+#: src/Position_User.php:230
 msgid "The assignment is not valid."
 msgstr "La asignación no es válida."
 
-#: src/Position_User.php:388
+#: src/Position_User.php:424
 msgid "Positions (IAM)"
 msgstr "Puestos (IAM)"
 
-#: src/Position_User.php:391
+#: src/Position_User.php:427
 msgid "Assignments"
 msgstr "Asignaciones"
 
@@ -708,7 +716,7 @@ msgstr "Semestral"
 msgid "Annual"
 msgstr "Anual"
 
-#: src/Rights.php:200
+#: src/Rights.php:210
 msgid ""
 "Maintains the access governance catalogue and register: positions, resources, roles, access matrix and grants. Does "
 "not review or approve."
@@ -716,19 +724,19 @@ msgstr ""
 "Mantiene el catálogo y el registro de gobierno de accesos: puestos, recursos, roles, matriz de accesos y "
 "otorgamientos. No revisa ni aprueba."
 
-#: src/Rights.php:206
+#: src/Rights.php:216
 msgid "Sees and updates only the accesses of the resources they own and recertifies them."
 msgstr "Ve y actualiza solo los accesos de los recursos que posee y los recertifica."
 
-#: src/Rights.php:212
+#: src/Rights.php:222
 msgid "Read-only access to the whole register, the catalogue and the reports."
 msgstr "Acceso de solo lectura a todo el registro, el catálogo y los reportes."
 
-#: src/Rights.php:218
+#: src/Rights.php:228
 msgid "Registers access requests and grants and reads the catalogue. Cannot review or approve."
 msgstr "Registra solicitudes y otorgamientos de acceso y consulta el catálogo. No puede revisar ni aprobar."
 
-#: src/Role.php:159 templates/roles_tab.html.twig:65
+#: src/Role.php:159 templates/roles_tab.html.twig:63
 msgid "The role has grants or matrix cells (nothing is deleted)."
 msgstr "El rol tiene otorgamientos o celdas de matriz (no se borra nada)."
 
@@ -1028,7 +1036,8 @@ msgstr "Tipo"
 msgid "Primary"
 msgstr "Principal"
 
-#: templates/position_user_form.html.twig:36 templates/positions_tab.html.twig:50
+#: templates/position_user_form.html.twig:36 templates/positions_tab.html.twig:50 templates/search.html.twig:87
+#: templates/search.html.twig:89
 msgid "Inactive"
 msgstr "Inactivo"
 
@@ -1040,7 +1049,7 @@ msgstr "Abrir la asignación y su bitácora"
 msgid "Set the end date"
 msgstr "Establecer la fecha de fin"
 
-#: templates/positions_tab.html.twig:66
+#: templates/positions_tab.html.twig:67
 msgid "No position assignments."
 msgstr "Sin asignaciones de puesto."
 
@@ -1080,19 +1089,19 @@ msgstr "No hay recursos vinculados a este elemento."
 msgid "Add a resource"
 msgstr "Agregar un recurso"
 
-#: templates/roles_tab.html.twig:24 templates/roles_tab.html.twig:43 templates/roles_tab.html.twig:89
+#: templates/roles_tab.html.twig:24 templates/roles_tab.html.twig:42 templates/roles_tab.html.twig:86
 msgid "Break-glass"
 msgstr "Emergencia (break-glass)"
 
-#: templates/roles_tab.html.twig:48
+#: templates/roles_tab.html.twig:47
 msgid "Save"
 msgstr "Guardar"
 
-#: templates/roles_tab.html.twig:65
+#: templates/roles_tab.html.twig:63
 msgid "In use"
 msgstr "En uso"
 
-#: templates/roles_tab.html.twig:71
+#: templates/roles_tab.html.twig:69
 msgid "No roles defined."
 msgstr "Sin roles definidos."
 

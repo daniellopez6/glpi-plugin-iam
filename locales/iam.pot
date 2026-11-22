@@ -3,7 +3,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: iam\n"
-"POT-Creation-Date: 2026-11-22 19:12+0000\n"
+"POT-Creation-Date: 2026-11-22 23:28+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -93,19 +93,19 @@ msgstr ""
 msgid "Held without expectation"
 msgstr ""
 
-#: front/search.php:35 src/Menu.php:63 templates/search.html.twig:19 templates/search.html.twig:23
+#: front/search.php:35 src/Menu.php:61 templates/search.html.twig:19 templates/search.html.twig:23
 msgid "Case search"
 msgstr ""
 
-#: setup.php:101
+#: setup.php:102
 msgid "IAM - Identity & Access Governance"
 msgstr ""
 
-#: src/Grant.php:293 src/Position_User.php:206
+#: src/Grant.php:293 src/Position_User.php:222
 msgid "A date is not valid (expected format YYYY-MM-DD)."
 msgstr ""
 
-#: src/Grant.php:294 src/Position_User.php:205
+#: src/Grant.php:294 src/Position_User.php:221
 msgid "The end date cannot be before the begin date."
 msgstr ""
 
@@ -157,7 +157,7 @@ msgstr ""
 msgid "As owner you can only request a revocation or a modification."
 msgstr ""
 
-#: src/Grant.php:307 src/Position_User.php:213
+#: src/Grant.php:307 src/Position_User.php:229
 msgid "The ticket does not exist or you are not allowed to see it."
 msgstr ""
 
@@ -197,7 +197,7 @@ msgstr ""
 msgid "The resource does not exist or you are not allowed to see it."
 msgstr ""
 
-#: src/Grant.php:318 src/Position_User.php:212
+#: src/Grant.php:318 src/Position_User.php:228
 msgid "The person does not exist or you are not allowed to see it."
 msgstr ""
 
@@ -209,7 +209,7 @@ msgstr ""
 msgid "Person"
 msgstr ""
 
-#: src/Grant.php:522 templates/grants_tab.html.twig:38 templates/roles_tab.html.twig:23 templates/roles_tab.html.twig:38 templates/roles_tab.html.twig:83
+#: src/Grant.php:522 templates/grants_tab.html.twig:38 templates/roles_tab.html.twig:23 templates/roles_tab.html.twig:37 templates/roles_tab.html.twig:80
 msgid "Level"
 msgstr ""
 
@@ -311,11 +311,11 @@ msgstr ""
 msgid "Expired"
 msgstr ""
 
-#: src/Grant.php:85 templates/position_user_form.html.twig:28 templates/positions_tab.html.twig:45 templates/positions_tab.html.twig:95 templates/roles_tab.html.twig:45 templates/roles_tab.html.twig:54 templates/roles_tab.html.twig:90
+#: src/Grant.php:85 templates/position_user_form.html.twig:28 templates/positions_tab.html.twig:45 templates/positions_tab.html.twig:95 templates/roles_tab.html.twig:44 templates/roles_tab.html.twig:53 templates/roles_tab.html.twig:87
 msgid "Yes"
 msgstr ""
 
-#: src/Grant.php:86 templates/position_user_form.html.twig:28 templates/positions_tab.html.twig:45 templates/positions_tab.html.twig:95 templates/roles_tab.html.twig:44 templates/roles_tab.html.twig:54 templates/roles_tab.html.twig:90
+#: src/Grant.php:86 templates/position_user_form.html.twig:28 templates/positions_tab.html.twig:45 templates/positions_tab.html.twig:95 templates/roles_tab.html.twig:43 templates/roles_tab.html.twig:53 templates/roles_tab.html.twig:87
 msgid "No"
 msgstr ""
 
@@ -409,12 +409,16 @@ msgid_plural "Log entries"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Position.php:148
+#: src/Position.php:156
 msgid "The position has assignments (the history is kept). Deactivate it instead of deleting it."
 msgstr ""
 
-#: src/Position.php:156
+#: src/Position.php:164
 msgid "The position has sub-positions. Move or delete them first, or deactivate it instead of deleting it."
+msgstr ""
+
+#: src/Position.php:172
+msgid "The position has expectations in the access matrix. Remove its matrix expectations first, or deactivate it instead of deleting it."
 msgstr ""
 
 #: src/Position.php:34
@@ -435,7 +439,7 @@ msgstr ""
 msgid "The parent position does not exist or is not available in this entity."
 msgstr ""
 
-#: src/Position_Role.php:249 src/Position_User.php:210
+#: src/Position_Role.php:249 src/Position_User.php:226
 msgid "Select a position."
 msgstr ""
 
@@ -449,31 +453,31 @@ msgid_plural "Matrix cells"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Position_User.php:207
+#: src/Position_User.php:223
 msgid "The person already has an active primary position."
 msgstr ""
 
-#: src/Position_User.php:208
+#: src/Position_User.php:224
 msgid "The assignment type is not valid."
 msgstr ""
 
-#: src/Position_User.php:209
+#: src/Position_User.php:225
 msgid "The agent can only assign a position with its ticket."
 msgstr ""
 
-#: src/Position_User.php:211
+#: src/Position_User.php:227
 msgid "The position is not active."
 msgstr ""
 
-#: src/Position_User.php:214
+#: src/Position_User.php:230
 msgid "The assignment is not valid."
 msgstr ""
 
-#: src/Position_User.php:388
+#: src/Position_User.php:424
 msgid "Positions (IAM)"
 msgstr ""
 
-#: src/Position_User.php:391
+#: src/Position_User.php:427
 msgid "Assignments"
 msgstr ""
 
@@ -685,23 +689,23 @@ msgstr ""
 msgid "Annual"
 msgstr ""
 
-#: src/Rights.php:200
+#: src/Rights.php:210
 msgid "Maintains the access governance catalogue and register: positions, resources, roles, access matrix and grants. Does not review or approve."
 msgstr ""
 
-#: src/Rights.php:206
+#: src/Rights.php:216
 msgid "Sees and updates only the accesses of the resources they own and recertifies them."
 msgstr ""
 
-#: src/Rights.php:212
+#: src/Rights.php:222
 msgid "Read-only access to the whole register, the catalogue and the reports."
 msgstr ""
 
-#: src/Rights.php:218
+#: src/Rights.php:228
 msgid "Registers access requests and grants and reads the catalogue. Cannot review or approve."
 msgstr ""
 
-#: src/Role.php:159 templates/roles_tab.html.twig:65
+#: src/Role.php:159 templates/roles_tab.html.twig:63
 msgid "The role has grants or matrix cells (nothing is deleted)."
 msgstr ""
 
@@ -1007,7 +1011,7 @@ msgstr ""
 msgid "Primary"
 msgstr ""
 
-#: templates/position_user_form.html.twig:36 templates/positions_tab.html.twig:50
+#: templates/position_user_form.html.twig:36 templates/positions_tab.html.twig:50 templates/search.html.twig:87 templates/search.html.twig:89
 msgid "Inactive"
 msgstr ""
 
@@ -1019,7 +1023,7 @@ msgstr ""
 msgid "Set the end date"
 msgstr ""
 
-#: templates/positions_tab.html.twig:66
+#: templates/positions_tab.html.twig:67
 msgid "No position assignments."
 msgstr ""
 
@@ -1055,19 +1059,19 @@ msgstr ""
 msgid "Add a resource"
 msgstr ""
 
-#: templates/roles_tab.html.twig:24 templates/roles_tab.html.twig:43 templates/roles_tab.html.twig:89
+#: templates/roles_tab.html.twig:24 templates/roles_tab.html.twig:42 templates/roles_tab.html.twig:86
 msgid "Break-glass"
 msgstr ""
 
-#: templates/roles_tab.html.twig:48
+#: templates/roles_tab.html.twig:47
 msgid "Save"
 msgstr ""
 
-#: templates/roles_tab.html.twig:65
+#: templates/roles_tab.html.twig:63
 msgid "In use"
 msgstr ""
 
-#: templates/roles_tab.html.twig:71
+#: templates/roles_tab.html.twig:69
 msgid "No roles defined."
 msgstr ""
 
