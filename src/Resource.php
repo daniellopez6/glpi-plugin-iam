@@ -188,6 +188,7 @@ class Resource extends CommonDBTM
         $tabs = [];
         $this->addDefaultFormTab($tabs);
         $this->addStandardTab(Role::class, $tabs, $options);
+        $this->addStandardTab(Grant::class, $tabs, $options);
         $this->addStandardTab(\Log::class, $tabs, $options);
         return $tabs;
     }

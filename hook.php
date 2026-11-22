@@ -19,6 +19,7 @@
  * Installation and uninstallation of the IAM plugin.
  */
 
+use GlpiPlugin\Iam\Grant;
 use GlpiPlugin\Iam\Install\Installer;
 use GlpiPlugin\Iam\Ownership;
 use GlpiPlugin\Iam\Resource;
@@ -49,6 +50,11 @@ function plugin_iam_uninstall(): bool
  */
 function plugin_iam_addDefaultWhere($itemtype): array
 {
+    // Grants: the same predicate as Grant::canViewItem() (see Grant::visibilityCriteria()): resource visible in the
+    // active entities, recursion-aware, and owned by the session (user or current group) when it lacks READ
+    if ($itemtype === Grant::class) {
+        return [Grant::visibilityCriteria()];
+    }
     $where = [];
     // Cells: the position must be visible to the session (recursion-aware), for every session
     if ($itemtype === Position_Role::class) {

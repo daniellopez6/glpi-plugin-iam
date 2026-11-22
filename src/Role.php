@@ -56,6 +56,30 @@ class Role extends CommonDBChild
         ];
     }
 
+    /** Level labels in searches that join the roles table (e.g. the grants list). */
+    public static function getSpecificValueToDisplay($field, $values, array $options = [])
+    {
+        if (!is_array($values)) {
+            $values = [$field => $values];
+        }
+        if ($field === 'level') {
+            $v = (string) ($values[$field] ?? '');
+            return htmlescape(self::levelLabels()[$v] ?? $v);
+        }
+        return parent::getSpecificValueToDisplay($field, $values, $options);
+    }
+
+    public static function getSpecificValueToSelect($field, $name = '', $values = '', array $options = [])
+    {
+        if (!is_array($values)) {
+            $values = [$field => $values];
+        }
+        if ($field === 'level') {
+            return \Dropdown::showFromArray($name, self::levelLabels(), ['display' => false, 'value' => $values[$field] ?? '']);
+        }
+        return parent::getSpecificValueToSelect($field, $name, $values, $options);
+    }
+
     /**
      * The roles table has no is_recursive column (the parent's recursion is not copied): without this GLPI builds
      * list queries (API, search) on a column that does not exist.

@@ -36,4 +36,15 @@ final class FieldSets
     public const POSITION_ROLE = ['plugin_iam_positions_id', 'plugin_iam_roles_id', 'entities_id', 'expectation', 'comment'];
     /** @var list<string> */
     public const POSITION_ROLE_IMMUTABLE = ['plugin_iam_positions_id', 'plugin_iam_roles_id', 'entities_id'];
+    /**
+     * Grant fields accepted from the input. date_revoked is set by the server when the status becomes revoked;
+     * plugin_iam_resources_id, entities_id, source and users_id_recorder are overwritten by the server on creation.
+     *
+     * @var list<string>
+     */
+    public const GRANT = ['users_id', 'plugin_iam_roles_id', 'plugin_iam_resources_id', 'entities_id', 'plugin_accounts_accounts_id',
+        'date_begin', 'date_end', 'tickets_id', 'users_id_approver', 'users_id_approver_security', 'justification', 'mfa', 'status',
+        'revoke_reason', 'source', 'users_id_recorder'];
+    /** @var list<string> */
+    public const GRANT_IMMUTABLE = GrantRules::IMMUTABLE;
 }

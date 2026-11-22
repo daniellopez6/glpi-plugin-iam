@@ -68,9 +68,20 @@ class Menu extends CommonGLPI
                     + (Resource::canCreate() ? ['add' => Resource::getFormURL(false)] : []),
             ];
         }
+        if (Grant::canView()) {
+            $options[Grant::class] = [
+                'title' => Grant::getTypeName(2),
+                'page'  => Grant::getSearchURL(false),
+                'icon'  => Grant::getIcon(),
+                'links' => ['search' => Grant::getSearchURL(false)]
+                    + (Grant::canCreate() ? ['add' => Grant::getFormURL(false)] : []),
+            ];
+        }
+        // Landing page: the first entry the profile can open (owners have no catalogue right)
+        $first = reset($options);
         return [
             'title'   => self::getMenuName(),
-            'page'    => self::getSearchURL(false),
+            'page'    => $first !== false ? $first['page'] : self::getSearchURL(false),
             'icon'    => self::getIcon(),
             'options' => $options,
         ];

@@ -121,6 +121,15 @@ final class RightsTest extends TestCase
         $this->assertSame(READ, $r[Rights::CONFIG]);
     }
 
+    public function testWhoRegistersGrantsSeesTickets(): void
+    {
+        $roles = Rights::roleProfiles();
+        $this->assertSame(1024, $roles['agent']['rights']['ticket']);
+        $this->assertSame(1024, $roles['analyst']['rights']['ticket']);
+        $this->assertArrayNotHasKey('ticket', $roles['owner']['rights']);
+        $this->assertArrayNotHasKey('ticket', $roles['auditor']['rights']);
+    }
+
     public function testInitialValueUsesRoleDefinitionForRoleProfiles(): void
     {
         $comment = 'Whatever ' . Rights::marker('agent');

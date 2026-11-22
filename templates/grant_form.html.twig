@@ -1,0 +1,137 @@
+{#
+ # -------------------------------------------------------------------------
+ # IAM - Identity & Access Governance plugin for GLPI
+ # Copyright (C) 2026 daniellopez6
+ # https://github.com/daniellopez6/glpi-plugin-iam
+ # -------------------------------------------------------------------------
+ # LICENSE
+ #
+ # This program is free software: you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+ # the Free Software Foundation, either version 3 of the License, or
+ # (at your option) any later version. See LICENSE for the full text.
+ # -------------------------------------------------------------------------
+ #}
+{# Grant form. Step 1 of a new grant picks the resource (plain GET, no AJAX); step 2 offers only the roles of that resource. #}
+{% import 'components/form/fields_macros.html.twig' as fields %}
+
+{% if pick_resource %}
+<div class="card">
+   <div class="card-body">
+      <form method="get" action="{{ action }}" class="row g-2 align-items-end">
+         {% if preset_user %}<input type="hidden" name="users_id" value="{{ preset_user }}">{% endif %}
+         {% if ticket_id %}<input type="hidden" name="tickets_id" value="{{ ticket_id }}">{% endif %}
+         <div class="col-md-6">
+            {{ fields.dropdownField('GlpiPlugin\\Iam\\Resource', 'plugin_iam_resources_id', 0, __('Resource', 'iam'), {
+               'condition': {'is_deleted': 0},
+               'full_width': true,
+               'mb': ''
+            }) }}
+         </div>
+         <div class="col-md-2">
+            <button type="submit" class="btn btn-primary"><i class="ti ti-arrow-right me-1"></i>{{ __('Next', 'iam') }}</button>
+         </div>
+      </form>
+   </div>
+</div>
+{% else %}
+{% set editable = mode == 'new' or mode == 'full' %}
+{% embed 'generic_show_form.html.twig' %}
+   {% import 'components/form/fields_macros.html.twig' as fields %}
+   {% block form_fields %}
+      {# Person, resource and role are fixed once the grant exists #}
+      {% if mode == 'new' %}
+         {{ fields.dropdownField('User', 'users_id', preset_user, __('Person', 'iam'), {'right': 'all', 'required': true}) }}
+         {{ fields.hiddenField('plugin_iam_resources_id', resource.id) }}
+         {{ fields.htmlField('', '<a href="' ~ (resource.url|e('html_attr')) ~ '">' ~ (resource.name|e) ~ '</a>', __('Resource', 'iam')) }}
+         {{ fields.dropdownField('GlpiPlugin\\Iam\\Role', 'plugin_iam_roles_id', 0, __('Role', 'iam'), {
+            'condition': {'plugin_iam_resources_id': resource.id},
+            'entity': resource.entity,
+            'required': true
+         }) }}
+      {% else %}
+         {{ fields.readOnlyField('', beneficiary, __('Person', 'iam')) }}
+         {% if resource %}
+            {{ fields.htmlField('', '<a href="' ~ (resource.url|e('html_attr')) ~ '">' ~ (resource.name|e) ~ '</a>', __('Resource', 'iam')) }}
+         {% endif %}
+         {{ fields.readOnlyField('', role ? role.name ~ ' (' ~ role.level ~ ')' : '', __('Role', 'iam')) }}
+         {{ fields.readOnlyField('', entity, __('Entity', 'iam')) }}
+      {% endif %}
+
+      {% if editable %}
+         {{ fields.dateField('date_begin', item.fields['date_begin'], __('Begin date', 'iam')) }}
+         {{ fields.dateField('date_end', item.fields['date_end'], __('End date', 'iam')) }}
+      {% else %}
+         {{ fields.readOnlyField('', item.fields['date_begin'], __('Begin date', 'iam')) }}
+         {{ fields.readOnlyField('', item.fields['date_end'], __('End date', 'iam')) }}
+      {% endif %}
+
+      {# A ticket or an account that the viewer cannot see is neither shown nor posted (so it is never cleared by mistake) #}
+      {% if not ticket_visible %}
+         {{ fields.readOnlyField('', __('The ticket is not visible to you.', 'iam'), __('Ticket', 'iam')) }}
+      {% elseif editable %}
+         {{ fields.dropdownField('Ticket', 'tickets_id', ticket_id, __('Ticket', 'iam'), {'display_emptychoice': true}) }}
+      {% elseif ticket_id %}
+         {{ fields.htmlField('', '<a href="' ~ (path('/front/ticket.form.php')|e('html_attr')) ~ '?id=' ~ ticket_id ~ '">#' ~ ticket_id ~ '</a>', __('Ticket', 'iam')) }}
+      {% else %}
+         {{ fields.readOnlyField('', '', __('Ticket', 'iam')) }}
+      {% endif %}
+
+      {% if editable %}
+         {{ fields.dropdownField('User', 'users_id_approver', item.fields['users_id_approver'], __('Approver', 'iam'), {'right': 'all'}) }}
+      {% else %}
+         {{ fields.readOnlyField('', approver, __('Approver', 'iam')) }}
+      {% endif %}
+      {% if editable and can_approve %}
+         {{ fields.dropdownField('User', 'users_id_approver_security', item.fields['users_id_approver_security'], __('Security approver', 'iam'), {'right': 'all'}) }}
+      {% else %}
+         {{ fields.readOnlyField('', security, __('Security approver', 'iam')) }}
+      {% endif %}
+
+      {% if accounts %}
+         {% if not account_visible %}
+            {{ fields.readOnlyField('', __('The account is not visible to you.', 'iam'), __('Account', 'iam')) }}
+         {% elseif editable %}
+            {{ fields.dropdownField('GlpiPlugin\\Accounts\\Account', 'plugin_accounts_accounts_id', account_id, __('Account', 'iam'), {'display_emptychoice': true}) }}
+         {% else %}
+            {{ fields.readOnlyField('', account_id ? get_item_name('GlpiPlugin\\Accounts\\Account', account_id) : '', __('Account', 'iam')) }}
+         {% endif %}
+      {% endif %}
+
+      {% if editable %}
+         {{ fields.dropdownArrayField('mfa', item.fields['mfa'] ?: 'na', mfa_labels, __('MFA', 'iam')) }}
+      {% else %}
+         {{ fields.readOnlyField('', mfa_label, __('MFA', 'iam')) }}
+      {% endif %}
+
+      {% if mode == 'read' %}
+         {{ fields.readOnlyField('', status_label, __('Status', 'iam')) }}
+      {% else %}
+         {{ fields.dropdownArrayField('status', item.fields['status'] ?: 'active', statuses, __('Status', 'iam')) }}
+      {% endif %}
+
+      {% if mode == 'full' %}
+         {{ fields.textareaField('revoke_reason', item.fields['revoke_reason'], __('Revocation reason', 'iam'), {'full_width': true}) }}
+      {% elseif item.fields['revoke_reason'] %}
+         {{ fields.readOnlyField('', item.fields['revoke_reason'], __('Revocation reason', 'iam'), {'full_width': true}) }}
+      {% endif %}
+
+      {% if mode == 'read' %}
+         {{ fields.readOnlyField('', item.fields['justification'], __('Justification', 'iam'), {'full_width': true}) }}
+      {% else %}
+         {{ fields.textareaField('justification', item.fields['justification'], __('Justification', 'iam'), {'full_width': true}) }}
+      {% endif %}
+
+      {% if mode != 'new' %}
+         {{ fields.readOnlyField('', source, __('Source', 'iam')) }}
+         {{ fields.readOnlyField('', recorder, __('Recorded by', 'iam')) }}
+         {% if item.fields['date_revoked'] %}
+            {{ fields.readOnlyField('', item.fields['date_revoked'], __('Revocation date', 'iam')) }}
+         {% endif %}
+      {% endif %}
+      {% if mode == 'owner' %}
+         <div class="col-12"><div class="alert alert-info"><i class="ti ti-info-circle me-2"></i>{{ __('As owner you can request the revocation or the modification of this access; the change is made through a ticket.', 'iam') }}</div></div>
+      {% endif %}
+   {% endblock %}
+{% endembed %}
+{% endif %}
