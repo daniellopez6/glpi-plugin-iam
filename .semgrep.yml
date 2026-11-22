@@ -1,0 +1,31 @@
+# Local rules. The registry rulesets (p/php, p/owasp-top-ten) are added on the command line in CI.
+rules:
+  - id: iam-sql-nonliteral
+    languages: [php]
+    severity: ERROR
+    message: Raw SQL with a non-literal argument. Use the GLPI DB iterator ($DB->request/insert/update/delete).
+    patterns:
+      - pattern-either:
+          - pattern: $DB->query($X)
+          - pattern: $DB->doQuery($X)
+      - pattern-not: $DB->query("...")
+      - pattern-not: $DB->doQuery("...")
+      - pattern-not: $DB->query('...')
+      - pattern-not: $DB->doQuery('...')
+  - id: iam-twig-raw
+    languages: [generic]
+    severity: ERROR
+    message: "|raw in a Twig template. Escape output, or pass the content through GLPI's sanitizer first."
+    paths:
+      include:
+        - templates/
+    pattern-regex: '\|\s*raw\b'
+  - id: iam-dynamic-instantiation
+    languages: [php]
+    severity: ERROR
+    message: Dynamic class instantiation. Only the whitelisted resolvers may do it.
+    paths:
+      exclude:
+        - "**/src/ResourceItemtypes.php"
+        - "**/src/NoteRules.php"
+    pattern-regex: 'new\s+\$'

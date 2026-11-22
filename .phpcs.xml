@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<ruleset name="IAM plugin">
+    <description>PSR-12, as used by GLPI 10+ and official plugins.</description>
+    <file>setup.php</file>
+    <file>hook.php</file>
+    <file>src</file>
+    <file>front</file>
+    <file>ajax</file>
+    <file>tests</file>
+    <arg name="extensions" value="php" />
+    <rule ref="PSR12">
+        <!-- Long translated strings and SQL column definitions -->
+        <exclude name="Generic.Files.LineLength" />
+    </rule>
+    <rule ref="PSR1.Files.SideEffects">
+        <!-- GLPI front and ajax controllers and setup.php define functions and run code by design -->
+        <exclude-pattern>front/*</exclude-pattern>
+        <exclude-pattern>ajax/*</exclude-pattern>
+        <exclude-pattern>setup.php</exclude-pattern>
+        <exclude-pattern>hook.php</exclude-pattern>
+        <exclude-pattern>tests/bootstrap.php</exclude-pattern>
+    </rule>
+    <!-- GLPI naming conventions: relation classes (Item_Type) and framework hooks (post_addItem, ...) -->
+    <rule ref="Squiz.Classes.ValidClassName">
+        <exclude-pattern>src/*_*.php</exclude-pattern>
+    </rule>
+    <rule ref="PSR1.Methods.CamelCapsMethodName">
+        <exclude-pattern>src/*</exclude-pattern>
+    </rule>
+</ruleset>

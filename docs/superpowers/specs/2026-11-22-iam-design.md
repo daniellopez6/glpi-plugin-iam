@@ -71,7 +71,7 @@ al SGSI, el inventario y el ERM.
 - Integración con GRC Manager **opcional y protegida** (como en ERM): si no está
   activo, las funciones de excepciones/evidencias se ocultan.
 - Multi-entidad: todo objeto con `entities_id`; puestos y recursos recursivos.
-- Entorno de prueba: VM 192.168.88.4, demo Finandina S.A. (entidad 1).
+- Entorno de prueba: GLPI de laboratorio (<glpi-url>), demo Empresa A (demo) (entidad 1).
 
 ## 6. Enfoques considerados
 
@@ -269,8 +269,8 @@ en todas las tablas, incluidas las hijas).
 
 ## 12 bis. Multi-entidad
 
-Mismo modelo que ERM (varias empresas en una instancia, p. ej. Finandina y
-Clínica Del Valle):
+Mismo modelo que ERM (varias empresas en una instancia, p. ej. Empresa A y
+Empresa B (demo)):
 
 - Toda tabla tiene `entities_id`; catálogos (puestos, recursos, roles, reglas SoD)
   además `is_recursive`, para que un holding defina puestos o aplicaciones
@@ -285,7 +285,7 @@ Clínica Del Valle):
   frecuencias de recertificación por nivel, si se exige MFA en privilegiados.
 - Las reglas SoD se evalúan por persona en todas las entidades que el analista
   puede ver (un conflicto puede cruzar empresas).
-- Demo en dos empresas: Finandina S.A. (entidad 1) y Clínica Del Valle (entidad 2).
+- Demo en dos empresas: Empresa A (demo) (entidad 1) y Empresa B (demo) (entidad 2).
 
 ## 13. Integraciones
 
@@ -429,7 +429,7 @@ sin `addDefaultWhere`, derechos a nivel de ítem faltantes y claves de padre mut
 - **XSS**: Twig con autoescape, sin `|raw` salvo HTML sanitizado por GLPI; datos
   hacia JS por `data-*`/JSON codificado, nunca interpolados en scripts. La matriz
   y el panel nominal escapan todo texto (nombres, notas, comentarios).
-- **CSRF**: `csrf_compliant` y token en todo POST/AJAX que modifica.
+- **CSRF**: `csrf_compliant`; en GLPI 12 la protección la aplica el kernel (`CheckCsrfListener` + `CsrfChecker`: rechaza POST con `Sec-Fetch-Site` cross-site/same-site u `Origin` distinto) para todo front de plugin; `csrf_token()` está deprecado y no se usa. Los endpoints AJAX que modifican deben ser POST y pasar por el kernel.
 - **Separación de funciones en el propio plugin**: nadie valida sus accesos; el
   aprobador de seguridad no puede ser quien solicita ni el beneficiario; el agente
   (`source=agent`) no puede aprobar ni cerrar campañas.
@@ -462,7 +462,7 @@ sin `addDefaultWhere`, derechos a nivel de ítem faltantes y claves de padre mut
 
 1. **1.0** Catálogos (puestos, persona↔puesto, recursos, roles), matriz, grants,
    derechos y perfiles, notas permanentes, matriz visual con panel nominal,
-   buscador. Demo Finandina.
+   buscador. Demo Empresa A.
 2. **1.1** Motor de desvíos completo + excepciones GRC + privilegiados + SoD + tablero.
 3. **1.2** Mis activos + campañas de recertificación + evidencia GRC + fotos.
 4. **1.3** Ciclo de vida automático (movers/leavers), import CSV, guía para el agente.

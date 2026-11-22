@@ -1,0 +1,55 @@
+{#
+ # -------------------------------------------------------------------------
+ # IAM - Identity & Access Governance plugin for GLPI
+ # Copyright (C) 2026 daniellopez6
+ # https://github.com/daniellopez6/glpi-plugin-iam
+ # -------------------------------------------------------------------------
+ # LICENSE
+ #
+ # This program is free software: you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+ # the Free Software Foundation, either version 3 of the License, or
+ # (at your option) any later version. See LICENSE for the full text.
+ # -------------------------------------------------------------------------
+ #}
+{# Resource form #}
+{% extends 'generic_show_form.html.twig' %}
+{% import 'components/form/fields_macros.html.twig' as fields %}
+{% import '@iam/_help.html.twig' as h %}
+
+{% block form_fields %}
+   <div class="col-12">{{ h.box(help.boxes.resource) }}</div>
+   {{ fields.textField('name', item.fields['name'], __('Name'), {'required': true, 'helper': help.fields.resource_name}) }}
+   {{ fields.textField('code', item.fields['code'], __('Code', 'iam'), {'helper': help.fields.resource_code}) }}
+   {% if link_deleted %}
+   <div class="col-12">
+      <div class="alert alert-warning d-flex align-items-center">
+         <i class="ti ti-alert-triangle me-2"></i>
+         <span class="badge bg-warning me-2">{{ __('Linked item deleted', 'iam') }}</span>
+         {{ __('The inventory item of this resource no longer exists or is in the trashbin. Link another item or keep the record as history.', 'iam') }}
+      </div>
+   </div>
+   {% endif %}
+   {% if link_hidden %}
+   <div class="col-12"><div class="alert alert-info"><i class="ti ti-eye-off me-2"></i>{{ __('The linked item is not visible to you.', 'iam') }}</div></div>
+   {% endif %}
+   {% if link %}
+      {{ fields.htmlField('', '<a href="' ~ (link.url|e('html_attr')) ~ '">' ~ (link.name|e) ~ '</a>', __('Linked item', 'iam')) }}
+   {% endif %}
+   {{ fields.dropdownItemsFromItemtypes('items_id', (link ? __('Change linked item', 'iam') : __('Linked item', 'iam')), {
+      'helper': help.fields.resource_item,
+      'itemtypes': itemtypes,
+      'itemtype_name': 'itemtype',
+      'items_id_name': 'items_id',
+      'default_itemtype': preset_type,
+      'default_items_id': preset_id,
+      'entity_restrict': -1,
+      'checkright': true,
+      'display_emptychoice': true
+   }) }}
+   {{ fields.dropdownField('User', 'users_id_owner', item.fields['users_id_owner'], __('Owner (person)', 'iam'), {'helper': help.fields.resource_owner_user, 'right': 'all', 'entity': item.fields['entities_id']}) }}
+   {{ fields.dropdownField('Group', 'groups_id_owner', item.fields['groups_id_owner'], __('Owner (group)', 'iam'), {'helper': help.fields.resource_owner_group, 'entity': item.fields['entities_id']}) }}
+   {{ fields.dropdownArrayField('criticality', item.fields['criticality'], criticalities, __('Criticality', 'iam'), {'helper': help.fields.resource_criticality}) }}
+   {{ fields.dropdownArrayField('review_frequency', item.fields['review_frequency'] ?: 'annual', frequencies, __('Review frequency', 'iam'), {'helper': help.fields.resource_review}) }}
+   {{ fields.textareaField('comment', item.fields['comment'], __('Comments'), {'full_width': true}) }}
+{% endblock %}

@@ -1,0 +1,68 @@
+{#
+ # -------------------------------------------------------------------------
+ # IAM - Identity & Access Governance plugin for GLPI
+ # Copyright (C) 2026 daniellopez6
+ # https://github.com/daniellopez6/glpi-plugin-iam
+ # -------------------------------------------------------------------------
+ # LICENSE
+ #
+ # This program is free software: you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+ # the Free Software Foundation, either version 3 of the License, or
+ # (at your option) any later version. See LICENSE for the full text.
+ # -------------------------------------------------------------------------
+ #}
+{# Grants of a person, a ticket or a resource (rows already filtered to what the session may see) #}
+{% set badges = {
+   'active': 'bg-green-lt',
+   'pending': 'bg-blue-lt',
+   'revoke_pending': 'bg-orange-lt',
+   'modify_pending': 'bg-orange-lt',
+   'revoked': 'bg-secondary-lt',
+   'expired': 'bg-secondary-lt'
+} %}
+<div class="card">
+   {% if can_add %}
+   <div class="card-header">
+      <a class="btn btn-primary btn-sm" href="{{ add_url }}"><i class="ti ti-plus me-1"></i>{{ __('Register a grant', 'iam') }}</a>
+   </div>
+   {% endif %}
+   <div class="table-responsive">
+      <table class="table table-hover card-table">
+         <thead>
+            <tr>
+               <th>{{ __('ID') }}</th>
+               {% if for != 'users_id' %}<th>{{ __('Person', 'iam') }}</th>{% endif %}
+               {% if for != 'plugin_iam_resources_id' %}<th>{{ __('Resource', 'iam') }}</th>{% endif %}
+               <th>{{ __('Role', 'iam') }}</th>
+               <th>{{ __('Level', 'iam') }}</th>
+               <th>{{ __('Status', 'iam') }}</th>
+               <th>{{ __('Begin date', 'iam') }}</th>
+               <th>{{ __('End date', 'iam') }}</th>
+               {% if for != 'tickets_id' %}<th>{{ __('Ticket', 'iam') }}</th>{% endif %}
+               <th>{{ __('Source', 'iam') }}</th>
+            </tr>
+         </thead>
+         <tbody>
+         {% for r in rows %}
+            <tr>
+               <td><a href="{{ r.url }}">{{ r.id }}</a></td>
+               {% if for != 'users_id' %}<td>{{ r.person }}</td>{% endif %}
+               {% if for != 'plugin_iam_resources_id' %}<td>{{ r.resource }}</td>{% endif %}
+               <td>{{ r.role }}</td>
+               <td>{{ r.level }}</td>
+               <td><span class="badge {{ badges[r.status] ?? 'bg-secondary-lt' }}">{{ r.status_label }}</span></td>
+               <td>{{ r.begin }}</td>
+               <td>{{ r.end }}</td>
+               {% if for != 'tickets_id' %}
+               <td>{% if r.ticket %}<a href="{{ path('/front/ticket.form.php') }}?id={{ r.ticket }}">#{{ r.ticket }}</a>{% endif %}</td>
+               {% endif %}
+               <td>{{ r.source }}</td>
+            </tr>
+         {% else %}
+            <tr><td colspan="10" class="text-muted">{{ __('No grants.', 'iam') }}</td></tr>
+         {% endfor %}
+         </tbody>
+      </table>
+   </div>
+</div>

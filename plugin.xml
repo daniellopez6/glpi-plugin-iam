@@ -1,0 +1,50 @@
+<root>
+   <name>IAM - Identity &amp; Access Governance</name>
+   <key>iam</key>
+   <state>beta</state>
+   <logo>https://raw.githubusercontent.com/daniellopez6/glpi-plugin-iam/main/iam.png</logo>
+   <description>
+      <short>
+         <en>Access governance for GLPI (ISO/IEC 27001:2022): positions, resources linked to inventory, position x role RBAC matrix with live gap view, access register with separation of duties and append-only audit notes.</en>
+         <es>Gobierno de accesos para GLPI (ISO/IEC 27001:2022): puestos, recursos vinculados al inventario, matriz RBAC puesto x rol con vista de brechas en vivo, registro de accesos con separación de funciones y notas de auditoría de solo agregado.</es>
+      </short>
+      <long>
+         <en>Govern who can access which business application or resource of the GLPI inventory. Release 1.0 provides: organisation positions and dated assignments of people; resources linked to inventory items (software, appliances, computers, network equipment, databases, domains, certificates, suppliers) with owners and roles; a two-way RBAC matrix (positions x application roles) with a live view of the gaps between expected and registered access; a nominal access register with separation of duties (beneficiary, approvers and recorder must differ) and ticket traceability; append-only audit notes; a quick case search; and an API ready for an automation agent with stable error codes. Roadmap: deviation engine, GRC Manager waivers, owner recertification campaigns and reports. Supports ISO/IEC 27001:2022 controls A.5.3, A.5.15, A.5.16 and A.5.18 (A.8.2: privileged roles are flagged, not yet validated).</en>
+         <es>Gobierne quién accede a cada aplicación o recurso de negocio del inventario de GLPI. La versión 1.0 ofrece: puestos de la organización y asignaciones de personas con vigencia; recursos vinculados a elementos del inventario (software, appliances, computadoras, equipos de red, bases de datos, dominios, certificados, proveedores) con dueños y roles; una matriz RBAC de doble entrada (puestos x roles de aplicación) con vista en vivo de las brechas entre el acceso esperado y el registrado; un registro nominal de accesos con separación de funciones (beneficiario, aprobadores y registrador deben ser distintos) y trazabilidad al ticket; notas de auditoría de solo agregado; una búsqueda rápida de casos; y una API preparada para un agente de automatización con códigos de error estables. Hoja de ruta: motor de desvíos, waivers de GRC Manager, campañas de recertificación por dueños y reportes. Apoya los controles ISO/IEC 27001:2022 A.5.3, A.5.15, A.5.16 y A.5.18 (A.8.2: los roles privilegiados se marcan, aún sin validación).</es>
+      </long>
+   </description>
+   <homepage>https://github.com/daniellopez6/glpi-plugin-iam</homepage>
+   <download>https://github.com/daniellopez6/glpi-plugin-iam/releases</download>
+   <issues>https://github.com/daniellopez6/glpi-plugin-iam/issues</issues>
+   <readme>https://github.com/daniellopez6/glpi-plugin-iam/blob/main/README.md</readme>
+   <authors>
+      <author>daniellopez6</author>
+   </authors>
+   <versions>
+      <version>
+         <num>1.0.0</num>
+         <compatibility>~12.0.0</compatibility>
+         <download_url>https://github.com/daniellopez6/glpi-plugin-iam/releases/download/1.0.0/glpi-iam-1.0.0.tar.bz2</download_url>
+      </version>
+   </versions>
+   <langs>
+      <lang>es_AR</lang>
+      <lang>es_ES</lang>
+      <lang>en_GB</lang>
+   </langs>
+   <license>GPL v3+</license>
+   <tags>
+      <en>
+         <tag>iam</tag>
+         <tag>rbac</tag>
+         <tag>iso 27001</tag>
+         <tag>access control</tag>
+      </en>
+      <es>
+         <tag>iam</tag>
+         <tag>rbac</tag>
+         <tag>iso 27001</tag>
+         <tag>control de accesos</tag>
+      </es>
+   </tags>
+</root>

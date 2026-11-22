@@ -1,0 +1,104 @@
+{#
+ # -------------------------------------------------------------------------
+ # IAM - Identity & Access Governance plugin for GLPI
+ # Copyright (C) 2026 daniellopez6
+ # https://github.com/daniellopez6/glpi-plugin-iam
+ # -------------------------------------------------------------------------
+ # LICENSE
+ #
+ # This program is free software: you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+ # the Free Software Foundation, either version 3 of the License, or
+ # (at your option) any later version. See LICENSE for the full text.
+ # -------------------------------------------------------------------------
+ #}
+{% import 'components/form/fields_macros.html.twig' as fields %}
+{% import '@iam/_help.html.twig' as h %}
+{{ h.box(help.boxes.assignment) }}
+<div class="card">
+   <div class="table-responsive">
+      <table class="table table-hover card-table">
+         <thead>
+            <tr>
+               <th>{{ for_user ? __('Position', 'iam') : __('Person', 'iam') }}</th>
+               <th>{{ __('Type', 'iam') }}</th>
+               <th>{{ __('Primary', 'iam') }}</th>
+               <th>{{ __('Begin date', 'iam') }}</th>
+               <th>{{ __('End date', 'iam') }}</th>
+               <th>{{ __('Status', 'iam') }}</th>
+               <th>{{ __('Ticket', 'iam') }}</th>
+               <th></th>
+               {% if can_edit %}<th></th>{% endif %}
+            </tr>
+         </thead>
+         <tbody>
+         {% for r in rows %}
+            <tr>
+               <td>
+                  {% if for_user %}
+                     {% if r.url %}<a href="{{ r.url }}">{{ r.position }}</a>{% else %}{{ r.position }}{% endif %}
+                  {% else %}
+                     {{ r.person }}
+                  {% endif %}
+               </td>
+               <td>{{ r.type }}</td>
+               <td>{{ r.primary ? __('Yes', 'iam') : __('No', 'iam') }}</td>
+               <td>{{ r.begin }}</td>
+               <td>{{ r.end }}</td>
+               <td>
+                  {% if r.active %}<span class="badge bg-green-lt">{{ __('Active', 'iam') }}</span>
+                  {% else %}<span class="badge bg-secondary-lt">{{ __('Inactive', 'iam') }}</span>{% endif %}
+               </td>
+               <td>{% if r.ticket %}<a href="{{ path('/front/ticket.form.php') }}?id={{ r.ticket }}">#{{ r.ticket }}</a>{% endif %}</td>
+               <td><a href="{{ r.page }}" title="{{ __('Open the assignment and its log', 'iam') }}" aria-label="{{ __('Open the assignment and its log', 'iam') }}"><i class="ti ti-notebook"></i></a></td>
+               {% if can_edit %}
+               <td>
+                  {% if r.editable %}
+                  <form method="post" action="{{ action }}" class="d-flex gap-1">
+                     <input type="hidden" name="id" value="{{ r.id }}">
+                     <input type="date" name="date_end" value="{{ r.end }}" class="form-control form-control-sm" aria-label="{{ __('End date', 'iam') }}">
+                     <button type="submit" name="update" class="btn btn-sm btn-outline-primary" title="{{ __('Set the end date', 'iam') }}"><i class="ti ti-device-floppy"></i></button>
+                  </form>
+                  {% endif %}
+               </td>
+               {% endif %}
+            </tr>
+         {% else %}
+            <tr><td colspan="9" class="text-muted">{{ __('No position assignments.', 'iam') }}</td></tr>
+         {% endfor %}
+         </tbody>
+      </table>
+   </div>
+   {% if can_add %}
+   <div class="card-footer">
+      <form method="post" action="{{ action }}" class="row g-2 align-items-end">
+         {% if for_user %}
+            <input type="hidden" name="users_id" value="{{ item_id }}">
+         {% else %}
+            <input type="hidden" name="plugin_iam_positions_id" value="{{ item_id }}">
+         {% endif %}
+         <div class="col-md-3">
+            {% if for_user %}
+               {{ fields.dropdownField('GlpiPlugin\\Iam\\Position', 'plugin_iam_positions_id', 0, __('Position', 'iam'), {'condition': {'is_active': 1}, 'full_width': true, 'mb': ''}) }}
+            {% else %}
+               {{ fields.dropdownField('User', 'users_id', 0, __('Person', 'iam'), {'right': 'all', 'full_width': true, 'mb': ''}) }}
+            {% endif %}
+         </div>
+         <div class="col-md-2">
+            <label class="form-label">{{ __('Type', 'iam') }}</label>
+            <select name="type" class="form-select" title="{{ help.fields.assign_type }}">
+               {% for k, label in types %}<option value="{{ k }}">{{ label }}</option>{% endfor %}
+            </select>
+         </div>
+         <div class="col-md-1">
+            <label class="form-label">{{ __('Primary', 'iam') }}</label>
+            <select name="is_primary" class="form-select" title="{{ help.fields.assign_primary }}"><option value="0">{{ __('No', 'iam') }}</option><option value="1">{{ __('Yes', 'iam') }}</option></select>
+         </div>
+         <div class="col-md-2"><label class="form-label">{{ __('Begin date', 'iam') }}</label><input type="date" name="date_begin" class="form-control" title="{{ help.fields.assign_begin }}"></div>
+         <div class="col-md-2"><label class="form-label">{{ __('End date', 'iam') }}</label><input type="date" name="date_end" class="form-control" title="{{ help.fields.assign_end }}"></div>
+         <div class="col-md-1"><label class="form-label">{{ __('Ticket', 'iam') }}</label><input type="number" min="0" name="tickets_id" class="form-control" title="{{ help.fields.assign_ticket }}"></div>
+         <div class="col-md-1"><button type="submit" name="add" class="btn btn-primary w-100"><i class="ti ti-plus"></i></button></div>
+      </form>
+   </div>
+   {% endif %}
+</div>

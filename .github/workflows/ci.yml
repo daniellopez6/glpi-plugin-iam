@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout GLPI 12
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          repository: glpi-project/glpi
+          ref: 12.0.2
+          path: glpi
+      - name: Checkout plugin
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          path: glpi/plugins/iam
+      - name: Setup PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: '8.2'
+          extensions: intl, mbstring, gd, ldap, zip, bz2, curl, sodium
+          tools: composer:v2
+      - name: Install GLPI dependencies
+        working-directory: glpi
+        run: composer install --no-dev --no-interaction --no-progress --ignore-platform-reqs
+      - name: Install plugin dev tools
+        working-directory: glpi/plugins/iam
+        run: composer install --no-interaction --no-progress
+      - name: PHP syntax
+        working-directory: glpi/plugins/iam
+        run: find setup.php hook.php src front ajax tests -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Unit tests (PHPUnit)
+        working-directory: glpi/plugins/iam
+        run: vendor/bin/phpunit --no-progress
+      - name: Coding standard (PSR-12)
+        working-directory: glpi/plugins/iam
+        run: vendor/bin/phpcs --standard=.phpcs.xml
+      - name: Static analysis (PHPStan)
+        working-directory: glpi/plugins/iam
+        run: php -d memory_limit=2G vendor/bin/phpstan analyse -c phpstan.neon --no-progress
+      - name: Static security rules (Semgrep)
+        working-directory: glpi/plugins/iam
+        run: |
+          pip install semgrep==1.185.0
+          semgrep --config p/php --config p/owasp-top-ten --config .semgrep.yml --exclude .github --error
+      - name: Locales are up to date
+        working-directory: glpi/plugins/iam
+        run: |
+          pip install babel==2.17.0
+          python3 tools/extract_locales.py
+          python3 tools/build_po.py
+          git diff --exit-code -I 'POT-Creation-Date' -I 'PO-Revision-Date' -I 'Generated-By' -- locales/*.po locales/*.pot

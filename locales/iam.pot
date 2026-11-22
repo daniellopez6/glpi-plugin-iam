@@ -1,0 +1,1108 @@
+# IAM - Identity & Access Governance plugin for GLPI
+# This file is distributed under the same license as the plugin (GPL-3.0-or-later).
+msgid ""
+msgstr ""
+"Project-Id-Version: iam\n"
+"POT-Creation-Date: 2026-11-22 23:28+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ajax/matrixedit.php:32
+msgid "Method not allowed."
+msgstr ""
+
+#: ajax/matrixedit.php:37
+msgid "You are not allowed to edit the matrix."
+msgstr ""
+
+#: ajax/matrixedit.php:44 src/Position_Role.php:262 src/Position_Role.php:295
+msgid "The expectation is not valid."
+msgstr ""
+
+#: ajax/matrixedit.php:59 front/matrix.php:105
+msgid "The matrix cell could not be saved."
+msgstr ""
+
+#: ajax/matrixedit.php:63
+msgid "Matrix cell saved."
+msgstr ""
+
+#: front/matrix.php:100
+msgid "Held while forbidden"
+msgstr ""
+
+#: front/matrix.php:101 src/Matrix.php:451
+msgid "Expected, not granted"
+msgstr ""
+
+#: front/matrix.php:102
+msgid "Privileged role"
+msgstr ""
+
+#: front/matrix.php:103
+msgid "Break-glass role"
+msgstr ""
+
+#: front/matrix.php:104
+msgid "Matrix cell saved. Totals are refreshed when the page is reloaded."
+msgstr ""
+
+#: front/matrix.php:106
+msgid "Set the expectation"
+msgstr ""
+
+#: front/matrix.php:107
+msgid "Loading…"
+msgstr ""
+
+#: front/matrix.php:108
+msgid "The people of this cell could not be loaded."
+msgstr ""
+
+#: front/matrix.php:115 src/Menu.php:56 templates/matrix.html.twig:42
+msgid "Access matrix"
+msgstr ""
+
+#: front/matrix.php:93 src/Position_Role.php:62
+msgid "Allowed"
+msgstr ""
+
+#: front/matrix.php:94 src/Position_Role.php:63
+msgid "On request"
+msgstr ""
+
+#: front/matrix.php:95 src/Position_Role.php:64
+msgid "Forbidden"
+msgstr ""
+
+#: front/matrix.php:96 templates/matrix_cell.html.twig:39
+msgid "No expectation"
+msgstr ""
+
+#: front/matrix.php:97
+msgid "People holding it as expected"
+msgstr ""
+
+#: front/matrix.php:98
+msgid "People expected to hold it"
+msgstr ""
+
+#: front/matrix.php:99
+msgid "Held without expectation"
+msgstr ""
+
+#: front/search.php:35 src/Menu.php:61 templates/search.html.twig:19 templates/search.html.twig:23
+msgid "Case search"
+msgstr ""
+
+#: setup.php:102
+msgid "IAM - Identity & Access Governance"
+msgstr ""
+
+#: src/Grant.php:293 src/Position_User.php:222
+msgid "A date is not valid (expected format YYYY-MM-DD)."
+msgstr ""
+
+#: src/Grant.php:294 src/Position_User.php:221
+msgid "The end date cannot be before the begin date."
+msgstr ""
+
+#: src/Grant.php:295
+msgid "The status is not valid."
+msgstr ""
+
+#: src/Grant.php:296
+msgid "This status change is not allowed."
+msgstr ""
+
+#: src/Grant.php:297
+msgid "The MFA value is not valid."
+msgstr ""
+
+#: src/Grant.php:298
+msgid "The agent can only register a grant with its ticket."
+msgstr ""
+
+#: src/Grant.php:299
+msgid "The agent cannot approve or revoke grants."
+msgstr ""
+
+#: src/Grant.php:300
+msgid "A revocation needs a reason."
+msgstr ""
+
+#: src/Grant.php:301
+msgid "Nobody can register or change their own access."
+msgstr ""
+
+#: src/Grant.php:302
+msgid "The approver cannot be the person who receives the access."
+msgstr ""
+
+#: src/Grant.php:303
+msgid "The security approver cannot be the person who receives the access nor who registered it."
+msgstr ""
+
+#: src/Grant.php:304
+msgid "Only a security approver can set the security approval."
+msgstr ""
+
+#: src/Grant.php:305 src/Grant.php:311
+msgid "As owner you can only request a revocation or a modification, with its justification."
+msgstr ""
+
+#: src/Grant.php:306
+msgid "As owner you can only request a revocation or a modification."
+msgstr ""
+
+#: src/Grant.php:307 src/Position_User.php:229
+msgid "The ticket does not exist or you are not allowed to see it."
+msgstr ""
+
+#: src/Grant.php:308
+msgid "The approver does not exist or you are not allowed to see it."
+msgstr ""
+
+#: src/Grant.php:309
+msgid "The approver cannot be the person who registers the access."
+msgstr ""
+
+#: src/Grant.php:310
+msgid "The security approval is always recorded in the name of the approver who gives it."
+msgstr ""
+
+#: src/Grant.php:312
+msgid "A revocation or modification request needs a justification."
+msgstr ""
+
+#: src/Grant.php:313
+msgid "The account does not exist or you are not allowed to see it."
+msgstr ""
+
+#: src/Grant.php:314
+msgid "Select a role."
+msgstr ""
+
+#: src/Grant.php:315 src/Position_Role.php:258 src/Position_Role.php:291
+msgid "The role does not exist or its resource is in the trash."
+msgstr ""
+
+#: src/Grant.php:316
+msgid "The role does not belong to the selected resource."
+msgstr ""
+
+#: src/Grant.php:317
+msgid "The resource does not exist or you are not allowed to see it."
+msgstr ""
+
+#: src/Grant.php:318 src/Position_User.php:228
+msgid "The person does not exist or you are not allowed to see it."
+msgstr ""
+
+#: src/Grant.php:319
+msgid "The grant is not valid."
+msgstr ""
+
+#: src/Grant.php:515 templates/grant_form.html.twig:48 templates/grant_form.html.twig:58 templates/grants_tab.html.twig:35 templates/position_user_form.html.twig:23 templates/positions_tab.html.twig:23 templates/positions_tab.html.twig:84
+msgid "Person"
+msgstr ""
+
+#: src/Grant.php:522 templates/grants_tab.html.twig:38 templates/roles_tab.html.twig:23 templates/roles_tab.html.twig:37 templates/roles_tab.html.twig:80
+msgid "Level"
+msgstr ""
+
+#: src/Grant.php:524 templates/grant_form.html.twig:114 templates/grant_form.html.twig:116 templates/grants_tab.html.twig:39 templates/position_user_form.html.twig:33 templates/positions_tab.html.twig:28
+msgid "Status"
+msgstr ""
+
+#: src/Grant.php:526 templates/grant_form.html.twig:67 templates/grant_form.html.twig:70 templates/grants_tab.html.twig:40 templates/position_user_form.html.twig:29 templates/positions_tab.html.twig:26 templates/positions_tab.html.twig:97
+msgid "Begin date"
+msgstr ""
+
+#: src/Grant.php:527 templates/grant_form.html.twig:68 templates/grant_form.html.twig:71 templates/grants_tab.html.twig:41 templates/position_user_form.html.twig:31 templates/positions_tab.html.twig:27 templates/positions_tab.html.twig:59 templates/positions_tab.html.twig:98
+msgid "End date"
+msgstr ""
+
+#: src/Grant.php:529 templates/grant_form.html.twig:76 templates/grant_form.html.twig:78 templates/grant_form.html.twig:80 templates/grant_form.html.twig:82 templates/grants_tab.html.twig:42 templates/matrix_cell.html.twig:66 templates/position_user_form.html.twig:38 templates/positions_tab.html.twig:29 templates/positions_tab.html.twig:99
+msgid "Ticket"
+msgstr ""
+
+#: src/Grant.php:530 templates/grant_form.html.twig:132 templates/grants_tab.html.twig:43
+msgid "Source"
+msgstr ""
+
+#: src/Grant.php:532 templates/grant_form.html.twig:86 templates/grant_form.html.twig:88
+msgid "Approver"
+msgstr ""
+
+#: src/Grant.php:535 templates/grant_form.html.twig:92 templates/grant_form.html.twig:94
+msgid "Security approver"
+msgstr ""
+
+#: src/Grant.php:536 templates/grant_form.html.twig:108 templates/grant_form.html.twig:110
+msgid "MFA"
+msgstr ""
+
+#: src/Grant.php:538 templates/grant_form.html.twig:133
+msgid "Recorded by"
+msgstr ""
+
+#: src/Grant.php:540 templates/grant_form.html.twig:135
+msgid "Revocation date"
+msgstr ""
+
+#: src/Grant.php:543 templates/grant_form.html.twig:126 templates/grant_form.html.twig:128
+msgid "Justification"
+msgstr ""
+
+#: src/Grant.php:545 templates/grant_form.html.twig:120 templates/grant_form.html.twig:122
+msgid "Revocation reason"
+msgstr ""
+
+#: src/Grant.php:55
+msgid "Grant"
+msgid_plural "Grants"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Grant.php:550 templates/grant_form.html.twig:99 templates/grant_form.html.twig:101 templates/grant_form.html.twig:103
+msgid "Account"
+msgstr ""
+
+#: src/Grant.php:627
+msgid "Not approved"
+msgstr ""
+
+#: src/Grant.php:631
+msgid "Approved by me"
+msgstr ""
+
+#: src/Grant.php:65 templates/resource_item_tab.html.twig:26 templates/search.html.twig:52
+msgid "Grants"
+msgstr ""
+
+#: src/Grant.php:72
+msgid "Pending"
+msgstr ""
+
+#: src/Grant.php:73 templates/position_user_form.html.twig:35 templates/positions_tab.html.twig:49
+msgid "Active"
+msgstr ""
+
+#: src/Grant.php:74
+msgid "Revocation pending"
+msgstr ""
+
+#: src/Grant.php:75
+msgid "Modification pending"
+msgstr ""
+
+#: src/Grant.php:76
+msgid "Revoked"
+msgstr ""
+
+#: src/Grant.php:767
+msgid "Grants (IAM)"
+msgstr ""
+
+#: src/Grant.php:77
+msgid "Expired"
+msgstr ""
+
+#: src/Grant.php:85 templates/position_user_form.html.twig:28 templates/positions_tab.html.twig:45 templates/positions_tab.html.twig:95 templates/roles_tab.html.twig:44 templates/roles_tab.html.twig:53 templates/roles_tab.html.twig:87
+msgid "Yes"
+msgstr ""
+
+#: src/Grant.php:86 templates/position_user_form.html.twig:28 templates/positions_tab.html.twig:45 templates/positions_tab.html.twig:95 templates/roles_tab.html.twig:43 templates/roles_tab.html.twig:53 templates/roles_tab.html.twig:87
+msgid "No"
+msgstr ""
+
+#: src/Grant.php:87
+msgid "Not applicable"
+msgstr ""
+
+#: src/Grant.php:95
+msgid "Manual"
+msgstr ""
+
+#: src/Grant.php:96
+msgid "API"
+msgstr ""
+
+#: src/Grant.php:97
+msgid "Agent"
+msgstr ""
+
+#: src/Help.php:31 templates/help.html.twig:31 templates/matrix.html.twig:130
+msgid "Help and glossary"
+msgstr ""
+
+#: src/Matrix.php:450
+msgid "Holds it, as expected"
+msgstr ""
+
+#: src/Matrix.php:452
+msgid "Holds it, not expected"
+msgstr ""
+
+#: src/Matrix.php:453
+msgid "Holds it, forbidden"
+msgstr ""
+
+#: src/Menu.php:29 src/Menu.php:34 src/Profile.php:36 templates/profile_rights.html.twig:20
+msgid "Access governance (IAM)"
+msgstr ""
+
+#: src/Note.php:238
+msgid "The item does not exist or you are not allowed to add a log entry to it."
+msgstr ""
+
+#: src/Note.php:239
+msgid "The log entry is empty."
+msgstr ""
+
+#: src/Note.php:240
+msgid "The log entry is too long (maximum %d characters)."
+msgstr ""
+
+#: src/Note.php:241
+msgid "The corrected entry does not exist or belongs to another item."
+msgstr ""
+
+#: src/Note.php:242
+msgid "Log entries cannot be changed or deleted. Add a correction instead."
+msgstr ""
+
+#: src/Note.php:243
+msgid "The log entry is not valid."
+msgstr ""
+
+#: src/Note.php:320
+msgid "Item type"
+msgstr ""
+
+#: src/Note.php:322
+msgid "Item"
+msgstr ""
+
+#: src/Note.php:323
+msgid "Content"
+msgstr ""
+
+#: src/Note.php:324
+msgid "Author"
+msgstr ""
+
+#: src/Note.php:326 templates/notes_tab.html.twig:33
+msgid "Corrects entry"
+msgstr ""
+
+#: src/Note.php:420
+msgid "Log (IAM)"
+msgstr ""
+
+#: src/Note.php:49
+msgid "Log entry"
+msgid_plural "Log entries"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Position.php:156
+msgid "The position has assignments (the history is kept). Deactivate it instead of deleting it."
+msgstr ""
+
+#: src/Position.php:164
+msgid "The position has sub-positions. Move or delete them first, or deactivate it instead of deleting it."
+msgstr ""
+
+#: src/Position.php:172
+msgid "The position has expectations in the access matrix. Remove its matrix expectations first, or deactivate it instead of deleting it."
+msgstr ""
+
+#: src/Position.php:34
+msgid "Position"
+msgid_plural "Positions"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Position.php:44
+msgid "Positions"
+msgstr ""
+
+#: src/Position.php:57 src/Position.php:67
+msgid "Job title"
+msgstr ""
+
+#: src/Position.php:88
+msgid "The parent position does not exist or is not available in this entity."
+msgstr ""
+
+#: src/Position_Role.php:249 src/Position_User.php:226
+msgid "Select a position."
+msgstr ""
+
+#: src/Position_Role.php:265
+msgid "The position already has an expectation for this role."
+msgstr ""
+
+#: src/Position_Role.php:50
+msgid "Matrix cell"
+msgid_plural "Matrix cells"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Position_User.php:223
+msgid "The person already has an active primary position."
+msgstr ""
+
+#: src/Position_User.php:224
+msgid "The assignment type is not valid."
+msgstr ""
+
+#: src/Position_User.php:225
+msgid "The agent can only assign a position with its ticket."
+msgstr ""
+
+#: src/Position_User.php:227
+msgid "The position is not active."
+msgstr ""
+
+#: src/Position_User.php:230
+msgid "The assignment is not valid."
+msgstr ""
+
+#: src/Position_User.php:424
+msgid "Positions (IAM)"
+msgstr ""
+
+#: src/Position_User.php:427
+msgid "Assignments"
+msgstr ""
+
+#: src/Position_User.php:49
+msgid "Position assignment"
+msgid_plural "Position assignments"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Position_User.php:61
+msgid "Holder"
+msgstr ""
+
+#: src/Position_User.php:62
+msgid "Substitute"
+msgstr ""
+
+#: src/Position_User.php:63
+msgid "Temporary"
+msgstr ""
+
+#: src/Profile.php:49
+msgid "See all"
+msgstr ""
+
+#: src/Profile.php:49
+msgid "See all items"
+msgstr ""
+
+#: src/Profile.php:50
+msgid "See own"
+msgstr ""
+
+#: src/Profile.php:50
+msgid "See only the accesses of own resources"
+msgstr ""
+
+#: src/Profile.php:51
+msgid "Update"
+msgstr ""
+
+#: src/Profile.php:51
+msgid "Update the items the user can see"
+msgstr ""
+
+#: src/Profile.php:52
+msgid "Update own"
+msgstr ""
+
+#: src/Profile.php:52
+msgid "Update only the accesses of own resources"
+msgstr ""
+
+#: src/Profile.php:53
+msgid "Create"
+msgstr ""
+
+#: src/Profile.php:53
+msgid "Create items"
+msgstr ""
+
+#: src/Profile.php:54 src/Profile.php:54
+msgid "Put in trashbin"
+msgstr ""
+
+#: src/Profile.php:55
+msgid "Purge"
+msgstr ""
+
+#: src/Profile.php:55
+msgid "Delete permanently"
+msgstr ""
+
+#: src/Profile.php:58
+msgid "Access register (grants, deviations and notes)"
+msgstr ""
+
+#: src/Profile.php:63
+msgid "Catalogue (positions, resources, roles, access matrix and SoD rules)"
+msgstr ""
+
+#: src/Profile.php:68
+msgid "Recertification reviews"
+msgstr ""
+
+#: src/Profile.php:70
+msgid "Review accesses"
+msgstr ""
+
+#: src/Profile.php:70
+msgid "Confirm or revoke accesses in recertification campaigns"
+msgstr ""
+
+#: src/Profile.php:73
+msgid "Approvals (requests and deviations)"
+msgstr ""
+
+#: src/Profile.php:75
+msgid "Approve"
+msgstr ""
+
+#: src/Profile.php:75
+msgid "Approve or reject requests and deviations (never own ones)"
+msgstr ""
+
+#: src/Profile.php:78
+msgid "Reports and exports"
+msgstr ""
+
+#: src/Profile.php:80
+msgid "See reports"
+msgstr ""
+
+#: src/Profile.php:80
+msgid "See and export reports"
+msgstr ""
+
+#: src/Resource.php:173
+msgid "The resource has grants, matrix cells or log entries (nothing is deleted). Put it in the trashbin instead."
+msgstr ""
+
+#: src/Resource.php:217 templates/resource_form.html.twig:23 templates/resource_item_tab.html.twig:21
+msgid "Code"
+msgstr ""
+
+#: src/Resource.php:218
+msgid "Linked item type"
+msgstr ""
+
+#: src/Resource.php:220 templates/resource_form.html.twig:50 templates/resource_item_tab.html.twig:23
+msgid "Owner (person)"
+msgstr ""
+
+#: src/Resource.php:222 templates/resource_form.html.twig:51 templates/resource_item_tab.html.twig:24
+msgid "Owner (group)"
+msgstr ""
+
+#: src/Resource.php:224 templates/resource_form.html.twig:52 templates/resource_item_tab.html.twig:22
+msgid "Criticality"
+msgstr ""
+
+#: src/Resource.php:226 templates/resource_form.html.twig:53
+msgid "Review frequency"
+msgstr ""
+
+#: src/Resource.php:319
+msgid "Access (IAM)"
+msgstr ""
+
+#: src/Resource.php:413
+msgid "The resource must have a name."
+msgstr ""
+
+#: src/Resource.php:417
+msgid "The criticality is not valid."
+msgstr ""
+
+#: src/Resource.php:420
+msgid "The review frequency is not valid."
+msgstr ""
+
+#: src/Resource.php:439
+msgid "The linked item type is not allowed."
+msgstr ""
+
+#: src/Resource.php:442
+msgid "The linked item does not exist or you are not allowed to see it."
+msgstr ""
+
+#: src/Resource.php:45
+msgid "Resource"
+msgid_plural "Resources"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Resource.php:457
+msgid "The owner does not exist or you are not allowed to see it."
+msgstr ""
+
+#: src/Resource.php:55 templates/search.html.twig:65
+msgid "Resources"
+msgstr ""
+
+#: src/Resource.php:63
+msgid "Low"
+msgstr ""
+
+#: src/Resource.php:64
+msgid "Medium"
+msgstr ""
+
+#: src/Resource.php:65
+msgid "High"
+msgstr ""
+
+#: src/Resource.php:66
+msgid "Critical"
+msgstr ""
+
+#: src/Resource.php:74
+msgid "Quarterly"
+msgstr ""
+
+#: src/Resource.php:75
+msgid "Semiannual"
+msgstr ""
+
+#: src/Resource.php:76
+msgid "Annual"
+msgstr ""
+
+#: src/Rights.php:210
+msgid "Maintains the access governance catalogue and register: positions, resources, roles, access matrix and grants. Does not review or approve."
+msgstr ""
+
+#: src/Rights.php:216
+msgid "Sees and updates only the accesses of the resources they own and recertifies them."
+msgstr ""
+
+#: src/Rights.php:222
+msgid "Read-only access to the whole register, the catalogue and the reports."
+msgstr ""
+
+#: src/Rights.php:228
+msgid "Registers access requests and grants and reads the catalogue. Cannot review or approve."
+msgstr ""
+
+#: src/Role.php:159 templates/roles_tab.html.twig:63
+msgid "The role has grants or matrix cells (nothing is deleted)."
+msgstr ""
+
+#: src/Role.php:194
+msgid "The role must have a name."
+msgstr ""
+
+#: src/Role.php:201
+msgid "The role level is not valid."
+msgstr ""
+
+#: src/Role.php:220
+msgid "The resource of the role is not valid."
+msgstr ""
+
+#: src/Role.php:41
+msgid "Role"
+msgid_plural "Roles"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Role.php:53
+msgid "Standard"
+msgstr ""
+
+#: src/Role.php:54
+msgid "Sensitive"
+msgstr ""
+
+#: src/Role.php:55
+msgid "Privileged"
+msgstr ""
+
+#: templates/_help.html.twig:23
+msgid "(click to read)"
+msgstr ""
+
+#: templates/grant_form.html.twig:139
+msgid "As owner you can request the revocation or the modification of this access; the change is made through a ticket."
+msgstr ""
+
+#: templates/grant_form.html.twig:27 templates/grant_form.html.twig:50 templates/grant_form.html.twig:60 templates/grants_tab.html.twig:36 templates/matrix.html.twig:81 templates/matrix.html.twig:150 templates/matrix_cell.html.twig:28 templates/resource_item_tab.html.twig:20
+msgid "Resource"
+msgstr ""
+
+#: templates/grant_form.html.twig:34
+msgid "Next"
+msgstr ""
+
+#: templates/grant_form.html.twig:51 templates/grant_form.html.twig:62 templates/grants_tab.html.twig:37 templates/matrix_cell.html.twig:28
+msgid "Role"
+msgstr ""
+
+#: templates/grant_form.html.twig:63 templates/matrix.html.twig:44
+msgid "Entity"
+msgstr ""
+
+#: templates/grant_form.html.twig:76
+msgid "The ticket is not visible to you."
+msgstr ""
+
+#: templates/grant_form.html.twig:99
+msgid "The account is not visible to you."
+msgstr ""
+
+#: templates/grants_tab.html.twig:27
+msgid "Register a grant"
+msgstr ""
+
+#: templates/grants_tab.html.twig:63
+msgid "No grants."
+msgstr ""
+
+#: templates/help.html.twig:19
+msgid "Your role"
+msgstr ""
+
+#: templates/help.html.twig:25
+msgid "When"
+msgstr ""
+
+#: templates/help.html.twig:32
+msgid "What each person has to do, the meaning of the matrix symbols, the terms and the most common questions."
+msgstr ""
+
+#: templates/help.html.twig:34 templates/help.html.twig:40
+msgid "What do I have to do?"
+msgstr ""
+
+#: templates/help.html.twig:35 templates/help.html.twig:51
+msgid "Matrix legend"
+msgstr ""
+
+#: templates/help.html.twig:36 templates/help.html.twig:60
+msgid "Glossary"
+msgstr ""
+
+#: templates/help.html.twig:37 templates/help.html.twig:73
+msgid "Frequently asked questions"
+msgstr ""
+
+#: templates/help.html.twig:45
+msgid "Guides of the other roles"
+msgstr ""
+
+#: templates/help.html.twig:63
+msgid "Term"
+msgstr ""
+
+#: templates/help.html.twig:63
+msgid "Meaning"
+msgstr ""
+
+#: templates/help.html.twig:64
+msgid "Example"
+msgstr ""
+
+#: templates/help.html.twig:64
+msgid "ISO 27001:2022"
+msgstr ""
+
+#: templates/matrix.html.twig:102 templates/matrix.html.twig:102
+msgid "Filter positions or resources"
+msgstr ""
+
+#: templates/matrix.html.twig:104
+msgid "Expand roles"
+msgstr ""
+
+#: templates/matrix.html.twig:105
+msgid "Collapse"
+msgstr ""
+
+#: templates/matrix.html.twig:108
+msgid "Edit mode"
+msgstr ""
+
+#: templates/matrix.html.twig:115 templates/matrix.html.twig:116
+msgid "Legend"
+msgstr ""
+
+#: templates/matrix.html.twig:129
+msgid "Click a resource to see its roles, a role cell to see the people."
+msgstr ""
+
+#: templates/matrix.html.twig:136
+msgid "You see the people who hold an access to your resources. People who should have an access but do not are only shown to the access register readers."
+msgstr ""
+
+#: templates/matrix.html.twig:143
+msgid "No deviations with these filters."
+msgstr ""
+
+#: templates/matrix.html.twig:143
+msgid "Nothing to show: no visible positions or resources with these filters."
+msgstr ""
+
+#: templates/matrix.html.twig:150 templates/matrix_cell.html.twig:24 templates/position_user_form.html.twig:21 templates/positions_tab.html.twig:23 templates/positions_tab.html.twig:82
+msgid "Position"
+msgstr ""
+
+#: templates/matrix.html.twig:159 templates/matrix.html.twig:181
+msgid "People with deviations"
+msgstr ""
+
+#: templates/matrix.html.twig:160 templates/matrix.html.twig:182
+msgid "People missing an expected access"
+msgstr ""
+
+#: templates/matrix.html.twig:172
+msgid "No area"
+msgstr ""
+
+#: templates/matrix.html.twig:193 templates/matrix_cell.html.twig:26
+msgid "No active position"
+msgstr ""
+
+#: templates/matrix.html.twig:193 templates/matrix_cell.html.twig:26
+msgid "No position expects it"
+msgstr ""
+
+#: templates/matrix.html.twig:195
+msgid "People who hold accesses but have no active position: every such access is unexpected"
+msgstr ""
+
+#: templates/matrix.html.twig:195
+msgid "People holding an access that none of their positions expects: every such access is unexpected"
+msgstr ""
+
+#: templates/matrix.html.twig:210
+msgid "People in this cell"
+msgstr ""
+
+#: templates/matrix.html.twig:211
+msgid "Close"
+msgstr ""
+
+#: templates/matrix.html.twig:44
+msgid "with sub-entities"
+msgstr ""
+
+#: templates/matrix.html.twig:47
+msgid "People holding at least one access that is not expected or is forbidden"
+msgstr ""
+
+#: templates/matrix.html.twig:48
+msgid "people with deviations"
+msgstr ""
+
+#: templates/matrix.html.twig:51
+msgid "deviating grants"
+msgstr ""
+
+#: templates/matrix.html.twig:54
+msgid "forbidden held"
+msgstr ""
+
+#: templates/matrix.html.twig:58
+msgid "people missing an expected access"
+msgstr ""
+
+#: templates/matrix.html.twig:62
+msgid "positions"
+msgstr ""
+
+#: templates/matrix.html.twig:62
+msgid "resources"
+msgstr ""
+
+#: templates/matrix.html.twig:62 templates/matrix.html.twig:153
+msgid "roles"
+msgstr ""
+
+#: templates/matrix.html.twig:72
+msgid "Area"
+msgstr ""
+
+#: templates/matrix.html.twig:74
+msgid "All areas"
+msgstr ""
+
+#: templates/matrix.html.twig:83
+msgid "All resources"
+msgstr ""
+
+#: templates/matrix.html.twig:91
+msgid "Only deviations"
+msgstr ""
+
+#: templates/matrix.html.twig:95
+msgid "Privileged only"
+msgstr ""
+
+#: templates/matrix.html.twig:97
+msgid "Apply"
+msgstr ""
+
+#: templates/matrix_cell.html.twig:34
+msgid "Expectation"
+msgstr ""
+
+#: templates/matrix_cell.html.twig:45
+msgid "Only people holding an access you can see are listed."
+msgstr ""
+
+#: templates/matrix_cell.html.twig:49
+msgid "Nobody in this cell."
+msgstr ""
+
+#: templates/matrix_cell.html.twig:63
+msgid "Grant"
+msgstr ""
+
+#: templates/notes_tab.html.twig:26
+msgid "New log entry"
+msgstr ""
+
+#: templates/notes_tab.html.twig:28
+msgid "Entries are permanent: they cannot be changed or deleted. To correct one, add a new entry that references it."
+msgstr ""
+
+#: templates/notes_tab.html.twig:41
+msgid "Add"
+msgstr ""
+
+#: templates/notes_tab.html.twig:53
+msgid "agent"
+msgstr ""
+
+#: templates/notes_tab.html.twig:56
+msgid "corrects entry #%d"
+msgstr ""
+
+#: templates/notes_tab.html.twig:62
+msgid "No log entries."
+msgstr ""
+
+#: templates/position_user_form.html.twig:25 templates/positions_tab.html.twig:24 templates/positions_tab.html.twig:88
+msgid "Type"
+msgstr ""
+
+#: templates/position_user_form.html.twig:27 templates/positions_tab.html.twig:25 templates/positions_tab.html.twig:94
+msgid "Primary"
+msgstr ""
+
+#: templates/position_user_form.html.twig:36 templates/positions_tab.html.twig:50 templates/search.html.twig:87 templates/search.html.twig:89
+msgid "Inactive"
+msgstr ""
+
+#: templates/positions_tab.html.twig:53 templates/positions_tab.html.twig:53
+msgid "Open the assignment and its log"
+msgstr ""
+
+#: templates/positions_tab.html.twig:60
+msgid "Set the end date"
+msgstr ""
+
+#: templates/positions_tab.html.twig:67
+msgid "No position assignments."
+msgstr ""
+
+#: templates/resource_form.html.twig:28
+msgid "Linked item deleted"
+msgstr ""
+
+#: templates/resource_form.html.twig:29
+msgid "The inventory item of this resource no longer exists or is in the trashbin. Link another item or keep the record as history."
+msgstr ""
+
+#: templates/resource_form.html.twig:34
+msgid "The linked item is not visible to you."
+msgstr ""
+
+#: templates/resource_form.html.twig:37 templates/resource_form.html.twig:39
+msgid "Linked item"
+msgstr ""
+
+#: templates/resource_form.html.twig:39
+msgid "Change linked item"
+msgstr ""
+
+#: templates/resource_item_tab.html.twig:25 templates/search.html.twig:74
+msgid "Roles"
+msgstr ""
+
+#: templates/resource_item_tab.html.twig:41
+msgid "No resources are linked to this item."
+msgstr ""
+
+#: templates/resource_item_tab.html.twig:48
+msgid "Add a resource"
+msgstr ""
+
+#: templates/roles_tab.html.twig:24 templates/roles_tab.html.twig:42 templates/roles_tab.html.twig:86
+msgid "Break-glass"
+msgstr ""
+
+#: templates/roles_tab.html.twig:47
+msgid "Save"
+msgstr ""
+
+#: templates/roles_tab.html.twig:63
+msgid "In use"
+msgstr ""
+
+#: templates/roles_tab.html.twig:69
+msgid "No roles defined."
+msgstr ""
+
+#: templates/search.html.twig:24
+msgid "Ticket #1234, grant G-123, waiver EXC-2026-001, person, resource or role"
+msgstr ""
+
+#: templates/search.html.twig:25
+msgid "Search"
+msgstr ""
+
+#: templates/search.html.twig:29
+msgid "Type a ticket number (#1234), a grant (G-123), a waiver code or any words."
+msgstr ""
+
+#: templates/search.html.twig:31
+msgid "Results for"
+msgstr ""
+
+#: templates/search.html.twig:37
+msgid "searching waivers is available from 1.1 with GRC integration."
+msgstr ""
+
+#: templates/search.html.twig:43
+msgid "No results."
+msgstr ""
+
+#: templates/search.html.twig:47
+msgid "Showing the first %d"
+msgstr ""
+
+#: templates/search.html.twig:83
+msgid "People"
+msgstr ""

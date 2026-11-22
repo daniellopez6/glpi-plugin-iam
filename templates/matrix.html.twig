@@ -1,0 +1,215 @@
+{#
+ # -------------------------------------------------------------------------
+ # IAM - Identity & Access Governance plugin for GLPI
+ # Copyright (C) 2026 daniellopez6
+ # https://github.com/daniellopez6/glpi-plugin-iam
+ # -------------------------------------------------------------------------
+ # LICENSE
+ #
+ # This program is free software: you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+ # the Free Software Foundation, either version 3 of the License, or
+ # (at your option) any later version. See LICENSE for the full text.
+ # -------------------------------------------------------------------------
+ #}
+{# RBAC matrix: rows = positions grouped by area, columns = resources (collapsed; expanded to roles by matrix.js).
+   Every value is escaped by Twig; the client data travels in a data-* attribute (JSON with HEX flags). #}
+{% import '@iam/_help.html.twig' as h %}
+{% set glyphs = {'allowed': 'ti-check', 'on_request': 'ti-circle-half-2', 'forbidden': 'ti-ban'} %}
+
+{% macro block(b, members_visible, glyphs) %}
+   {%- if b is null -%}<td></td>
+   {%- else -%}
+      <td class="iam-agg{{ b.deviations ? ' iam-has-dev' : '' }}{{ b.forbidden ? ' iam-has-forbidden' : '' }}">
+         {%- if b.expectation -%}<i class="ti {{ glyphs[b.expectation] }} iam-e-{{ b.expectation }}" aria-hidden="true"></i>{% if b.mixed %}<sup class="iam-mixed">+</sup>{% endif %}{%- else -%}<span class="iam-e-none" aria-hidden="true">·</span>{%- endif -%}
+         {#- expected / complete / missing are only sent to the register readers (absent for asset owners) -#}
+         {%- if members_visible and b.expected|default(0) > 0 -%}<span class="iam-count">{{ b.complete }}/{{ b.expected }}</span>
+         {%- elseif b.holders > 0 -%}<span class="iam-count">{{ b.holders }}</span>{%- endif -%}
+         {%- if b.deviations -%}<span class="iam-dev"><i class="ti {{ b.forbidden ? 'ti-ban' : 'ti-alert-triangle' }}" aria-hidden="true"></i>{{ b.deviations }}</span>{%- endif -%}
+         {%- if members_visible and b.missing|default(0) -%}<span class="iam-miss"><i class="ti ti-point-filled" aria-hidden="true"></i>{{ b.missing }}</span>{%- endif -%}
+      </td>
+   {%- endif -%}
+{% endmacro %}
+{% import _self as m %}
+
+<div class="iam-matrix-page" id="iam-matrix"
+     data-client="{{ client_json }}"
+     data-cell-url="{{ cell_url }}"
+     data-edit-url="{{ edit_url }}">
+
+   {# Header: title, scope and totals (distinct people) #}
+   <div class="d-flex flex-wrap align-items-center gap-3 mb-2">
+      <h2 class="mb-0 me-2"><i class="ti ti-table me-1"></i>{{ __('Access matrix', 'iam') }}</h2>
+      <span class="text-secondary small">
+         <i class="ti ti-stack-2 me-1" aria-hidden="true"></i>{{ __('Entity', 'iam') }}: <strong>{{ entity }}</strong>{% if recursive %} ({{ __('with sub-entities', 'iam') }}){% endif %}
+      </span>
+      <div class="ms-auto d-flex flex-wrap gap-2 iam-kpis">
+         <span class="iam-kpi iam-kpi-dev" title="{{ __('People holding at least one access that is not expected or is forbidden', 'iam') }}">
+            <i class="ti ti-alert-triangle" aria-hidden="true"></i><strong>{{ totals.deviation_people }}</strong> {{ __('people with deviations', 'iam') }}
+         </span>
+         <span class="iam-kpi iam-kpi-dev">
+            <i class="ti ti-lock-access" aria-hidden="true"></i><strong>{{ totals.deviation_grants }}</strong> {{ __('deviating grants', 'iam') }}
+         </span>
+         <span class="iam-kpi iam-kpi-forbidden">
+            <i class="ti ti-ban" aria-hidden="true"></i><strong>{{ totals.forbidden_grants }}</strong> {{ __('forbidden held', 'iam') }}
+         </span>
+         {% if members_visible %}
+         <span class="iam-kpi iam-kpi-miss">
+            <i class="ti ti-point-filled" aria-hidden="true"></i><strong>{{ totals.missing_people }}</strong> {{ __('people missing an expected access', 'iam') }}
+         </span>
+         {% endif %}
+         <span class="iam-kpi">
+            {{ counts.rows }} {{ __('positions', 'iam') }} · {{ counts.cols }} {{ __('resources', 'iam') }} · {{ counts.roles }} {{ __('roles', 'iam') }}
+         </span>
+      </div>
+   </div>
+
+   {{ h.box(help.boxes.matrix) }}
+
+   {# Filters: server side (area, resource, only deviations, privileged) and a quick client-side text filter #}
+   <form method="get" action="{{ self_url }}" class="iam-filters d-flex flex-wrap align-items-end gap-2 mb-2" role="search">
+      <div>
+         <label class="form-label small mb-0" for="iam-f-area">{{ __('Area', 'iam') }}</label>
+         <select class="form-select form-select-sm" id="iam-f-area" name="area" data-iam-autosubmit>
+            <option value="0">{{ __('All areas', 'iam') }}</option>
+            {% for a in areas %}
+               <option value="{{ a.id }}" {{ filters.area == a.id ? 'selected' : '' }}>{{ a.name }}</option>
+            {% endfor %}
+         </select>
+      </div>
+      <div>
+         <label class="form-label small mb-0" for="iam-f-resource">{{ __('Resource', 'iam') }}</label>
+         <select class="form-select form-select-sm" id="iam-f-resource" name="resource" data-iam-autosubmit>
+            <option value="0">{{ __('All resources', 'iam') }}</option>
+            {% for id, name in resources %}
+               <option value="{{ id }}" {{ filters.resource == id ? 'selected' : '' }}>{{ name }}</option>
+            {% endfor %}
+         </select>
+      </div>
+      <label class="form-check form-switch mb-1">
+         <input class="form-check-input" type="checkbox" name="only_deviations" value="1" {{ filters.only_deviations ? 'checked' : '' }} data-iam-autosubmit>
+         <span class="form-check-label">{{ __('Only deviations', 'iam') }}</span>
+      </label>
+      <label class="form-check form-switch mb-1">
+         <input class="form-check-input" type="checkbox" name="privileged" value="1" {{ filters.privileged ? 'checked' : '' }} data-iam-autosubmit>
+         <span class="form-check-label"><i class="ti ti-shield-half-filled" aria-hidden="true"></i> {{ __('Privileged only', 'iam') }}</span>
+      </label>
+      <noscript><button type="submit" class="btn btn-sm btn-primary">{{ __('Apply', 'iam') }}</button></noscript>
+      <div class="ms-auto d-flex flex-wrap align-items-end gap-2">
+         <div class="input-icon">
+            <span class="input-icon-addon"><i class="ti ti-search" aria-hidden="true"></i></span>
+            <input type="search" class="form-control form-control-sm" id="iam-quickfilter"
+                   placeholder="{{ __('Filter positions or resources', 'iam') }}" aria-label="{{ __('Filter positions or resources', 'iam') }}">
+         </div>
+         <button type="button" class="btn btn-sm btn-outline-secondary" data-iam-expand="all"><i class="ti ti-arrows-maximize me-1" aria-hidden="true"></i>{{ __('Expand roles', 'iam') }}</button>
+         <button type="button" class="btn btn-sm btn-outline-secondary" data-iam-expand="none"><i class="ti ti-arrows-minimize me-1" aria-hidden="true"></i>{{ __('Collapse', 'iam') }}</button>
+         {% if can_edit %}
+            <button type="button" class="btn btn-sm btn-outline-primary" id="iam-edit-toggle" aria-pressed="false">
+               <i class="ti ti-pencil me-1" aria-hidden="true"></i>{{ __('Edit mode', 'iam') }}
+            </button>
+         {% endif %}
+      </div>
+   </form>
+
+   {# Legend: every glyph and colour (states differ by icon AND colour); the text is the one of the help page (HelpContent) #}
+   <div class="iam-legend" role="note" aria-label="{{ __('Legend', 'iam') }}">
+      <span class="iam-legend-title">{{ __('Legend', 'iam') }}</span>
+      <span><i class="ti ti-check iam-e-allowed" aria-hidden="true"></i> {{ help.legend.allowed.label }}</span>
+      <span><i class="ti ti-circle-half-2 iam-e-on_request" aria-hidden="true"></i> {{ help.legend.on_request.label }}</span>
+      <span><i class="ti ti-ban iam-e-forbidden" aria-hidden="true"></i> {{ help.legend.forbidden.label }}</span>
+      <span><span class="iam-e-none" aria-hidden="true">·</span> {{ help.legend.none.label }}</span>
+      <span><span class="iam-count">{{ members_visible ? '3/4' : '3' }}</span> {{ help.legend.ok.label }}</span>
+      <span><span class="iam-dev"><i class="ti ti-alert-triangle" aria-hidden="true"></i>2</span> {{ help.legend.unexpected.label }}</span>
+      <span><span class="iam-dev"><i class="ti ti-ban" aria-hidden="true"></i>1</span> {{ help.legend.forbidden_held.label }}</span>
+      {% if members_visible %}
+         <span><span class="iam-miss"><i class="ti ti-point-filled" aria-hidden="true"></i>1</span> {{ help.legend.missing.label }}</span>
+      {% endif %}
+      <span><i class="ti ti-shield-half-filled iam-priv" aria-hidden="true"></i> {{ help.legend.privileged.label }}</span>
+      <span><i class="ti ti-urgent iam-bg" aria-hidden="true"></i> {{ help.legend.breakglass.label }}</span>
+      <span class="text-secondary"><i class="ti ti-hand-click" aria-hidden="true"></i> {{ __('Click a resource to see its roles, a role cell to see the people.', 'iam') }}</span>
+      <a href="{{ help_url }}" class="ms-auto"><i class="ti ti-help" aria-hidden="true"></i> {{ __('Help and glossary', 'iam') }}</a>
+   </div>
+
+   {% if not members_visible %}
+      <div class="alert alert-info py-2 my-2">
+         <i class="ti ti-info-circle me-1" aria-hidden="true"></i>
+         {{ __('You see the people who hold an access to your resources. People who should have an access but do not are only shown to the access register readers.', 'iam') }}
+      </div>
+   {% endif %}
+
+   {% if cols is empty or (groups is empty and bucket is null) %}
+      <div class="alert alert-secondary my-3">
+         <i class="ti ti-mood-empty me-1" aria-hidden="true"></i>
+         {% if filters.only_deviations %}{{ __('No deviations with these filters.', 'iam') }}{% else %}{{ __('Nothing to show: no visible positions or resources with these filters.', 'iam') }}{% endif %}
+      </div>
+   {% else %}
+   <div class="iam-matrix-wrap card">
+      <table class="iam-matrix" id="iam-matrix-table">
+         <thead>
+            <tr>
+               <th class="iam-corner" scope="col">{{ __('Position', 'iam') }} \ {{ __('Resource', 'iam') }}</th>
+               {% for c in cols %}
+                  <th class="iam-res" scope="col" data-res="{{ c.id }}" data-name="{{ c.name|lower }}">
+                     <button type="button" class="iam-res-btn" aria-expanded="false" title="{{ c.name }} — {{ c.roles }} {{ __('roles', 'iam') }}">
+                        <span class="iam-res-name">{{ c.name }}</span>
+                        <i class="ti ti-chevron-right iam-chev" aria-hidden="true"></i>
+                     </button>
+                     <span class="iam-res-badges">
+                        {% if c.privileged %}<i class="ti ti-shield-half-filled iam-priv" title="{{ levels.privileged }}" aria-label="{{ levels.privileged }}"></i>{% endif %}
+                        {% if c.deviations %}<span class="iam-dev" title="{{ __('People with deviations', 'iam') }}"><i class="ti ti-alert-triangle" aria-hidden="true"></i>{{ c.deviations }}</span>{% endif %}
+                        {% if c.missing and members_visible %}<span class="iam-miss" title="{{ __('People missing an expected access', 'iam') }}"><i class="ti ti-point-filled" aria-hidden="true"></i>{{ c.missing }}</span>{% endif %}
+                     </span>
+                  </th>
+               {% endfor %}
+            </tr>
+         </thead>
+         {% for g in groups %}
+            <tbody class="iam-group">
+               <tr class="iam-area-row">
+                  <th colspan="1000" scope="rowgroup">
+                     <button type="button" class="iam-area-btn" aria-expanded="true">
+                        <i class="ti ti-chevron-down iam-chev" aria-hidden="true"></i>
+                        <span class="iam-area-name">{{ g.area ?: __('No area', 'iam') }}</span>
+                        <span class="text-secondary small">({{ g.rows|length }})</span>
+                     </button>
+                  </th>
+               </tr>
+               {% for r in g.rows %}
+                  <tr data-pos="{{ r.id }}" data-name="{{ (r.name ~ ' ' ~ g.area)|lower }}">
+                     <th scope="row" class="iam-pos">
+                        <span class="iam-pos-name" title="{{ g.area ? g.area ~ ' > ' : '' }}{{ r.name }}">{{ r.name }}</span>
+                        {% if r.deviations %}<span class="iam-dev" title="{{ __('People with deviations', 'iam') }}"><i class="ti ti-alert-triangle" aria-hidden="true"></i>{{ r.deviations }}</span>{% endif %}
+                        {% if r.missing and members_visible %}<span class="iam-miss" title="{{ __('People missing an expected access', 'iam') }}"><i class="ti ti-point-filled" aria-hidden="true"></i>{{ r.missing }}</span>{% endif %}
+                     </th>
+                     {% for b in r.blocks %}{{ m.block(b, members_visible, glyphs) }}{% endfor %}
+                  </tr>
+               {% endfor %}
+            </tbody>
+         {% endfor %}
+         {% if bucket %}
+            <tbody class="iam-group iam-bucket">
+               {# Asset owners only receive the assignments that qualify a grant: their bucket also holds the people none
+                  of whose positions expects the access, hence its own label #}
+               {% set bucket_label = members_visible ? __('No active position', 'iam') : __('No position expects it', 'iam') %}
+               <tr data-pos="0" data-name="{{ bucket_label|lower }}">
+                  <th scope="row" class="iam-pos" title="{{ members_visible ? __('People who hold accesses but have no active position: every such access is unexpected', 'iam') : __('People holding an access that none of their positions expects: every such access is unexpected', 'iam') }}">
+                     <i class="ti ti-user-question me-1" aria-hidden="true"></i><span class="iam-pos-name">{{ bucket_label }}</span>
+                     <span class="iam-dev"><i class="ti ti-alert-triangle" aria-hidden="true"></i>{{ bucket.deviations }}</span>
+                  </th>
+                  {% for b in bucket.blocks %}{{ m.block(b, members_visible, glyphs) }}{% endfor %}
+               </tr>
+            </tbody>
+         {% endif %}
+      </table>
+   </div>
+   {% endif %}
+
+   {# Nominal side panel, filled on demand per cell (ajax/matrixcell.php) #}
+   <div class="offcanvas offcanvas-end iam-panel" tabindex="-1" id="iam-panel" aria-labelledby="iam-panel-title">
+      <div class="offcanvas-header">
+         <h3 class="offcanvas-title" id="iam-panel-title"><i class="ti ti-users me-1" aria-hidden="true"></i>{{ __('People in this cell', 'iam') }}</h3>
+         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="{{ __('Close', 'iam') }}"></button>
+      </div>
+      <div class="offcanvas-body" id="iam-panel-body" aria-live="polite"></div>
+   </div>
+</div>

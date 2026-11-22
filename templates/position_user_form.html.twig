@@ -1,0 +1,42 @@
+{#
+ # -------------------------------------------------------------------------
+ # IAM - Identity & Access Governance plugin for GLPI
+ # Copyright (C) 2026 daniellopez6
+ # https://github.com/daniellopez6/glpi-plugin-iam
+ # -------------------------------------------------------------------------
+ # LICENSE
+ #
+ # This program is free software: you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+ # the Free Software Foundation, either version 3 of the License, or
+ # (at your option) any later version. See LICENSE for the full text.
+ # -------------------------------------------------------------------------
+ #}
+{# Read-only summary of a position assignment (edited from the person or position tab) #}
+{% import '@iam/_help.html.twig' as h %}
+{{ h.box(help.boxes.assignment) }}
+<div class="card">
+   <div class="card-body">
+      <dl class="row mb-0">
+         <dt class="col-sm-3">{{ __('Position', 'iam') }}</dt>
+         <dd class="col-sm-9">{% if position_url %}<a href="{{ position_url }}">{{ position }}</a>{% else %}{{ position }}{% endif %}</dd>
+         <dt class="col-sm-3">{{ __('Person', 'iam') }}</dt>
+         <dd class="col-sm-9">{{ person }}</dd>
+         <dt class="col-sm-3">{{ __('Type', 'iam') }}</dt>
+         <dd class="col-sm-9">{{ type }}</dd>
+         <dt class="col-sm-3">{{ __('Primary', 'iam') }}</dt>
+         <dd class="col-sm-9">{{ primary ? __('Yes', 'iam') : __('No', 'iam') }}</dd>
+         <dt class="col-sm-3">{{ __('Begin date', 'iam') }}</dt>
+         <dd class="col-sm-9">{{ begin }}</dd>
+         <dt class="col-sm-3">{{ __('End date', 'iam') }}</dt>
+         <dd class="col-sm-9">{{ end }}</dd>
+         <dt class="col-sm-3">{{ __('Status', 'iam') }}</dt>
+         <dd class="col-sm-9">
+            {% if active %}<span class="badge bg-green-lt">{{ __('Active', 'iam') }}</span>
+            {% else %}<span class="badge bg-secondary-lt">{{ __('Inactive', 'iam') }}</span>{% endif %}
+         </dd>
+         <dt class="col-sm-3">{{ __('Ticket', 'iam') }}</dt>
+         <dd class="col-sm-9">{% if ticket %}<a href="{{ path('/front/ticket.form.php') }}?id={{ ticket }}">#{{ ticket }}</a>{% endif %}</dd>
+      </dl>
+   </div>
+</div>
