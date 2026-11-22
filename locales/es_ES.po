@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  iam\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-22 13:48+0000\n"
+"POT-Creation-Date: 2026-11-22 14:02+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: es_ES\n"
@@ -15,15 +15,15 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: setup.php:82
+#: setup.php:85
 msgid "IAM - Identity & Access Governance"
 msgstr "IAM - Gobierno de Identidades y Accesos"
 
-#: src/Grant.php:294 src/Position_User.php:140
+#: src/Grant.php:294 src/Position_User.php:205
 msgid "A date is not valid (expected format YYYY-MM-DD)."
 msgstr "Una fecha no es válida (formato esperado AAAA-MM-DD)."
 
-#: src/Grant.php:295 src/Position_User.php:139
+#: src/Grant.php:295 src/Position_User.php:204
 msgid "The end date cannot be before the begin date."
 msgstr "La fecha de fin no puede ser anterior a la fecha de inicio."
 
@@ -75,7 +75,7 @@ msgstr "Como dueño solo puede solicitar una revocación o una modificación, co
 msgid "As owner you can only request a revocation or a modification."
 msgstr "Como dueño solo puede solicitar una revocación o una modificación."
 
-#: src/Grant.php:308 src/Position_User.php:234 src/Position_User.php:262
+#: src/Grant.php:308 src/Position_User.php:299 src/Position_User.php:327
 msgid "The ticket does not exist or you are not allowed to see it."
 msgstr "El ticket no existe o no tiene permiso para verlo."
 
@@ -119,76 +119,73 @@ msgstr "El rol no pertenece al recurso seleccionado."
 msgid "The resource does not exist or you are not allowed to see it."
 msgstr "El recurso no existe o no tiene permiso para verlo."
 
-#: src/Grant.php:445 src/Position_User.php:218
+#: src/Grant.php:445 src/Position_User.php:283
 msgid "The person does not exist or you are not allowed to see it."
 msgstr "La persona no existe o no tiene permiso para verla."
 
-#: src/Grant.php:514 templates/grant_form.html.twig:44 templates/grant_form.html.twig:53 templates/grants_tab.html.twig:35
-#: templates/positions_tab.html.twig:21 templates/positions_tab.html.twig:80
+#: src/Grant.php:515 templates/grant_form.html.twig:44 templates/grant_form.html.twig:53 templates/grants_tab.html.twig:35
+#: templates/position_user_form.html.twig:21 templates/positions_tab.html.twig:21 templates/positions_tab.html.twig:82
 msgid "Person"
 msgstr "Persona"
 
-#: src/Grant.php:521 templates/grants_tab.html.twig:38 templates/roles_tab.html.twig:21 templates/roles_tab.html.twig:36
+#: src/Grant.php:522 templates/grants_tab.html.twig:38 templates/roles_tab.html.twig:21 templates/roles_tab.html.twig:36
 #: templates/roles_tab.html.twig:81
 msgid "Level"
 msgstr "Nivel"
 
-#: src/Grant.php:523 templates/grant_form.html.twig:109 templates/grant_form.html.twig:111
-#: templates/grants_tab.html.twig:39 templates/positions_tab.html.twig:26
+#: src/Grant.php:524 templates/grant_form.html.twig:109 templates/grant_form.html.twig:111
+#: templates/grants_tab.html.twig:39 templates/position_user_form.html.twig:31 templates/positions_tab.html.twig:26
 msgid "Status"
 msgstr "Estado"
 
-#: src/Grant.php:525 templates/grant_form.html.twig:62 templates/grant_form.html.twig:65 templates/grants_tab.html.twig:40
-#: templates/positions_tab.html.twig:24 templates/positions_tab.html.twig:93
+#: src/Grant.php:526 templates/grant_form.html.twig:62 templates/grant_form.html.twig:65 templates/grants_tab.html.twig:40
+#: templates/position_user_form.html.twig:27 templates/positions_tab.html.twig:24 templates/positions_tab.html.twig:95
 msgid "Begin date"
 msgstr "Fecha de inicio"
 
-#: src/Grant.php:526 templates/grant_form.html.twig:63 templates/grant_form.html.twig:66 templates/grants_tab.html.twig:41
-#: templates/positions_tab.html.twig:25 templates/positions_tab.html.twig:55 templates/positions_tab.html.twig:94
+#: src/Grant.php:527 templates/grant_form.html.twig:63 templates/grant_form.html.twig:66 templates/grants_tab.html.twig:41
+#: templates/position_user_form.html.twig:29 templates/positions_tab.html.twig:25 templates/positions_tab.html.twig:57
+#: templates/positions_tab.html.twig:96
 msgid "End date"
 msgstr "Fecha de fin"
 
-#: src/Grant.php:528 templates/grant_form.html.twig:71 templates/grant_form.html.twig:73 templates/grant_form.html.twig:75
-#: templates/grant_form.html.twig:77 templates/grants_tab.html.twig:42 templates/positions_tab.html.twig:27
-#: templates/positions_tab.html.twig:95
+#: src/Grant.php:529 templates/grant_form.html.twig:71 templates/grant_form.html.twig:73 templates/grant_form.html.twig:75
+#: templates/grant_form.html.twig:77 templates/grants_tab.html.twig:42 templates/position_user_form.html.twig:36
+#: templates/positions_tab.html.twig:27 templates/positions_tab.html.twig:97
 msgid "Ticket"
 msgstr "Ticket"
 
-#: src/Grant.php:529 templates/grant_form.html.twig:127 templates/grants_tab.html.twig:43
+#: src/Grant.php:530 templates/grant_form.html.twig:127 templates/grants_tab.html.twig:43
 msgid "Source"
 msgstr "Origen"
 
-#: src/Grant.php:531 templates/grant_form.html.twig:81 templates/grant_form.html.twig:83
+#: src/Grant.php:532 templates/grant_form.html.twig:81 templates/grant_form.html.twig:83
 msgid "Approver"
 msgstr "Aprobador"
 
-#: src/Grant.php:534 templates/grant_form.html.twig:87 templates/grant_form.html.twig:89
+#: src/Grant.php:535 templates/grant_form.html.twig:87 templates/grant_form.html.twig:89
 msgid "Security approver"
 msgstr "Aprobador de seguridad"
 
-#: src/Grant.php:535 templates/grant_form.html.twig:103 templates/grant_form.html.twig:105
+#: src/Grant.php:536 templates/grant_form.html.twig:103 templates/grant_form.html.twig:105
 msgid "MFA"
 msgstr "MFA"
 
-#: src/Grant.php:537 templates/grant_form.html.twig:128
+#: src/Grant.php:538 templates/grant_form.html.twig:128
 msgid "Recorded by"
 msgstr "Registrado por"
 
-#: src/Grant.php:539 templates/grant_form.html.twig:130
+#: src/Grant.php:540 templates/grant_form.html.twig:130
 msgid "Revocation date"
 msgstr "Fecha de revocación"
 
-#: src/Grant.php:542 templates/grant_form.html.twig:121 templates/grant_form.html.twig:123
+#: src/Grant.php:543 templates/grant_form.html.twig:121 templates/grant_form.html.twig:123
 msgid "Justification"
 msgstr "Justificación"
 
-#: src/Grant.php:544 templates/grant_form.html.twig:115 templates/grant_form.html.twig:117
+#: src/Grant.php:545 templates/grant_form.html.twig:115 templates/grant_form.html.twig:117
 msgid "Revocation reason"
 msgstr "Motivo de revocación"
-
-#: src/Grant.php:549 templates/grant_form.html.twig:94 templates/grant_form.html.twig:96 templates/grant_form.html.twig:98
-msgid "Account"
-msgstr "Cuenta"
 
 #: src/Grant.php:55
 msgid "Grant"
@@ -196,11 +193,15 @@ msgid_plural "Grants"
 msgstr[0] "Otorgamiento"
 msgstr[1] "Otorgamientos"
 
-#: src/Grant.php:626
+#: src/Grant.php:550 templates/grant_form.html.twig:94 templates/grant_form.html.twig:96 templates/grant_form.html.twig:98
+msgid "Account"
+msgstr "Cuenta"
+
+#: src/Grant.php:627
 msgid "Not approved"
 msgstr "No aprobado"
 
-#: src/Grant.php:630
+#: src/Grant.php:631
 msgid "Approved by me"
 msgstr "Aprobado por mí"
 
@@ -212,7 +213,7 @@ msgstr "Otorgamientos"
 msgid "Pending"
 msgstr "Pendiente"
 
-#: src/Grant.php:73 templates/positions_tab.html.twig:46
+#: src/Grant.php:73 templates/position_user_form.html.twig:33 templates/positions_tab.html.twig:47
 msgid "Active"
 msgstr "Activo"
 
@@ -228,7 +229,7 @@ msgstr "Modificación pendiente"
 msgid "Revoked"
 msgstr "Revocado"
 
-#: src/Grant.php:765
+#: src/Grant.php:766
 msgid "Grants (IAM)"
 msgstr "Otorgamientos (IAM)"
 
@@ -236,13 +237,15 @@ msgstr "Otorgamientos (IAM)"
 msgid "Expired"
 msgstr "Vencido"
 
-#: src/Grant.php:85 templates/positions_tab.html.twig:42 templates/positions_tab.html.twig:91
-#: templates/roles_tab.html.twig:43 templates/roles_tab.html.twig:52 templates/roles_tab.html.twig:88
+#: src/Grant.php:85 templates/position_user_form.html.twig:26 templates/positions_tab.html.twig:43
+#: templates/positions_tab.html.twig:93 templates/roles_tab.html.twig:43 templates/roles_tab.html.twig:52
+#: templates/roles_tab.html.twig:88
 msgid "Yes"
 msgstr "Sí"
 
-#: src/Grant.php:86 templates/positions_tab.html.twig:42 templates/positions_tab.html.twig:91
-#: templates/roles_tab.html.twig:42 templates/roles_tab.html.twig:52 templates/roles_tab.html.twig:88
+#: src/Grant.php:86 templates/position_user_form.html.twig:26 templates/positions_tab.html.twig:43
+#: templates/positions_tab.html.twig:93 templates/roles_tab.html.twig:42 templates/roles_tab.html.twig:52
+#: templates/roles_tab.html.twig:88
 msgid "No"
 msgstr "No"
 
@@ -266,11 +269,67 @@ msgstr "Agente"
 msgid "Access governance (IAM)"
 msgstr "Gobierno de accesos (IAM)"
 
+#: src/Note.php:234
+msgid "The item does not exist or you are not allowed to add a log entry to it."
+msgstr "El elemento no existe o no tiene permiso para agregarle una entrada de bitácora."
+
+#: src/Note.php:235
+msgid "The log entry is empty."
+msgstr "La entrada de bitácora está vacía."
+
+#: src/Note.php:236
+#, python-format
+msgid "The log entry is too long (maximum %d characters)."
+msgstr "La entrada de bitácora es demasiado larga (máximo %d caracteres)."
+
+#: src/Note.php:237
+msgid "The corrected entry does not exist or belongs to another item."
+msgstr "La entrada corregida no existe o pertenece a otro elemento."
+
+#: src/Note.php:238
+msgid "Log entries cannot be changed or deleted. Add a correction instead."
+msgstr "Las entradas de bitácora no se pueden modificar ni borrar. Agregue una corrección."
+
+#: src/Note.php:239
+msgid "The log entry is not valid."
+msgstr "La entrada de bitácora no es válida."
+
+#: src/Note.php:315
+msgid "Item type"
+msgstr "Tipo de elemento"
+
+#: src/Note.php:317
+msgid "Item"
+msgstr "Elemento"
+
+#: src/Note.php:318
+msgid "Content"
+msgstr "Contenido"
+
+#: src/Note.php:319
+msgid "Author"
+msgstr "Autor"
+
+#: src/Note.php:321 templates/notes_tab.html.twig:31
+msgid "Corrects entry"
+msgstr "Corrige la entrada"
+
+#: src/Note.php:415
+msgid "Log (IAM)"
+msgstr "Bitácora (IAM)"
+
+#: src/Note.php:49
+msgid "Log entry"
+msgid_plural "Log entries"
+msgstr[0] "Entrada de bitácora"
+msgstr[1] "Entradas de bitácora"
+
 #: src/Position.php:132
 msgid "The position has assignments (the history is kept). Deactivate it instead of deleting it."
 msgstr "El puesto tiene asignaciones (el historial se conserva). Desactívelo en lugar de eliminarlo."
 
-#: src/Position.php:34 templates/positions_tab.html.twig:21 templates/positions_tab.html.twig:78
+#: src/Position.php:34 templates/position_user_form.html.twig:19 templates/positions_tab.html.twig:21
+#: templates/positions_tab.html.twig:80
 msgid "Position"
 msgid_plural "Positions"
 msgstr[0] "Puesto"
@@ -288,7 +347,7 @@ msgstr "Cargo (título)"
 msgid "The parent position does not exist or is not available in this entity."
 msgstr "El puesto padre no existe o no está disponible en esta entidad."
 
-#: src/Position_Role.php:204 src/Position_User.php:206
+#: src/Position_Role.php:204 src/Position_User.php:271
 msgid "Select a position."
 msgstr "Seleccione un puesto."
 
@@ -318,49 +377,49 @@ msgstr "Bajo solicitud"
 msgid "Forbidden"
 msgstr "Prohibido"
 
-#: src/Position_User.php:141
+#: src/Position_User.php:206
 msgid "The person already has an active primary position."
 msgstr "La persona ya tiene un puesto principal activo."
 
-#: src/Position_User.php:142
+#: src/Position_User.php:207
 msgid "The assignment type is not valid."
 msgstr "El tipo de asignación no es válido."
 
-#: src/Position_User.php:143
+#: src/Position_User.php:208
 msgid "The assignment is not valid."
 msgstr "La asignación no es válida."
 
-#: src/Position_User.php:209
+#: src/Position_User.php:274
 msgid "The position is not active."
 msgstr "El puesto no está activo."
 
-#: src/Position_User.php:214
+#: src/Position_User.php:279
 msgid "Select a person."
 msgstr "Seleccione una persona."
 
-#: src/Position_User.php:308
+#: src/Position_User.php:373
 msgid "Positions (IAM)"
 msgstr "Puestos (IAM)"
 
-#: src/Position_User.php:311
+#: src/Position_User.php:376
 msgid "Assignments"
 msgstr "Asignaciones"
 
-#: src/Position_User.php:48
+#: src/Position_User.php:49
 msgid "Position assignment"
 msgid_plural "Position assignments"
 msgstr[0] "Asignación de puesto"
 msgstr[1] "Asignaciones de puesto"
 
-#: src/Position_User.php:60
+#: src/Position_User.php:61
 msgid "Holder"
 msgstr "Titular"
 
-#: src/Position_User.php:61
+#: src/Position_User.php:62
 msgid "Substitute"
 msgstr "Suplente"
 
-#: src/Position_User.php:62
+#: src/Position_User.php:63
 msgid "Temporary"
 msgstr "Temporal"
 
@@ -460,61 +519,57 @@ msgstr "Ver reportes"
 msgid "See and export reports"
 msgstr "Ver y exportar reportes"
 
-#: src/Resource.php:158
+#: src/Resource.php:177
 msgid "The resource has grants or matrix cells (nothing is deleted). Put it in the trashbin instead."
 msgstr "El recurso tiene otorgamientos o celdas de matriz (no se borra nada). Envíelo a la papelera."
 
-#: src/Resource.php:202 templates/resource_form.html.twig:21 templates/resource_item_tab.html.twig:21
+#: src/Resource.php:221 templates/resource_form.html.twig:21 templates/resource_item_tab.html.twig:21
 msgid "Code"
 msgstr "Código"
 
-#: src/Resource.php:203
+#: src/Resource.php:222
 msgid "Linked item type"
 msgstr "Tipo de elemento vinculado"
 
-#: src/Resource.php:205 templates/resource_form.html.twig:47 templates/resource_item_tab.html.twig:23
+#: src/Resource.php:224 templates/resource_form.html.twig:47 templates/resource_item_tab.html.twig:23
 msgid "Owner (person)"
 msgstr "Dueño (persona)"
 
-#: src/Resource.php:207 templates/resource_form.html.twig:48 templates/resource_item_tab.html.twig:24
+#: src/Resource.php:226 templates/resource_form.html.twig:48 templates/resource_item_tab.html.twig:24
 msgid "Owner (group)"
 msgstr "Dueño (grupo)"
 
-#: src/Resource.php:209 templates/resource_form.html.twig:49 templates/resource_item_tab.html.twig:22
+#: src/Resource.php:228 templates/resource_form.html.twig:49 templates/resource_item_tab.html.twig:22
 msgid "Criticality"
 msgstr "Criticidad"
 
-#: src/Resource.php:211 templates/resource_form.html.twig:50
+#: src/Resource.php:230 templates/resource_form.html.twig:50
 msgid "Review frequency"
 msgstr "Frecuencia de revisión"
 
-#: src/Resource.php:303
+#: src/Resource.php:322
 msgid "Access (IAM)"
 msgstr "Accesos (IAM)"
 
-#: src/Resource.php:397
+#: src/Resource.php:416
 msgid "The resource must have a name."
 msgstr "El recurso debe tener un nombre."
 
-#: src/Resource.php:401
+#: src/Resource.php:420
 msgid "The criticality is not valid."
 msgstr "La criticidad no es válida."
 
-#: src/Resource.php:404
+#: src/Resource.php:423
 msgid "The review frequency is not valid."
 msgstr "La frecuencia de revisión no es válida."
 
-#: src/Resource.php:423
+#: src/Resource.php:442
 msgid "The linked item type is not allowed."
 msgstr "El tipo de elemento vinculado no está permitido."
 
-#: src/Resource.php:426
+#: src/Resource.php:445
 msgid "The linked item does not exist or you are not allowed to see it."
 msgstr "El elemento vinculado no existe o no tiene permiso para verlo."
-
-#: src/Resource.php:441
-msgid "The owner does not exist or you are not allowed to see it."
-msgstr "El dueño no existe o no tiene permiso para verlo."
 
 #: src/Resource.php:45 templates/grant_form.html.twig:25 templates/grant_form.html.twig:46
 #: templates/grant_form.html.twig:55 templates/grants_tab.html.twig:36 templates/resource_item_tab.html.twig:20
@@ -522,6 +577,10 @@ msgid "Resource"
 msgid_plural "Resources"
 msgstr[0] "Recurso"
 msgstr[1] "Recursos"
+
+#: src/Resource.php:460
+msgid "The owner does not exist or you are not allowed to see it."
+msgstr "El dueño no existe o no tiene permiso para verlo."
 
 #: src/Resource.php:55
 msgid "Resources"
@@ -637,23 +696,54 @@ msgstr "Registrar un otorgamiento"
 msgid "No grants."
 msgstr "Sin otorgamientos."
 
-#: templates/positions_tab.html.twig:22 templates/positions_tab.html.twig:84
+#: templates/notes_tab.html.twig:24
+msgid "New log entry"
+msgstr "Nueva entrada de bitácora"
+
+#: templates/notes_tab.html.twig:26
+msgid "Entries are permanent: they cannot be changed or deleted. To correct one, add a new entry that references it."
+msgstr ""
+"Las entradas son permanentes: no se pueden modificar ni borrar. Para corregir una, agregue una nueva entrada que la "
+"referencie."
+
+#: templates/notes_tab.html.twig:39
+msgid "Add"
+msgstr "Agregar"
+
+#: templates/notes_tab.html.twig:51
+msgid "agent"
+msgstr "agente"
+
+#: templates/notes_tab.html.twig:54
+#, python-format
+msgid "corrects entry #%d"
+msgstr "corrige la entrada #%d"
+
+#: templates/notes_tab.html.twig:60
+msgid "No log entries."
+msgstr "Sin entradas de bitácora."
+
+#: templates/position_user_form.html.twig:23 templates/positions_tab.html.twig:22 templates/positions_tab.html.twig:86
 msgid "Type"
 msgstr "Tipo"
 
-#: templates/positions_tab.html.twig:23 templates/positions_tab.html.twig:90
+#: templates/position_user_form.html.twig:25 templates/positions_tab.html.twig:23 templates/positions_tab.html.twig:92
 msgid "Primary"
 msgstr "Principal"
 
-#: templates/positions_tab.html.twig:47
+#: templates/position_user_form.html.twig:34 templates/positions_tab.html.twig:48
 msgid "Inactive"
 msgstr "Inactivo"
 
-#: templates/positions_tab.html.twig:56
+#: templates/positions_tab.html.twig:51
+msgid "Open the assignment and its log"
+msgstr "Abrir la asignación y su bitácora"
+
+#: templates/positions_tab.html.twig:58
 msgid "Set the end date"
 msgstr "Establecer la fecha de fin"
 
-#: templates/positions_tab.html.twig:62
+#: templates/positions_tab.html.twig:64
 msgid "No position assignments."
 msgstr "Sin asignaciones de puesto."
 

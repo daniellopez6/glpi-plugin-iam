@@ -34,3 +34,62 @@ Entorno: GLPI 12.0.2 en 192.168.88.4, entidad Finandina (id 1), sesión Super-Ad
 | Purga de un rol sin otorgamientos | Permitida |
 | Sesión con perfil "IAM - Dueño de activo" (usuario 12, grupos 2 y 3) | Lista solo los recursos de sus grupos; el recurso 3 (grupo 5) responde 403; no puede crear ni editar roles |
 | Pestaña "Accesos (IAM)" en el Software 1395 | Lista el recurso 1 con sus roles y otorgamientos |
+
+### Revisión 4 - notas permanentes: solo inserción (Tarea 9)
+
+Entorno: GLPI 12.0.2 en 192.168.88.4, árbol de la Tarea 9 desplegado y caché limpiada. Usuarios temporales (borrados al
+final): auditor (perfil "IAM - Auditor", entidad 1), dueño (perfil "IAM - Dueño de activo", entidad 1, miembro del grupo
+3 = dueño del recurso 1), analista de la entidad 2 y agente (perfil "IAM - Agente", entidad 1).
+
+**Super-Admin por API sobre la nota 1** (otorgamiento 2). Fila antes y después de los intentos:
+
+```
+SELECT id,itemtype,items_id,entities_id,users_id,md5(content),plugin_iam_notes_id,date_creation
+  FROM glpi_plugin_iam_notes WHERE id=1;
+antes:   1 | GlpiPlugin\Iam\Grant | 2 | 1 | 2 | 2afc8845f07f1b730022631823bc6ab1 | 0 | 2026-11-22 10:58:49
+después: 1 | GlpiPlugin\Iam\Grant | 2 | 1 | 2 | 2afc8845f07f1b730022631823bc6ab1 | 0 | 2026-11-22 10:58:49
+```
+
+| Intento | Resultado |
+| --- | --- |
+| `PUT /Note/1` (content, users_id, plugin_iam_notes_id) | HTTP 400 `ERROR_GLPI_UPDATE` "No tenés permiso" |
+| `PUT /Note` masivo `[{id:1}]` | HTTP 400, `{"1": false}` |
+| `DELETE /Note/1` | HTTP 400 `ERROR_GLPI_DELETE` |
+| `DELETE /Note/1?force_purge=1` | HTTP 400 `ERROR_GLPI_DELETE` |
+| `DELETE /Note` masivo con `force_purge` | HTTP 400, `{"1": false}` |
+| Capa de clase (CLI como Super-Admin): `update()`, `delete()`, `delete(force)` | `false`; `can(1, UPDATE/PURGE)` `false` |
+| Acciones masivas de Note | ninguna (prohibidas update, delete, purge, restore, clone, transfer, amend_comment, add_note) |
+| `front/note.form.php`: GET, POST `update`/`delete`/`purge` | HTTP 403 |
+| POST de alta con `Sec-Fetch-Site: cross-site` o `Origin` ajeno | HTTP 403 (CSRF de GLPI 12) |
+
+La fila no cambió y la tabla conservó todas las notas. El mismo rechazo se obtuvo para PUT y DELETE con `force_purge`
+con las sesiones de auditor, dueño y analista de la entidad 2, y para PUT con la del agente.
+
+**Alta y reglas**
+
+| Prueba | Resultado |
+| --- | --- |
+| Alta por API en otorgamiento 2, recurso 1 y asignación 1 (admin) | 201; `entities_id` = la del objetivo (1), `users_id` = sesión, fecha del servidor |
+| Alta con `users_id=99`, `entities_id=2`, `date_creation=2000-01-01`, `id=500` | Ignorados (users_id 2, entidad 1, fecha actual, id 1) |
+| Corrección en el otorgamiento 2 que referencia la nota 1 | 201, `plugin_iam_notes_id=1`; la pestaña muestra "corrige la entrada #1" |
+| Referencia a una nota de otro objetivo / inexistente | 400 "La entrada corregida no existe o pertenece a otro elemento." |
+| `itemtype` = User, en minúsculas, o elemento inexistente | 400 "No tenés permiso" |
+| Contenido vacío / 10001 caracteres / 10000 caracteres | Rechazado / rechazado (`content_too_long`) / aceptado |
+| Alta por formulario web (recurso 1, corrección de la nota 2, texto multilínea) | 302 al recurso; fila creada |
+| Contenido con `<b>` y `<script>` | Mostrado escapado (`&lt;script&gt;`), saltos de línea como `<br />` |
+| Auditor: alta en cualquier objetivo (API y web) | Rechazada; ve las notas, la pestaña no ofrece formulario |
+| Dueño: alta en otorgamiento 2 (recurso propio) y en el recurso 1 (API y web) | 201 / 302 |
+| Dueño: alta en otorgamiento 4 (recurso 3, de otro grupo) o en la asignación 1 | Rechazada (API 400, web 403) |
+| Agente: alta en otorgamiento 2 | 201; la pestaña muestra la insignia "agente" |
+
+**Visibilidad de listas** (`GET /Note` y `search/Note`):
+
+| Sesión | Notas listadas |
+| --- | --- |
+| Super-Admin (raíz recursiva) | 1-8 (todas) |
+| Auditor (entidad 1) | 1-8 |
+| Dueño (entidad 1, grupo 3) | 1, 2, 4, 5, 6, 7 (no la 3, de una asignación, ni la 8, del otorgamiento 4 de otro dueño); `GET /Note/3` 403 |
+| Analista de la entidad 2 | ninguna (`[]`, `totalcount` 0); `GET /Note/1..3` 403 |
+
+Pestaña "Bitácora (IAM)": HTTP 200 en otorgamiento, recurso y página de la asignación para admin y auditor; 403 para el
+dueño en el otorgamiento 4 y en la asignación. `/var/log/glpi/php-errors.log` sin entradas nuevas.

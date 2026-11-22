@@ -15,6 +15,8 @@
  * -------------------------------------------------------------------------
  */
 
+use GlpiPlugin\Iam\Menu;
+use GlpiPlugin\Iam\Position;
 use GlpiPlugin\Iam\Position_User;
 
 // Assignments are history: only add and update (set the end date); never delete or purge
@@ -25,7 +27,18 @@ if (isset($_POST['add'])) {
 } elseif (isset($_POST['update'])) {
     $item->check((int) $_POST['id'], UPDATE);
     $item->update($_POST);
-} else {
+} elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
     throw new \Glpi\Exception\Http\AccessDeniedHttpException();
+} else {
+    // Read-only page of an assignment, with its "Log (IAM)" tab
+    $id = (int) ($_GET['id'] ?? 0);
+    if ($id <= 0) {
+        throw new \Glpi\Exception\Http\AccessDeniedHttpException();
+    }
+    $item->check($id, READ);
+    Html::header(Position_User::getTypeName(1), $_SERVER['PHP_SELF'], plugin_iam_sector(), Menu::class, Position::class);
+    $item->display(['id' => $id]);
+    Html::footer();
+    return;
 }
 Html::back();

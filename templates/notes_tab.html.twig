@@ -1,0 +1,63 @@
+{#
+ # -------------------------------------------------------------------------
+ # IAM - Identity & Access Governance plugin for GLPI
+ # Copyright (C) 2026 daniellopez6
+ # https://github.com/daniellopez6/glpi-plugin-iam
+ # -------------------------------------------------------------------------
+ # LICENSE
+ #
+ # This program is free software: you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+ # the Free Software Foundation, either version 3 of the License, or
+ # (at your option) any later version. See LICENSE for the full text.
+ # -------------------------------------------------------------------------
+ #}
+{# Append-only log of an item: no edit or delete controls; content is autoescaped, then nl2br (pre_escape html).
+   CSRF: GLPI 12 checks Sec-Fetch-Site/Origin on every POST (token-less, csrf_token() is deprecated). #}
+<div class="card">
+   {% if can_add %}
+   <div class="card-body border-bottom">
+      <form method="post" action="{{ action }}">
+         <input type="hidden" name="itemtype" value="{{ itemtype }}">
+         <input type="hidden" name="items_id" value="{{ items_id }}">
+         <div class="mb-2">
+            <label class="form-label" for="iam-note-content">{{ __('New log entry', 'iam') }}</label>
+            <textarea id="iam-note-content" name="content" class="form-control" rows="3" maxlength="{{ max_length }}" required></textarea>
+            <div class="form-hint">{{ __('Entries are permanent: they cannot be changed or deleted. To correct one, add a new entry that references it.', 'iam') }}</div>
+         </div>
+         <div class="row g-2 align-items-end">
+            {% if rows|length > 0 %}
+            <div class="col-md-4">
+               <label class="form-label" for="iam-note-ref">{{ __('Corrects entry', 'iam') }}</label>
+               <select id="iam-note-ref" name="plugin_iam_notes_id" class="form-select">
+                  <option value="0">-</option>
+                  {% for r in rows %}<option value="{{ r.id }}">#{{ r.id }} ({{ r.date }}, {{ r.author }})</option>{% endfor %}
+               </select>
+            </div>
+            {% endif %}
+            <div class="col-md-2">
+               <button type="submit" name="add" class="btn btn-primary"><i class="ti ti-plus me-1"></i>{{ __('Add', 'iam') }}</button>
+            </div>
+         </div>
+      </form>
+   </div>
+   {% endif %}
+   <div class="list-group list-group-flush">
+   {% for r in rows %}
+      <div class="list-group-item" id="iam-note-{{ r.id }}">
+         <div class="d-flex flex-wrap gap-2 align-items-center text-muted small mb-1">
+            <span class="fw-bold">#{{ r.id }}</span>
+            <span><i class="ti ti-user me-1"></i>{{ r.author }}</span>
+            {% if r.agent %}<span class="badge bg-purple-lt">{{ __('agent', 'iam') }}</span>{% endif %}
+            <span><i class="ti ti-clock me-1"></i>{{ r.date }}</span>
+            {% if r.corrects %}
+               <a href="#iam-note-{{ r.corrects }}">{{ __('corrects entry #%d', 'iam')|format(r.corrects) }}</a>
+            {% endif %}
+         </div>
+         <div>{{ r.content|nl2br }}</div>
+      </div>
+   {% else %}
+      <div class="list-group-item text-muted">{{ __('No log entries.', 'iam') }}</div>
+   {% endfor %}
+   </div>
+</div>

@@ -21,6 +21,7 @@ use CommonDBRelation;
 use CommonDBTM;
 use CommonGLPI;
 use Glpi\Application\View\TemplateRenderer;
+use Glpi\DBAL\QuerySubQuery;
 use Profile_User;
 use Session;
 use Ticket;
@@ -106,6 +107,35 @@ class Position_User extends CommonDBRelation
         return self::positionVisible($positionId) && self::userVisible($usersId);
     }
 
+    /**
+     * Search restriction implementing canViewItem() in SQL (used for the notes of assignments): READ, position visible
+     * in the active entities (recursion-aware) and person visible (an authorization of the person in an active
+     * entity, or a recursive one in an ancestor entity: the same as userVisible()).
+     *
+     * @return array<mixed>
+     */
+    public static function visibilityCriteria(): array
+    {
+        $t = self::getTable();
+        if (!self::canView()) {
+            return ["$t.id" => 0];
+        }
+        $pt = Position::getTable();
+        $put = Profile_User::getTable();
+        return [
+            "$t.plugin_iam_positions_id" => new QuerySubQuery([
+                'SELECT' => "$pt.id",
+                'FROM'   => $pt,
+                'WHERE'  => getEntitiesRestrictCriteria($pt, '', '', true),
+            ]),
+            "$t.users_id" => new QuerySubQuery([
+                'SELECT' => "$put.users_id",
+                'FROM'   => $put,
+                'WHERE'  => getEntitiesRestrictCriteria($put, '', '', true),
+            ]),
+        ];
+    }
+
     public function canViewItem(): bool
     {
         return self::canView() && self::rowVisible((int) ($this->fields['plugin_iam_positions_id'] ?? 0), (int) ($this->fields['users_id'] ?? 0));
@@ -130,6 +160,41 @@ class Position_User extends CommonDBRelation
     public function canPurgeItem(): bool
     {
         return false;
+    }
+
+    public function defineTabs($options = [])
+    {
+        $tabs = [];
+        $this->addDefaultFormTab($tabs);
+        $this->addStandardTab(Note::class, $tabs, $options);
+        $this->addStandardTab(\Log::class, $tabs, $options);
+        return $tabs;
+    }
+
+    /**
+     * Read-only summary of an assignment (it is edited from the person or position tab); its page carries the
+     * "Log (IAM)" tab.
+     */
+    public function showForm($ID, array $options = [])
+    {
+        if (!$this->getFromDB((int) $ID) || !$this->canViewItem()) {
+            return false;
+        }
+        $position = new Position();
+        $positionId = (int) $this->fields['plugin_iam_positions_id'];
+        $ticket = (int) $this->fields['tickets_id'];
+        TemplateRenderer::getInstance()->display('@iam/position_user_form.html.twig', [
+            'position'     => $position->getFromDB($positionId) ? (string) $position->fields['completename'] : '#' . $positionId,
+            'position_url' => Position::canView() ? Position::getFormURLWithID($positionId) : '',
+            'person'       => (string) User::getFriendlyNameById((int) $this->fields['users_id']),
+            'type'         => self::typeLabels()[(string) $this->fields['type']] ?? (string) $this->fields['type'],
+            'primary'      => (int) $this->fields['is_primary'] === 1,
+            'begin'        => (string) $this->fields['date_begin'],
+            'end'          => (string) $this->fields['date_end'],
+            'active'       => PositionPeriod::isActive($this->fields['date_begin'], $this->fields['date_end'], date('Y-m-d')),
+            'ticket'       => $ticket > 0 && self::ticketAllowed($ticket) ? $ticket : 0,
+        ]);
+        return true;
     }
 
     /** User-facing message of a PositionPeriod::validate() error code. */
@@ -346,6 +411,7 @@ class Position_User extends CommonDBRelation
                 'end'       => (string) $r['date_end'],
                 'active'    => PositionPeriod::isActive($r['date_begin'], $r['date_end'], $today),
                 'ticket'    => (int) $r['tickets_id'] > 0 ? (int) $r['tickets_id'] : 0,
+                'page'      => self::getFormURLWithID((int) $r['id']),
             ];
         }
         $canAdd = self::canCreate();

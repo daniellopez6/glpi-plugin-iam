@@ -102,6 +102,25 @@ class Resource extends CommonDBTM
         return array_values(array_map('intval', (array) ($_SESSION['glpigroups'] ?? [])));
     }
 
+    /**
+     * Search restriction implementing canViewItem() in SQL (used for the notes of resources): resource visible in the
+     * active entities (recursion-aware) and, without CONFIG READ, owned by the session (ACCESS READ_OWNED).
+     *
+     * @return array<mixed>
+     */
+    public static function visibilityCriteria(): array
+    {
+        $t = self::getTable();
+        if (!self::canView()) {
+            return ["$t.id" => 0];
+        }
+        $where = getEntitiesRestrictCriteria($t, '', '', true);
+        if (self::ownedOnly()) {
+            $where[] = Ownership::resourceCriteria((int) Session::getLoginUserID(), self::sessionGroups(), $t);
+        }
+        return $where;
+    }
+
     /** True when the session sees the catalogue only through ownership. */
     public static function ownedOnly(): bool
     {

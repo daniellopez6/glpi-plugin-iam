@@ -21,10 +21,12 @@
 
 use GlpiPlugin\Iam\Grant;
 use GlpiPlugin\Iam\Install\Installer;
+use GlpiPlugin\Iam\Note;
 use GlpiPlugin\Iam\Ownership;
 use GlpiPlugin\Iam\Resource;
 use GlpiPlugin\Iam\Position;
 use GlpiPlugin\Iam\Position_Role;
+use GlpiPlugin\Iam\Position_User;
 use GlpiPlugin\Iam\Role;
 use Glpi\DBAL\QuerySubQuery;
 
@@ -54,6 +56,14 @@ function plugin_iam_addDefaultWhere($itemtype): array
     // active entities, recursion-aware, and owned by the session (user or current group) when it lacks READ
     if ($itemtype === Grant::class) {
         return [Grant::visibilityCriteria()];
+    }
+    // Notes: the same predicate as Note::canViewItem(): the target is visible, per target type (see
+    // Note::visibilityCriteria()); assignments: Position_User::canViewItem() (position and person visible)
+    if ($itemtype === Note::class) {
+        return [Note::visibilityCriteria()];
+    }
+    if ($itemtype === Position_User::class) {
+        return [Position_User::visibilityCriteria()];
     }
     $where = [];
     // Cells: the position must be visible to the session (recursion-aware), for every session
