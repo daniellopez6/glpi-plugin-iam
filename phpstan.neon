@@ -5,6 +5,7 @@ parameters:
     paths:
         - setup.php
         - hook.php
+        - src
     bootstrapFiles:
         - ../../vendor/autoload.php
         - ../../src/autoload/constants.php

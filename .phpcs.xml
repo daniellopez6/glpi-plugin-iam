@@ -3,6 +3,7 @@
     <description>PSR-12, as used by GLPI 10+ and official plugins.</description>
     <file>setup.php</file>
     <file>hook.php</file>
+    <file>src</file>
     <file>tests</file>
     <arg name="extensions" value="php" />
     <rule ref="PSR12">

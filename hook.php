@@ -19,13 +19,17 @@
  * Installation and uninstallation of the IAM plugin.
  */
 
+use GlpiPlugin\Iam\Install\Installer;
+
 function plugin_iam_install(): bool
 {
+    Installer::install(new Migration(PLUGIN_IAM_VERSION));
     return true;
 }
 
 function plugin_iam_uninstall(): bool
 {
+    Installer::uninstall();
     return true;
 }
 
