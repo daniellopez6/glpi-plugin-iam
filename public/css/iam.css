@@ -241,3 +241,7 @@
 .iam-chip-ok { color: var(--iam-allowed); border-color: var(--iam-allowed); }
 .iam-chip-miss { color: var(--iam-miss); border: 1px dashed var(--iam-miss); }
 .iam-chip-dev { color: var(--tblr-red-fg, #fff); background: var(--iam-dev); }
+
+/* ---- Case search ------------------------------------------------------------------------------------------------- */
+.iam-search-page { max-width: 60rem; }
+.iam-search-page .list-group-item { overflow-wrap: anywhere; }

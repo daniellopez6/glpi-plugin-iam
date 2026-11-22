@@ -3,7 +3,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: iam\n"
-"POT-Creation-Date: 2026-11-22 18:18+0000\n"
+"POT-Creation-Date: 2026-11-22 18:25+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -91,6 +91,10 @@ msgstr ""
 
 #: front/matrix.php:99
 msgid "Held while forbidden"
+msgstr ""
+
+#: front/search.php:34 src/Menu.php:63 templates/search.html.twig:18 templates/search.html.twig:21
+msgid "Case search"
 msgstr ""
 
 #: setup.php:101
@@ -275,7 +279,7 @@ msgstr ""
 msgid "Approved by me"
 msgstr ""
 
-#: src/Grant.php:65 templates/resource_item_tab.html.twig:26
+#: src/Grant.php:65 templates/resource_item_tab.html.twig:26 templates/search.html.twig:50
 msgid "Grants"
 msgstr ""
 
@@ -641,7 +645,7 @@ msgstr[1] ""
 msgid "The owner does not exist or you are not allowed to see it."
 msgstr ""
 
-#: src/Resource.php:55
+#: src/Resource.php:55 templates/search.html.twig:63
 msgid "Resources"
 msgstr ""
 
@@ -991,7 +995,7 @@ msgstr ""
 msgid "Change linked item"
 msgstr ""
 
-#: templates/resource_item_tab.html.twig:25
+#: templates/resource_item_tab.html.twig:25 templates/search.html.twig:72
 msgid "Roles"
 msgstr ""
 
@@ -1017,4 +1021,36 @@ msgstr ""
 
 #: templates/roles_tab.html.twig:69
 msgid "No roles defined."
+msgstr ""
+
+#: templates/search.html.twig:22
+msgid "Ticket #1234, grant G-123, waiver EXC-2026-001, person, resource or role"
+msgstr ""
+
+#: templates/search.html.twig:23
+msgid "Search"
+msgstr ""
+
+#: templates/search.html.twig:27
+msgid "Type a ticket number (#1234), a grant (G-123), a waiver code or any words."
+msgstr ""
+
+#: templates/search.html.twig:29
+msgid "Results for"
+msgstr ""
+
+#: templates/search.html.twig:35
+msgid "searching waivers is available from 1.1 with GRC integration."
+msgstr ""
+
+#: templates/search.html.twig:41
+msgid "No results."
+msgstr ""
+
+#: templates/search.html.twig:45
+msgid "Showing the first %d"
+msgstr ""
+
+#: templates/search.html.twig:81
+msgid "People"
 msgstr ""

@@ -58,6 +58,13 @@ class Menu extends CommonGLPI
                 'icon'  => 'ti ti-table',
             ];
         }
+        if (Matrix::canView()) {
+            $options['search'] = [
+                'title' => __('Case search', 'iam'),
+                'page'  => plugin_iam_url('front/search.php', false),
+                'icon'  => 'ti ti-search',
+            ];
+        }
         if (Position::canView()) {
             $options[Position::class] = [
                 'title' => Position::getTypeName(2),

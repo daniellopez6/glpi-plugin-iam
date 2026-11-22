@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  iam\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-22 18:18+0000\n"
+"POT-Creation-Date: 2026-11-22 18:25+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: es_ES\n"
@@ -98,6 +98,10 @@ msgstr "Lo tienen sin estar previsto"
 #: front/matrix.php:99
 msgid "Held while forbidden"
 msgstr "Lo tienen estando prohibido"
+
+#: front/search.php:34 src/Menu.php:63 templates/search.html.twig:18 templates/search.html.twig:21
+msgid "Case search"
+msgstr "Búsqueda de casos"
 
 #: setup.php:101
 msgid "IAM - Identity & Access Governance"
@@ -289,7 +293,7 @@ msgstr "No aprobado"
 msgid "Approved by me"
 msgstr "Aprobado por mí"
 
-#: src/Grant.php:65 templates/resource_item_tab.html.twig:26
+#: src/Grant.php:65 templates/resource_item_tab.html.twig:26 templates/search.html.twig:50
 msgid "Grants"
 msgstr "Otorgamientos"
 
@@ -663,7 +667,7 @@ msgstr[1] "Recursos"
 msgid "The owner does not exist or you are not allowed to see it."
 msgstr "El dueño no existe o no tiene permiso para verlo."
 
-#: src/Resource.php:55
+#: src/Resource.php:55 templates/search.html.twig:63
 msgid "Resources"
 msgstr "Recursos"
 
@@ -1013,7 +1017,7 @@ msgstr "Elemento vinculado"
 msgid "Change linked item"
 msgstr "Cambiar elemento vinculado"
 
-#: templates/resource_item_tab.html.twig:25
+#: templates/resource_item_tab.html.twig:25 templates/search.html.twig:72
 msgid "Roles"
 msgstr "Roles"
 
@@ -1040,4 +1044,37 @@ msgstr "En uso"
 #: templates/roles_tab.html.twig:69
 msgid "No roles defined."
 msgstr "Sin roles definidos."
+
+#: templates/search.html.twig:22
+msgid "Ticket #1234, grant G-123, waiver EXC-2026-001, person, resource or role"
+msgstr "Ticket #1234, acceso G-123, excepción EXC-2026-001, persona, recurso o rol"
+
+#: templates/search.html.twig:23
+msgid "Search"
+msgstr "Buscar"
+
+#: templates/search.html.twig:27
+msgid "Type a ticket number (#1234), a grant (G-123), a waiver code or any words."
+msgstr "Escriba un número de ticket (#1234), un acceso (G-123), un código de excepción o cualquier palabra."
+
+#: templates/search.html.twig:29
+msgid "Results for"
+msgstr "Resultados para"
+
+#: templates/search.html.twig:35
+msgid "searching waivers is available from 1.1 with GRC integration."
+msgstr "la búsqueda de excepciones estará disponible desde la 1.1 con la integración GRC."
+
+#: templates/search.html.twig:41
+msgid "No results."
+msgstr "Sin resultados."
+
+#: templates/search.html.twig:45
+#, python-format
+msgid "Showing the first %d"
+msgstr "Se muestran los primeros %d"
+
+#: templates/search.html.twig:81
+msgid "People"
+msgstr "Personas"
 

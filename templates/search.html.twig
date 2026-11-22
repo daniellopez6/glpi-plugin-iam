@@ -1,0 +1,93 @@
+{#
+ # -------------------------------------------------------------------------
+ # IAM - Identity & Access Governance plugin for GLPI
+ # Copyright (C) 2026 daniellopez6
+ # https://github.com/daniellopez6/glpi-plugin-iam
+ # -------------------------------------------------------------------------
+ # LICENSE
+ #
+ # This program is free software: you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+ # the Free Software Foundation, either version 3 of the License, or
+ # (at your option) any later version. See LICENSE for the full text.
+ # -------------------------------------------------------------------------
+ #}
+{# Quick case search. Everything is escaped by Twig (the query is echoed back escaped); results only contain rows the
+   session may see (the server applies the visibility predicate of each table). #}
+<div class="iam-search-page">
+   <h2 class="mb-3"><i class="ti ti-search me-1"></i>{{ __('Case search', 'iam') }}</h2>
+   <form method="get" action="{{ self_url }}" class="d-flex gap-2 mb-2" role="search">
+      <input type="search" name="q" value="{{ q }}" maxlength="200" autofocus autocomplete="off"
+             class="form-control form-control-lg" aria-label="{{ __('Case search', 'iam') }}"
+             placeholder="{{ __('Ticket #1234, grant G-123, waiver EXC-2026-001, person, resource or role', 'iam') }}">
+      <button type="submit" class="btn btn-primary"><i class="ti ti-search me-1"></i>{{ __('Search', 'iam') }}</button>
+   </form>
+
+   {% if results is null %}
+      <p class="text-secondary">{{ __('Type a ticket number (#1234), a grant (G-123), a waiver code or any words.', 'iam') }}</p>
+   {% else %}
+      <p class="text-secondary">{{ __('Results for', 'iam') }} <strong>{{ q }}</strong></p>
+
+      {% if results.waivers %}
+         <div class="alert alert-info iam-search-waivers">
+            <i class="ti ti-info-circle me-1" aria-hidden="true"></i>
+            {% for w in results.waivers %}<strong>{{ w }}</strong>{% if not loop.last %}, {% endif %}{% endfor %}:
+            {{ __('searching waivers is available from 1.1 with GRC integration.', 'iam') }}
+         </div>
+      {% endif %}
+
+      {% set total = results.users|length + results.resources|length + results.roles|length + results.grants|length %}
+      {% if total == 0 and not results.waivers %}
+         <div class="alert alert-secondary">{{ __('No results.', 'iam') }}</div>
+      {% endif %}
+
+      {% macro cap(list, limit) %}
+         {% if list|length >= limit %}<span class="text-secondary small ms-2">{{ __('Showing the first %d', 'iam')|format(limit) }}</span>{% endif %}
+      {% endmacro %}
+      {% import _self as m %}
+
+      {% if results.grants %}
+         <div class="card mb-3"><div class="card-header"><h3 class="card-title"><i class="ti ti-lock-access me-1"></i>{{ __('Grants', 'iam') }} ({{ results.grants|length }}){{ m.cap(results.grants, limit) }}</h3></div>
+         <div class="list-group list-group-flush">
+            {% for g in results.grants %}
+               <a class="list-group-item list-group-item-action" href="{{ g.url }}">
+                  <strong>G-{{ g.id }}</strong> · {{ g.person }} — {{ g.role }} @ {{ g.resource }}
+                  <span class="badge bg-secondary-lt ms-2">{{ g.status }}</span>
+                  {% if g.ticket %}<span class="text-secondary small ms-2"><i class="ti ti-ticket" aria-hidden="true"></i> #{{ g.ticket }}</span>{% endif %}
+               </a>
+            {% endfor %}
+         </div></div>
+      {% endif %}
+
+      {% if results.resources %}
+         <div class="card mb-3"><div class="card-header"><h3 class="card-title"><i class="ti ti-server me-1"></i>{{ __('Resources', 'iam') }} ({{ results.resources|length }}){{ m.cap(results.resources, limit) }}</h3></div>
+         <div class="list-group list-group-flush">
+            {% for r in results.resources %}
+               <a class="list-group-item list-group-item-action" href="{{ r.url }}">{{ r.label }}{% if r.code %} <span class="text-secondary">({{ r.code }})</span>{% endif %}</a>
+            {% endfor %}
+         </div></div>
+      {% endif %}
+
+      {% if results.roles %}
+         <div class="card mb-3"><div class="card-header"><h3 class="card-title"><i class="ti ti-key me-1"></i>{{ __('Roles', 'iam') }} ({{ results.roles|length }}){{ m.cap(results.roles, limit) }}</h3></div>
+         <div class="list-group list-group-flush">
+            {% for r in results.roles %}
+               <a class="list-group-item list-group-item-action" href="{{ r.url }}">{{ r.label }} <span class="text-secondary">@ {{ r.resource }}</span></a>
+            {% endfor %}
+         </div></div>
+      {% endif %}
+
+      {% if results.users %}
+         <div class="card mb-3"><div class="card-header"><h3 class="card-title"><i class="ti ti-user me-1"></i>{{ __('People', 'iam') }} ({{ results.users|length }}){{ m.cap(results.users, limit) }}</h3></div>
+         <div class="list-group list-group-flush">
+            {% for u in results.users %}
+               {% if user_links %}
+                  <a class="list-group-item list-group-item-action" href="{{ user_url }}?id={{ u.id }}">{{ u.label }} <span class="text-secondary">({{ u.login }})</span></a>
+               {% else %}
+                  <div class="list-group-item">{{ u.label }} <span class="text-secondary">({{ u.login }})</span></div>
+               {% endif %}
+            {% endfor %}
+         </div></div>
+      {% endif %}
+   {% endif %}
+</div>

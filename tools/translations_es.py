@@ -248,4 +248,13 @@ ES: dict = {
  "Nobody in this cell.": "Nadie en esta celda.",
  "No position expects it": "Ningún puesto lo prevé",
  "People holding an access that none of their positions expects: every such access is unexpected": "Personas con un acceso que ninguno de sus puestos prevé: todos esos accesos son no previstos",
+ "Case search": "Búsqueda de casos",
+ "Ticket #1234, grant G-123, waiver EXC-2026-001, person, resource or role": "Ticket #1234, acceso G-123, excepción EXC-2026-001, persona, recurso o rol",
+ "Search": "Buscar",
+ "Type a ticket number (#1234), a grant (G-123), a waiver code or any words.": "Escriba un número de ticket (#1234), un acceso (G-123), un código de excepción o cualquier palabra.",
+ "Results for": "Resultados para",
+ "searching waivers is available from 1.1 with GRC integration.": "la búsqueda de excepciones estará disponible desde la 1.1 con la integración GRC.",
+ "No results.": "Sin resultados.",
+ "Showing the first %d": "Se muestran los primeros %d",
+ "People": "Personas",
 }
