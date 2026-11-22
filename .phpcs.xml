@@ -4,6 +4,7 @@
     <file>setup.php</file>
     <file>hook.php</file>
     <file>src</file>
+    <file>front</file>
     <file>tests</file>
     <arg name="extensions" value="php" />
     <rule ref="PSR12">

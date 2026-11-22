@@ -44,6 +44,17 @@ final class Rights
         return [self::ACCESS, self::CONFIG, self::REVIEW, self::APPROVE, self::REPORT];
     }
 
+    /** The active profile has at least one IAM right (any bit): used to hide the menu from everybody else. */
+    public static function hasAny(): bool
+    {
+        foreach (self::all() as $right) {
+            if ((int) ($_SESSION['glpiactiveprofile'][$right] ?? 0) > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static function canReadAll(): bool
     {
         return (bool) Session::haveRight(self::ACCESS, READ);

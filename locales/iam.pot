@@ -3,18 +3,98 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: iam\n"
-"POT-Creation-Date: 2026-11-22 12:25+0000\n"
+"POT-Creation-Date: 2026-11-22 12:34+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: setup.php:49
+#: setup.php:71
 msgid "IAM - Identity & Access Governance"
 msgstr ""
 
-#: src/Profile.php:36 templates/profile_rights.html.twig:20
+#: src/Menu.php:29 src/Menu.php:34 src/Profile.php:36 templates/profile_rights.html.twig:20
 msgid "Access governance (IAM)"
+msgstr ""
+
+#: src/Position.php:34
+msgid "Position"
+msgid_plural "Positions"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Position.php:44
+msgid "Positions"
+msgstr ""
+
+#: src/Position.php:50 src/Position.php:60
+msgid "Job title"
+msgstr ""
+
+#: src/Position.php:81
+msgid "The position has assignments (the history is kept). Deactivate it instead of deleting it."
+msgstr ""
+
+#: src/Position_User.php:126
+msgid "The end date cannot be before the begin date."
+msgstr ""
+
+#: src/Position_User.php:127
+msgid "A date is not valid (expected format YYYY-MM-DD)."
+msgstr ""
+
+#: src/Position_User.php:128
+msgid "The person already has an active primary position."
+msgstr ""
+
+#: src/Position_User.php:129
+msgid "The assignment type is not valid."
+msgstr ""
+
+#: src/Position_User.php:130
+msgid "The assignment is not valid."
+msgstr ""
+
+#: src/Position_User.php:187
+msgid "Select a position."
+msgstr ""
+
+#: src/Position_User.php:190
+msgid "The position is not active."
+msgstr ""
+
+#: src/Position_User.php:195
+msgid "Select a person."
+msgstr ""
+
+#: src/Position_User.php:211 src/Position_User.php:244
+msgid "The ticket does not exist or you are not allowed to see it."
+msgstr ""
+
+#: src/Position_User.php:258
+msgid "Positions (IAM)"
+msgstr ""
+
+#: src/Position_User.php:263
+msgid "Assignments"
+msgstr ""
+
+#: src/Position_User.php:46
+msgid "Position assignment"
+msgid_plural "Position assignments"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Position_User.php:58
+msgid "Holder"
+msgstr ""
+
+#: src/Position_User.php:59
+msgid "Substitute"
+msgstr ""
+
+#: src/Position_User.php:60
+msgid "Temporary"
 msgstr ""
 
 #: src/Profile.php:49
@@ -113,18 +193,74 @@ msgstr ""
 msgid "See and export reports"
 msgstr ""
 
-#: src/Rights.php:117
+#: src/Rights.php:144
 msgid "Maintains the access governance catalogue and register: positions, resources, roles, access matrix and grants. Does not review or approve."
 msgstr ""
 
-#: src/Rights.php:123
+#: src/Rights.php:150
 msgid "Sees and updates only the accesses of the resources they own and recertifies them."
 msgstr ""
 
-#: src/Rights.php:129
+#: src/Rights.php:156
 msgid "Read-only access to the whole register, the catalogue and the reports."
 msgstr ""
 
-#: src/Rights.php:135
+#: src/Rights.php:162
 msgid "Registers access requests and grants and reads the catalogue. Cannot review or approve."
+msgstr ""
+
+#: templates/positions_tab.html.twig:21 templates/positions_tab.html.twig:78
+msgid "Position"
+msgstr ""
+
+#: templates/positions_tab.html.twig:21 templates/positions_tab.html.twig:80
+msgid "Person"
+msgstr ""
+
+#: templates/positions_tab.html.twig:22 templates/positions_tab.html.twig:84
+msgid "Type"
+msgstr ""
+
+#: templates/positions_tab.html.twig:23 templates/positions_tab.html.twig:90
+msgid "Primary"
+msgstr ""
+
+#: templates/positions_tab.html.twig:24 templates/positions_tab.html.twig:93
+msgid "Begin date"
+msgstr ""
+
+#: templates/positions_tab.html.twig:25 templates/positions_tab.html.twig:55 templates/positions_tab.html.twig:94
+msgid "End date"
+msgstr ""
+
+#: templates/positions_tab.html.twig:26
+msgid "Status"
+msgstr ""
+
+#: templates/positions_tab.html.twig:27 templates/positions_tab.html.twig:95
+msgid "Ticket"
+msgstr ""
+
+#: templates/positions_tab.html.twig:42 templates/positions_tab.html.twig:91
+msgid "Yes"
+msgstr ""
+
+#: templates/positions_tab.html.twig:42 templates/positions_tab.html.twig:91
+msgid "No"
+msgstr ""
+
+#: templates/positions_tab.html.twig:46
+msgid "Active"
+msgstr ""
+
+#: templates/positions_tab.html.twig:47
+msgid "Inactive"
+msgstr ""
+
+#: templates/positions_tab.html.twig:56
+msgid "Set the end date"
+msgstr ""
+
+#: templates/positions_tab.html.twig:62
+msgid "No position assignments."
 msgstr ""

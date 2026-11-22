@@ -21,6 +21,10 @@
  * Licencia GPL-3.0-or-later.
  */
 
+use Glpi\Plugin\Hooks;
+use GlpiPlugin\Iam\Menu;
+use GlpiPlugin\Iam\Position;
+use GlpiPlugin\Iam\Position_User;
 use GlpiPlugin\Iam\Profile;
 
 define('PLUGIN_IAM_VERSION', '1.0.0');
@@ -38,6 +42,24 @@ function plugin_init_iam(): void
     }
 
     Plugin::registerClass(Profile::class, ['addtabon' => ['Profile']]);
+    Plugin::registerClass(Position::class);
+    Plugin::registerClass(Position_User::class, ['addtabon' => [User::class, Position::class]]);
+
+    // Own top-level menu sector; the first entry (Menu) gives it its title and hides it without any IAM right
+    $PLUGIN_HOOKS[Hooks::MENU_TOADD]['iam'] = [plugin_iam_sector() => [Menu::class]];
+}
+
+/** URL of a plugin file (relative to the GLPI root or absolute). */
+function plugin_iam_url(string $path, bool $full = true): string
+{
+    global $CFG_GLPI;
+    return ($full ? $CFG_GLPI['root_doc'] : '') . '/plugins/iam/' . ltrim($path, '/');
+}
+
+/** Menu sector of the plugin pages: always its own top-level menu. */
+function plugin_iam_sector(): string
+{
+    return 'iam';
 }
 
 /**
