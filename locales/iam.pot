@@ -3,7 +3,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: iam\n"
-"POT-Creation-Date: 2026-11-22 19:06+0000\n"
+"POT-Creation-Date: 2026-11-22 19:12+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -157,7 +157,7 @@ msgstr ""
 msgid "As owner you can only request a revocation or a modification."
 msgstr ""
 
-#: src/Grant.php:307 src/Position_User.php:214
+#: src/Grant.php:307 src/Position_User.php:213
 msgid "The ticket does not exist or you are not allowed to see it."
 msgstr ""
 
@@ -197,7 +197,7 @@ msgstr ""
 msgid "The resource does not exist or you are not allowed to see it."
 msgstr ""
 
-#: src/Grant.php:318 src/Position_User.php:213
+#: src/Grant.php:318 src/Position_User.php:212
 msgid "The person does not exist or you are not allowed to see it."
 msgstr ""
 
@@ -205,56 +205,60 @@ msgstr ""
 msgid "The grant is not valid."
 msgstr ""
 
-#: src/Grant.php:521 templates/grant_form.html.twig:48 templates/grant_form.html.twig:58 templates/grants_tab.html.twig:35 templates/position_user_form.html.twig:23 templates/positions_tab.html.twig:23 templates/positions_tab.html.twig:84
+#: src/Grant.php:515 templates/grant_form.html.twig:48 templates/grant_form.html.twig:58 templates/grants_tab.html.twig:35 templates/position_user_form.html.twig:23 templates/positions_tab.html.twig:23 templates/positions_tab.html.twig:84
 msgid "Person"
 msgstr ""
 
-#: src/Grant.php:528 templates/grants_tab.html.twig:38 templates/roles_tab.html.twig:23 templates/roles_tab.html.twig:38 templates/roles_tab.html.twig:83
+#: src/Grant.php:522 templates/grants_tab.html.twig:38 templates/roles_tab.html.twig:23 templates/roles_tab.html.twig:38 templates/roles_tab.html.twig:83
 msgid "Level"
 msgstr ""
 
-#: src/Grant.php:530 templates/grant_form.html.twig:114 templates/grant_form.html.twig:116 templates/grants_tab.html.twig:39 templates/position_user_form.html.twig:33 templates/positions_tab.html.twig:28
+#: src/Grant.php:524 templates/grant_form.html.twig:114 templates/grant_form.html.twig:116 templates/grants_tab.html.twig:39 templates/position_user_form.html.twig:33 templates/positions_tab.html.twig:28
 msgid "Status"
 msgstr ""
 
-#: src/Grant.php:532 templates/grant_form.html.twig:67 templates/grant_form.html.twig:70 templates/grants_tab.html.twig:40 templates/position_user_form.html.twig:29 templates/positions_tab.html.twig:26 templates/positions_tab.html.twig:97
+#: src/Grant.php:526 templates/grant_form.html.twig:67 templates/grant_form.html.twig:70 templates/grants_tab.html.twig:40 templates/position_user_form.html.twig:29 templates/positions_tab.html.twig:26 templates/positions_tab.html.twig:97
 msgid "Begin date"
 msgstr ""
 
-#: src/Grant.php:533 templates/grant_form.html.twig:68 templates/grant_form.html.twig:71 templates/grants_tab.html.twig:41 templates/position_user_form.html.twig:31 templates/positions_tab.html.twig:27 templates/positions_tab.html.twig:59 templates/positions_tab.html.twig:98
+#: src/Grant.php:527 templates/grant_form.html.twig:68 templates/grant_form.html.twig:71 templates/grants_tab.html.twig:41 templates/position_user_form.html.twig:31 templates/positions_tab.html.twig:27 templates/positions_tab.html.twig:59 templates/positions_tab.html.twig:98
 msgid "End date"
 msgstr ""
 
-#: src/Grant.php:535 templates/grant_form.html.twig:76 templates/grant_form.html.twig:78 templates/grant_form.html.twig:80 templates/grant_form.html.twig:82 templates/grants_tab.html.twig:42 templates/matrix_cell.html.twig:66 templates/position_user_form.html.twig:38 templates/positions_tab.html.twig:29 templates/positions_tab.html.twig:99
+#: src/Grant.php:529 templates/grant_form.html.twig:76 templates/grant_form.html.twig:78 templates/grant_form.html.twig:80 templates/grant_form.html.twig:82 templates/grants_tab.html.twig:42 templates/matrix_cell.html.twig:66 templates/position_user_form.html.twig:38 templates/positions_tab.html.twig:29 templates/positions_tab.html.twig:99
 msgid "Ticket"
 msgstr ""
 
-#: src/Grant.php:536 templates/grant_form.html.twig:132 templates/grants_tab.html.twig:43
+#: src/Grant.php:530 templates/grant_form.html.twig:132 templates/grants_tab.html.twig:43
 msgid "Source"
 msgstr ""
 
-#: src/Grant.php:538 templates/grant_form.html.twig:86 templates/grant_form.html.twig:88
+#: src/Grant.php:532 templates/grant_form.html.twig:86 templates/grant_form.html.twig:88
 msgid "Approver"
 msgstr ""
 
-#: src/Grant.php:541 templates/grant_form.html.twig:92 templates/grant_form.html.twig:94
+#: src/Grant.php:535 templates/grant_form.html.twig:92 templates/grant_form.html.twig:94
 msgid "Security approver"
 msgstr ""
 
-#: src/Grant.php:542 templates/grant_form.html.twig:108 templates/grant_form.html.twig:110
+#: src/Grant.php:536 templates/grant_form.html.twig:108 templates/grant_form.html.twig:110
 msgid "MFA"
 msgstr ""
 
-#: src/Grant.php:544 templates/grant_form.html.twig:133
+#: src/Grant.php:538 templates/grant_form.html.twig:133
 msgid "Recorded by"
 msgstr ""
 
-#: src/Grant.php:546 templates/grant_form.html.twig:135
+#: src/Grant.php:540 templates/grant_form.html.twig:135
 msgid "Revocation date"
 msgstr ""
 
-#: src/Grant.php:549 templates/grant_form.html.twig:126 templates/grant_form.html.twig:128
+#: src/Grant.php:543 templates/grant_form.html.twig:126 templates/grant_form.html.twig:128
 msgid "Justification"
+msgstr ""
+
+#: src/Grant.php:545 templates/grant_form.html.twig:120 templates/grant_form.html.twig:122
+msgid "Revocation reason"
 msgstr ""
 
 #: src/Grant.php:55
@@ -263,19 +267,15 @@ msgid_plural "Grants"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Grant.php:551 templates/grant_form.html.twig:120 templates/grant_form.html.twig:122
-msgid "Revocation reason"
-msgstr ""
-
-#: src/Grant.php:556 templates/grant_form.html.twig:99 templates/grant_form.html.twig:101 templates/grant_form.html.twig:103
+#: src/Grant.php:550 templates/grant_form.html.twig:99 templates/grant_form.html.twig:101 templates/grant_form.html.twig:103
 msgid "Account"
 msgstr ""
 
-#: src/Grant.php:633
+#: src/Grant.php:627
 msgid "Not approved"
 msgstr ""
 
-#: src/Grant.php:637
+#: src/Grant.php:631
 msgid "Approved by me"
 msgstr ""
 
@@ -303,12 +303,12 @@ msgstr ""
 msgid "Revoked"
 msgstr ""
 
-#: src/Grant.php:77
-msgid "Expired"
+#: src/Grant.php:767
+msgid "Grants (IAM)"
 msgstr ""
 
-#: src/Grant.php:773
-msgid "Grants (IAM)"
+#: src/Grant.php:77
+msgid "Expired"
 msgstr ""
 
 #: src/Grant.php:85 templates/position_user_form.html.twig:28 templates/positions_tab.html.twig:45 templates/positions_tab.html.twig:95 templates/roles_tab.html.twig:45 templates/roles_tab.html.twig:54 templates/roles_tab.html.twig:90
@@ -335,7 +335,7 @@ msgstr ""
 msgid "Agent"
 msgstr ""
 
-#: src/Help.php:31 templates/help.html.twig:30 templates/matrix.html.twig:130
+#: src/Help.php:31 templates/help.html.twig:31 templates/matrix.html.twig:130
 msgid "Help and glossary"
 msgstr ""
 
@@ -465,19 +465,15 @@ msgstr ""
 msgid "The position is not active."
 msgstr ""
 
-#: src/Position_User.php:212
-msgid "Select a person."
-msgstr ""
-
-#: src/Position_User.php:215
+#: src/Position_User.php:214
 msgid "The assignment is not valid."
 msgstr ""
 
-#: src/Position_User.php:389
+#: src/Position_User.php:388
 msgid "Positions (IAM)"
 msgstr ""
 
-#: src/Position_User.php:392
+#: src/Position_User.php:391
 msgid "Assignments"
 msgstr ""
 
@@ -739,7 +735,7 @@ msgstr ""
 msgid "Privileged"
 msgstr ""
 
-#: templates/_help.html.twig:22
+#: templates/_help.html.twig:23
 msgid "(click to read)"
 msgstr ""
 
@@ -779,51 +775,51 @@ msgstr ""
 msgid "No grants."
 msgstr ""
 
-#: templates/help.html.twig:18
+#: templates/help.html.twig:19
 msgid "Your role"
 msgstr ""
 
-#: templates/help.html.twig:24
+#: templates/help.html.twig:25
 msgid "When"
 msgstr ""
 
-#: templates/help.html.twig:31
+#: templates/help.html.twig:32
 msgid "What each person has to do, the meaning of the matrix symbols, the terms and the most common questions."
 msgstr ""
 
-#: templates/help.html.twig:33 templates/help.html.twig:39
+#: templates/help.html.twig:34 templates/help.html.twig:40
 msgid "What do I have to do?"
 msgstr ""
 
-#: templates/help.html.twig:34 templates/help.html.twig:50
+#: templates/help.html.twig:35 templates/help.html.twig:51
 msgid "Matrix legend"
 msgstr ""
 
-#: templates/help.html.twig:35 templates/help.html.twig:59
+#: templates/help.html.twig:36 templates/help.html.twig:60
 msgid "Glossary"
 msgstr ""
 
-#: templates/help.html.twig:36 templates/help.html.twig:72
+#: templates/help.html.twig:37 templates/help.html.twig:73
 msgid "Frequently asked questions"
 msgstr ""
 
-#: templates/help.html.twig:44
+#: templates/help.html.twig:45
 msgid "Guides of the other roles"
 msgstr ""
 
-#: templates/help.html.twig:62
+#: templates/help.html.twig:63
 msgid "Term"
 msgstr ""
 
-#: templates/help.html.twig:62
+#: templates/help.html.twig:63
 msgid "Meaning"
 msgstr ""
 
-#: templates/help.html.twig:63
+#: templates/help.html.twig:64
 msgid "Example"
 msgstr ""
 
-#: templates/help.html.twig:63
+#: templates/help.html.twig:64
 msgid "ISO 27001:2022"
 msgstr ""
 

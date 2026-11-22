@@ -64,7 +64,7 @@ Perfil **IAM - Analista**: ve y configura todo el catálogo y el registro, no re
 - **Criticidad** (baja, media, alta, crítica) y **frecuencia de revisión** (trimestral, semestral,
   anual).
 - **Roles:** nombre y nivel. *Estándar* es uso normal; *Sensible* afecta datos o dinero;
-  *Privilegiado* administra el sistema y exige justificación, vencimiento y MFA (A.8.2). Marca
+  *Privilegiado* administra el sistema; por política debería tener justificación, vencimiento y MFA (A.8.2), pero en 1.0 el plugin no lo bloquea (la 1.1 lo marcará como desvío). Marca
   *Emergencia (break-glass)* en las cuentas de emergencia, que solo se usan cuando falla el procedimiento normal.
 - Un rol con otorgamientos o celdas de la matriz no se puede quitar: nada se borra.
 - Desde la ficha de un elemento del inventario (pestaña *Accesos (IAM)*) puedes crear o ver su recurso.
@@ -91,11 +91,11 @@ liberar pagos.
 |---|---|
 | Persona | Quien recibe el acceso. No puede ser quien registra (nadie registra su propio acceso). |
 | Rol | Solo los del recurso elegido. No cambia después. |
-| Fecha de inicio / fin | Vigencia. El fin es obligatorio en la práctica para privilegiados. |
+| Fecha de inicio / fin | Vigencia. Por política, los privilegiados deberían tener fin (no se valida en 1.0). |
 | Ticket | El ticket donde se pidió y aprobó. Es la evidencia. |
 | Aprobador | Quien aprobó (normalmente el dueño). No puede ser la persona ni quien registra. |
 | Aprobador de seguridad | Solo para quien tenga ese derecho; se registra siempre a su nombre. |
-| Cuenta | Cuenta de Accounts Inventory (si está instalado). Un privilegiado debe usar una cuenta separada. |
+| Cuenta | Cuenta de Accounts Inventory (si está instalado). Por política, un privilegiado debería usar una cuenta separada (no se valida en 1.0). |
 | MFA | Sí, No o No aplica. |
 | Estado | Activo (por defecto) o Pendiente. |
 | Justificación | Por qué se concede. |
@@ -228,6 +228,7 @@ nominal, búsqueda, perfiles, API para el agente y esta ayuda. **Todavía no inc
 - excepciones (integración con GRC Manager),
 - campañas de recertificación y la vista «Mis activos» del dueño,
 - reportes y evidencia exportable,
+- la validación de los requisitos de A.8.2 para accesos privilegiados (vencimiento, MFA, cuenta separada, aprobación de seguridad): en 1.0 no se validan ni se bloquean; la 1.1 los marcará como desvío,
 - el ciclo de vida automático de altas, cambios y bajas, y la importación CSV.
 
 Llegan en las versiones 1.1 a 1.3. Hasta entonces, un desvío se resuelve corrigiendo el acceso o la matriz.

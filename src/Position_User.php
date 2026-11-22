@@ -209,7 +209,6 @@ class Position_User extends CommonDBRelation
             'agent_requires_ticket' => __('The agent can only assign a position with its ticket.', 'iam'),
             'position_required'     => __('Select a position.', 'iam'),
             'position_inactive'     => __('The position is not active.', 'iam'),
-            'person_required'       => __('Select a person.', 'iam'),
             'person_invalid'        => __('The person does not exist or you are not allowed to see it.', 'iam'),
             'ticket_invalid'        => __('The ticket does not exist or you are not allowed to see it.', 'iam'),
             default                 => __('The assignment is not valid.', 'iam'),
@@ -289,7 +288,7 @@ class Position_User extends CommonDBRelation
         $usersId = (int) ($input['users_id'] ?? 0);
         $user = new User();
         if ($usersId <= 0 || !$user->getFromDB($usersId)) {
-            return self::failCodes(['person_required']);
+            return self::failCodes(['person_invalid']);
         }
         // The person must belong to an entity the session can see (no assignment of people out of scope)
         if (!self::userVisible($usersId)) {

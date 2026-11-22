@@ -159,7 +159,7 @@
   },
   {
    "term": "Privileged access",
-   "definition": "A role that allows administering the system or bypassing controls. It needs justification, expiry, MFA and more frequent review.",
+   "definition": "A role that allows administering the system or bypassing controls. By policy it should have justification, expiry, MFA and more frequent review; in 1.0 the plugin records it but does not validate it.",
    "example": "Domain administrator, DBA.",
    "iso": "A.8.2"
   },
@@ -223,7 +223,7 @@
   },
   "privileged": {
    "label": "Privileged role",
-   "text": "Allows administering the system (A.8.2). It needs justification, expiry and MFA; it is not granted without security approval."
+   "text": "Allows administering the system (A.8.2). By policy it should have justification, expiry, MFA and security approval; in 1.0 the plugin does not block it: 1.1 will flag it as a deviation."
   },
   "breakglass": {
    "label": "Break-glass role",
@@ -269,7 +269,7 @@
    "iso": "A.5.15 · A.8.2",
    "lines": [
     "A role is a set of permissions of the resource: what a person can do with it.",
-    "The level sets the care needed: standard, sensitive or privileged. Privileged ones (administrators) need justification, expiry and MFA.",
+    "The level sets the care needed: standard, sensitive or privileged. Privileged ones (administrators) should have justification, expiry and MFA (A.8.2 policy); in 1.0 the plugin does not enforce it: 1.1 will flag it as a deviation.",
     "Mark as emergency account (break-glass) the accounts used only when the normal procedure fails.",
     "A role with grants or matrix cells cannot be removed: nothing is deleted."
    ],
@@ -304,7 +304,7 @@
     "It records an access that was already given. The request and approval are in the ticket; here stays the evidence.",
     "The person, resource and role cannot be changed later: to correct, revoke with a reason and register a new one.",
     "Nobody records or edits their own access, and the approver cannot be the recipient nor the recorder.",
-    "A privileged access needs justification, expiry and MFA. Security approval is given by a person holding that right, in their own name.",
+    "By policy a privileged access should have justification, expiry and MFA (not validated in 1.0; 1.1 will flag it as a deviation). Security approval is given by a person holding that right, in their own name.",
     "The source (manual, API or agent) is set by the server, it is not typed. Nothing is deleted: revoking is changing the status."
    ],
    "example": "Person M. Perez, role SAP-FI Read-only, ticket #4567, approver the head of Finance, expires in 6 months."
@@ -339,12 +339,12 @@
   "grant_person": "Who receives the access. It cannot be the person recording it.",
   "grant_role": "Role granted, among those of the chosen resource. It does not change once created.",
   "grant_begin": "Date since when the access applies. If left empty, today. Format YYYY-MM-DD.",
-  "grant_end": "Expiry of the access. Required in practice for privileged ones (A.8.2).",
+  "grant_end": "Expiry of the access. By policy every privileged access should have one (A.8.2); not validated in 1.0.",
   "grant_ticket": "Ticket where the access was requested and approved: it is the evidence. Mandatory for the AI agent.",
   "grant_approver": "Who approved the access (usually the owner). It cannot be the recipient nor the recorder (A.5.3).",
   "grant_security": "Security approval for privileged access. It is always recorded in the name of whoever approves.",
-  "grant_account": "Accounts Inventory account used for this access. A privileged one should use a separate account.",
-  "grant_mfa": "Whether the access requires a second factor. Essential for privileged ones.",
+  "grant_account": "Accounts Inventory account used for this access. By policy a privileged one should use a separate account (not validated in 1.0).",
+  "grant_mfa": "Whether the access requires a second factor. By policy it should be required for privileged ones (not validated in 1.0).",
   "grant_status": "Active; revocation or modification pending (asked by the owner); revoked or expired (final).",
   "grant_revoke_reason": "Mandatory when revoking: why the access is withdrawn. It stays as evidence and is not deleted.",
   "grant_justification": "Why the access is granted or changed. In an owner request, the reason for the revocation.",

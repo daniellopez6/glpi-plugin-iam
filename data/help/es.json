@@ -159,7 +159,7 @@
   },
   {
    "term": "Acceso privilegiado",
-   "definition": "Rol que permite administrar el sistema o saltarse controles. Debe tener justificación, vencimiento, MFA y revisión más frecuente.",
+   "definition": "Rol que permite administrar el sistema o saltarse controles. Por política debería tener justificación, vencimiento, MFA y revisión más frecuente; en 1.0 el plugin lo registra pero no lo valida.",
    "example": "Administrador de dominio, DBA.",
    "iso": "A.8.2"
   },
@@ -223,7 +223,7 @@
   },
   "privileged": {
    "label": "Rol privilegiado",
-   "text": "Permite administrar el sistema (A.8.2). Debe tener justificación, vencimiento y MFA; no se concede sin aprobación de seguridad."
+   "text": "Permite administrar el sistema (A.8.2). Por política debería tener justificación, vencimiento, MFA y aprobación de seguridad; en 1.0 el plugin no lo bloquea: la 1.1 lo marcará como desvío."
   },
   "breakglass": {
    "label": "Rol de emergencia (break-glass)",
@@ -269,7 +269,7 @@
    "iso": "A.5.15 · A.8.2",
    "lines": [
     "Un rol es un conjunto de permisos del recurso: lo que una persona puede hacer con él.",
-    "El nivel marca el cuidado necesario: estándar, sensible o privilegiado. Los privilegiados (administradores) requieren justificación, vencimiento y MFA.",
+    "El nivel marca el cuidado necesario: estándar, sensible o privilegiado. Los privilegiados (administradores) deberían tener justificación, vencimiento y MFA (política A.8.2); en 1.0 el plugin no lo exige: la 1.1 lo marcará como desvío.",
     "Marca como cuenta de emergencia (break-glass) las cuentas que solo se usan cuando falla lo normal.",
     "Un rol con otorgamientos o celdas de la matriz no se puede quitar: nada se borra."
    ],
@@ -304,7 +304,7 @@
     "Registra un acceso que ya se concedió. El pedido y su aprobación están en el ticket; aquí queda la evidencia.",
     "La persona, el recurso y el rol no se cambian después: para corregir, revoca con motivo y registra uno nuevo.",
     "Nadie registra ni edita su propio acceso, y el aprobador no puede ser quien lo recibe ni quien lo registra.",
-    "Un acceso privilegiado necesita justificación, vencimiento y MFA. La aprobación de seguridad la da una persona con ese derecho, en su propio nombre.",
+    "Por política, un acceso privilegiado debería tener justificación, vencimiento y MFA (en 1.0 no se valida; la 1.1 lo marcará como desvío). La aprobación de seguridad la da una persona con ese derecho, en su propio nombre.",
     "El origen (manual, API o agente) lo fija el servidor, no se escribe. Nada se borra: revocar es cambiar el estado."
    ],
    "example": "Persona M. Pérez, rol SAP-FI Consulta, ticket #4567, aprobador el jefe de Finanzas, vence en 6 meses."
@@ -339,12 +339,12 @@
   "grant_person": "Quien recibe el acceso. No puede ser quien lo registra.",
   "grant_role": "Rol concedido, de entre los del recurso elegido. No cambia una vez creado.",
   "grant_begin": "Fecha desde la que rige el acceso. Si se deja vacía, hoy. Formato AAAA-MM-DD.",
-  "grant_end": "Vencimiento del acceso. Obligatorio en la práctica para los privilegiados (A.8.2).",
+  "grant_end": "Vencimiento del acceso. Por política debería tenerlo todo acceso privilegiado (A.8.2); en 1.0 no se valida.",
   "grant_ticket": "Ticket donde se pidió y aprobó el acceso: es la evidencia. Es obligatorio para el agente de IA.",
   "grant_approver": "Quien aprobó el acceso (normalmente el dueño). No puede ser quien lo recibe ni quien lo registra (A.5.3).",
   "grant_security": "Aprobación de seguridad para accesos privilegiados. Siempre se registra a nombre de quien aprueba.",
-  "grant_account": "Cuenta de Accounts Inventory que se usa para este acceso. Un privilegiado debe usar una cuenta separada.",
-  "grant_mfa": "Si el acceso exige un segundo factor. Imprescindible en los privilegiados.",
+  "grant_account": "Cuenta de Accounts Inventory que se usa para este acceso. Por política, un privilegiado debería usar una cuenta separada (no se valida en 1.0).",
+  "grant_mfa": "Si el acceso exige un segundo factor. Por política, debería exigirse en los privilegiados (no se valida en 1.0).",
   "grant_status": "Activo; revocación o modificación pendiente (pedida por el dueño); revocado o vencido (finales).",
   "grant_revoke_reason": "Obligatorio al revocar: por qué se retira el acceso. Queda como evidencia y no se borra.",
   "grant_justification": "Por qué se concede o cambia el acceso. En un pedido del dueño, la razón de la revocación.",
